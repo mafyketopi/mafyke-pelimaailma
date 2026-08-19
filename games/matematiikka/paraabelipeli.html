@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paraabelipeli</title>
+<style>
+:root{
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --ink:#162033;
+  --muted:#627086;
+  --line:#dbe2ea;
+  --accent:#315efb;
+  --ok:#138a56;
+  --bad:#c43b3b;
+  --soft:#eef3ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+header{
+  background:white;
+  border-bottom:1px solid var(--line);
+  padding:24px 5%;
+}
+header h1{margin:0 0 6px;font-size:clamp(2rem,5vw,3rem)}
+header p{margin:0;color:var(--muted)}
+main{max-width:1100px;margin:auto;padding:28px 5% 50px}
+.tabs{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px
+}
+.tabs button{
+  border:1px solid var(--line);
+  background:white;
+  padding:12px 16px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:700;
+}
+.tabs button.active{
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 8px 24px rgba(31,45,61,.06);
+}
+.hidden{display:none!important}
+.row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.col{flex:1 1 380px}
+h2,h3{margin-top:0}
+.math{
+  font-size:1.35rem;
+  font-weight:700;
+  margin:8px 0 16px;
+}
+.note{
+  background:#f7f9fc;
+  border:1px solid var(--line);
+  padding:14px 16px;
+  border-radius:12px;
+  color:#3c485c;
+}
+input[type="number"],input[type="text"]{
+  width:92px;
+  padding:10px 11px;
+  border:1px solid #bcc7d3;
+  border-radius:10px;
+  font-size:1rem;
+}
+input.wide{width:170px}
+button.primary,button.secondary{
+  padding:10px 15px;border-radius:10px;cursor:pointer;font-weight:700;
+}
+button.primary{
+  color:white;background:var(--accent);border:1px solid var(--accent)
+}
+button.secondary{
+  color:var(--ink);background:white;border:1px solid var(--line)
+}
+button:disabled{opacity:.45;cursor:not-allowed}
+.feedback{min-height:28px;margin:10px 0;font-weight:700}
+.feedback.ok{color:var(--ok)}
+.feedback.bad{color:var(--bad)}
+table{
+  border-collapse:collapse;
+  width:100%;
+  margin:12px 0 18px;
+}
+th,td{
+  border:1px solid var(--line);
+  text-align:center;
+  padding:10px;
+}
+th{background:#f3f6fa}
+td input{width:74px}
+.canvas-wrap{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+  overflow:auto;
+}
+canvas{
+  display:block;
+  width:min(100%,640px);
+  height:auto;
+  margin:auto;
+  background:white;
+  touch-action:none;
+}
+.progress{
+  margin-bottom:16px;
+  color:var(--muted);
+  font-weight:700;
+}
+.example-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+@media (max-width:850px){
+  .example-grid{grid-template-columns:1fr}
+}
+.pill{
+  display:inline-block;padding:4px 9px;border-radius:999px;background:var(--soft);
+  color:#2445bd;font-size:.9rem;font-weight:700;margin-bottom:8px
+}
+.xyinputs{
+  display:flex;gap:8px;flex-wrap:wrap;margin:12px 0
+}
+.xyinputs input{width:74px}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+.small{font-size:.93rem;color:var(--muted)}
+</style>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)'],['$','$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style id="matikkapaketti-responsive-fix">
+html,body{max-width:100%;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
+canvas{max-width:100%!important;height:auto!important}
+img,svg,table{max-width:100%}
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
+.package-home:hover{opacity:1}
+@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
+@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
+<header>
+  <h1>Paraabelipeli</h1>
+  <p>Laske pisteitä, piirrä paraabeleja ja tutki kuvaajien leikkauspisteitä.</p>
+</header>
+
+<main>
+  <div class="tabs">
+    <button id="tabBasic" class="active">1. Paraabelin piirtäminen</button>
+    <button id="tabChallenge">2. Haaste: leikkauspisteet</button>
+  </div>
+
+  <section id="basicSection" class="card">
+    <div id="exampleBlock">
+      <div class="pill">Malliesimerkki</div>
+      <h2>Piirretään paraabeli seitsemän pisteen avulla</h2>
+      <p>Kun paraabeli on y-akselin suhteen symmetrinen, kannattaa valita \(x\)-arvot symmetrisesti nollan molemmin puolin.</p>
+      <div class="math">\(y=x^2\)</div>
+      <div class="example-grid">
+        <div>
+          <table>
+            <tr><th>\(x\)</th><td>-3</td><td>-2</td><td>-1</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
+            <tr><th>\(y\)</th><td>9</td><td>4</td><td>1</td><td>0</td><td>1</td><td>4</td><td>9</td></tr>
+          </table>
+          <p class="note">Huomaa pisteparit: \((-1,1)\) ja \((1,1)\), \((-2,4)\) ja \((2,4)\), \((-3,9)\) ja \((3,9)\).</p>
+          <button class="primary" id="animateExample">Näytä pisteet ja paraabeli</button>
+          <button class="secondary" id="startBasic">Aloita harjoitukset</button>
+        </div>
+        <div class="canvas-wrap"><canvas id="exampleCanvas" width="620" height="460"></canvas></div>
+      </div>
+    </div>
+
+    <div id="basicGame" class="hidden">
+      <div class="progress" id="basicProgress"></div>
+      <div class="row">
+        <div class="col">
+          <h2 id="basicTitle"></h2>
+          <div class="math" id="basicFunction"></div>
+
+          <div id="countStep">
+            <p><strong>Monenko pisteen koordinaatit aiot laskea?</strong></p>
+            <p class="small">Valitse 5–9 pistettä.</p>
+            <input type="number" id="pointCount" min="1" max="12">
+            <button class="primary" id="checkCount">Jatka</button>
+            <div class="feedback" id="countFeedback"></div>
+          </div>
+
+          <div id="xStep" class="hidden">
+            <p><strong>Valitse \(x\)-arvot symmetrisesti nollan molemmin puolin.</strong></p>
+            <p class="small">Mukana pitää olla \(x=0\), ja jokaiselle arvolle \(a\) pitää löytyä myös \(-a\).</p>
+            <div class="xyinputs" id="xInputs"></div>
+            <button class="primary" id="checkX">Tarkista x-arvot</button>
+            <div class="feedback" id="xFeedback"></div>
+          </div>
+
+          <div id="tableStep" class="hidden">
+            <p><strong>Laske nyt pisteiden \(y\)-arvot.</strong></p>
+            <div id="valueTable"></div>
+            <button class="primary" id="checkY">Tarkista arvot</button>
+            <div class="feedback" id="yFeedback"></div>
+          </div>
+
+          <div id="plotStep" class="hidden">
+            <p><strong>Sijoita laskemasi pisteet koordinaatistoon.</strong></p>
+            <p class="small">Klikkaa mahdollisimman lähelle oikeaa kohtaa. Piste napsahtaa ruudukkoon.</p>
+            <div class="feedback" id="plotFeedback"></div>
+            <button class="primary hidden" id="drawParabola">Piirrä paraabeli pisteiden kautta</button>
+            <button class="primary hidden" id="nextBasic">Seuraava harjoitus</button>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="canvas-wrap"><canvas id="basicCanvas" width="620" height="500"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="basicDone" class="hidden">
+      <h2>Hyvä! Kaikki viisi harjoitusta ovat valmiit.</h2>
+      <p>Osaat rakentaa y-akselin suhteen symmetrisen paraabelin laskettujen pisteiden avulla.</p>
+      <button class="primary" id="goChallenge">Siirry haasteeseen</button>
+    </div>
+  </section>
+
+  <section id="challengeSection" class="card hidden">
+    <div class="progress" id="challengeProgress"></div>
+    <div class="row">
+      <div class="col">
+        <h2>Haaste: missä suora ja paraabeli leikkaavat?</h2>
+        <p>Piirrä ensin paraabeli pisteiden avulla. Piirrä sitten suora valitsemalla kaksi pistettä. Lue lopuksi leikkauspisteet koordinaatistosta.</p>
+        <div id="challengeEquations" class="math"></div>
+
+        <div id="challengeParaStep">
+          <p><strong>1. Piirrä paraabeli.</strong></p>
+          <p class="small">Valitse viisi symmetristä \(x\)-arvoa. Tässä haasteessa käytetään aina viittä pistettä.</p>
+          <div class="xyinputs" id="challengeXInputs"></div>
+          <button class="primary" id="checkChallengeX">Tarkista x-arvot</button>
+          <div class="feedback" id="challengeXFeedback"></div>
+          <div id="challengeYArea" class="hidden">
+            <div id="challengeTable"></div>
+            <button class="primary" id="checkChallengeY">Tarkista y-arvot</button>
+            <div class="feedback" id="challengeYFeedback"></div>
+          </div>
+        </div>
+
+        <div id="challengePlotPara" class="hidden">
+          <p><strong>Klikkaa paraabelin viisi pistettä koordinaatistoon.</strong></p>
+          <div class="feedback" id="challengePlotFeedback"></div>
+        </div>
+
+        <div id="challengeLineStep" class="hidden">
+          <p><strong>2. Piirrä suora.</strong></p>
+          <p class="small">Valitse koordinaatistosta kaksi suoran pistettä.</p>
+          <button class="secondary" id="resetLine">Tyhjennä suoran pisteet</button>
+          <div class="feedback" id="lineFeedback"></div>
+        </div>
+
+        <div id="intersectionStep" class="hidden">
+          <p><strong>3. Mitkä ovat kuvaajien leikkauspisteet?</strong></p>
+          <p class="small">Syötä pisteet muodossa esimerkiksi <strong>(1, 2)</strong>. Jos pisteitä on kaksi, täytä molemmat.</p>
+          <div id="intersectionInputs"></div>
+          <button class="primary" id="checkIntersections">Tarkista vastaus</button>
+          <div class="feedback" id="intersectionFeedback"></div>
+          <button class="primary hidden" id="nextChallenge">Seuraava haaste</button>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="canvas-wrap"><canvas id="challengeCanvas" width="620" height="500"></canvas></div>
+      </div>
+    </div>
+
+    <div id="challengeDone" class="hidden">
+      <h2>Haaste valmis!</h2>
+      <p>Olet käyttänyt kuvaajia suoran ja paraabelin leikkauspisteiden löytämiseen.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const basicTasks = [
+  {a:1,c:0,label:'y=x^2', xmin:-5,xmax:5,ymin:-5,ymax:12},
+  {a:1,c:-2,label:'y=x^2-2', xmin:-5,xmax:5,ymin:-5,ymax:12},
+  {a:2,c:0,label:'y=2x^2', xmin:-4,xmax:4,ymin:-4,ymax:14},
+  {a:-1,c:3,label:'y=-x^2+3', xmin:-5,xmax:5,ymin:-10,ymax:6},
+  {a:0.5,c:-2,label:'y=\\frac12x^2-2', xmin:-6,xmax:6,ymin:-5,ymax:12}
+];
+
+const challengeTasks = [
+  {
+    para:{a:1,c:-2,label:'y=x^2-2'},
+    line:{m:1,b:0,label:'y=x'},
+    intersections:[[-1,-1],[2,2]],
+    xmin:-5,xmax:5,ymin:-5,ymax:8
+  },
+  {
+    para:{a:0.5,c:-2,label:'y=\\frac12x^2-2'},
+    line:{m:0,b:0,label:'y=0'},
+    intersections:[[-2,0],[2,0]],
+    xmin:-6,xmax:6,ymin:-5,ymax:8
+  },
+  {
+    para:{a:1,c:0,label:'y=x^2'},
+    line:{m:2,b:-1,label:'y=2x-1'},
+    intersections:[[1,1]],
+    xmin:-4,xmax:5,ymin:-4,ymax:10
+  }
+];
+
+function q(sel){return document.querySelector(sel)}
+function qa(sel){return [...document.querySelectorAll(sel)]}
+function typeset(){ if(window.MathJax?.typesetPromise) MathJax.typesetPromise(); }
+function setFeedback(el,msg,type=''){ el.textContent=msg; el.className='feedback '+type; }
+
+function setupCanvas(canvas, range){
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const W=canvas.width,H=canvas.height;
+  const pad=42;
+  const sx=(W-2*pad)/(range.xmax-range.xmin);
+  const sy=(H-2*pad)/(range.ymax-range.ymin);
+  const toPx=(x,y)=>[pad+(x-range.xmin)*sx,H-pad-(y-range.ymin)*sy];
+  const fromPx=(px,py)=>[
+    range.xmin+(px-pad)/sx,
+    range.ymin+(H-pad-py)/sy
+  ];
+
+  ctx.lineWidth=1;
+  ctx.font='13px system-ui';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+
+  for(let x=Math.ceil(range.xmin);x<=Math.floor(range.xmax);x++){
+    const [px]=toPx(x,0);
+    ctx.strokeStyle='#e7ebf0';
+    ctx.beginPath();ctx.moveTo(px,pad);ctx.lineTo(px,H-pad);ctx.stroke();
+    if(x!==0){
+      const [,py0]=toPx(0,0);
+      ctx.fillStyle='#607086';
+      ctx.fillText(x,px,Math.min(H-pad+17,H-12));
+    }
+  }
+  for(let y=Math.ceil(range.ymin);y<=Math.floor(range.ymax);y++){
+    const [,py]=toPx(0,y);
+    ctx.strokeStyle='#e7ebf0';
+    ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(W-pad,py);ctx.stroke();
+    if(y!==0){
+      const [px0]=toPx(0,0);
+      ctx.fillStyle='#607086';
+      ctx.textAlign='right';
+      ctx.fillText(y,Math.max(pad-8,px0-7),py);
+      ctx.textAlign='center';
+    }
+  }
+
+  ctx.strokeStyle='#263548';
+  ctx.lineWidth=2;
+  if(range.ymin<=0 && range.ymax>=0){
+    const [,py0]=toPx(0,0);
+    ctx.beginPath();ctx.moveTo(pad,py0);ctx.lineTo(W-pad,py0);ctx.stroke();
+  }
+  if(range.xmin<=0 && range.xmax>=0){
+    const [px0]=toPx(0,0);
+    ctx.beginPath();ctx.moveTo(px0,pad);ctx.lineTo(px0,H-pad);ctx.stroke();
+  }
+  return {ctx,toPx,fromPx,pad,W,H,range};
+}
+
+function drawPoint(env,x,y,r=6){
+  const [px,py]=env.toPx(x,y);
+  env.ctx.beginPath();
+  env.ctx.arc(px,py,r,0,Math.PI*2);
+  env.ctx.fillStyle='#315efb';
+  env.ctx.fill();
+  env.ctx.strokeStyle='white';
+  env.ctx.lineWidth=2;
+  env.ctx.stroke();
+}
+
+function drawParabolaCurve(env,a,c){
+  const ctx=env.ctx;
+  ctx.beginPath();
+  let started=false;
+  ctx.strokeStyle='#315efb';
+  ctx.lineWidth=3;
+  for(let px=env.pad;px<=env.W-env.pad;px+=1){
+    const [x]=env.fromPx(px,0);
+    const y=a*x*x+c;
+    if(y<env.range.ymin-1 || y>env.range.ymax+1){started=false;continue}
+    const [,py]=env.toPx(x,y);
+    if(!started){ctx.moveTo(px,py);started=true}else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+}
+
+function drawLineCurve(env,m,b){
+  const ctx=env.ctx;
+  const x1=env.range.xmin,x2=env.range.xmax;
+  const y1=m*x1+b,y2=m*x2+b;
+  const p1=env.toPx(x1,y1),p2=env.toPx(x2,y2);
+  ctx.beginPath();ctx.moveTo(...p1);ctx.lineTo(...p2);
+  ctx.strokeStyle='#d24b40';ctx.lineWidth=3;ctx.stroke();
+}
+
+function isSymmetric(xs){
+  if(!xs.some(v=>Math.abs(v)<1e-9)) return false;
+  const rounded=xs.map(v=>Math.round(v*1000)/1000);
+  const set=new Set(rounded.map(String));
+  return rounded.every(v=>set.has(String(-v)));
+}
+function uniqueNums(xs){
+  const set=new Set(xs.map(v=>String(v)));
+  return set.size===xs.length;
+}
+function formatNum(v){
+  if(Math.abs(v-Math.round(v))<1e-9) return String(Math.round(v));
+  return String(Number(v.toFixed(4)));
+}
+function evalPara(task,x){return task.a*x*x+task.c}
+function parsePoint(s){
+  const m=s.trim().match(/^\(?\s*(-?\d+(?:[.,]\d+)?)\s*[,;]\s*(-?\d+(?:[.,]\d+)?)\s*\)?$/);
+  if(!m) return null;
+  return [parseFloat(m[1].replace(',','.')),parseFloat(m[2].replace(',','.'))];
+}
+function samePoint(a,b){return Math.abs(a[0]-b[0])<1e-6 && Math.abs(a[1]-b[1])<1e-6}
+
+/* TABS */
+q('#tabBasic').onclick=()=>showTab('basic');
+q('#tabChallenge').onclick=()=>showTab('challenge');
+q('#goChallenge').onclick=()=>showTab('challenge');
+function showTab(which){
+  const basic=which==='basic';
+  q('#basicSection').classList.toggle('hidden',!basic);
+  q('#challengeSection').classList.toggle('hidden',basic);
+  q('#tabBasic').classList.toggle('active',basic);
+  q('#tabChallenge').classList.toggle('active',!basic);
+  if(!basic){ renderChallenge(); }
+}
+
+/* EXAMPLE */
+let exEnv=setupCanvas(q('#exampleCanvas'),{xmin:-4,xmax:4,ymin:-2,ymax:10});
+q('#animateExample').onclick=()=>{
+  exEnv=setupCanvas(q('#exampleCanvas'),{xmin:-4,xmax:4,ymin:-2,ymax:10});
+  const pts=[[0,0],[-1,1],[1,1],[-2,4],[2,4],[-3,9],[3,9]];
+  let i=0;
+  const t=setInterval(()=>{
+    if(i<pts.length){drawPoint(exEnv,...pts[i]);i++}
+    else {clearInterval(t);drawParabolaCurve(exEnv,1,0);}
+  },330);
+};
+
+/* BASIC */
+let basicIndex=0,basicCount=0,basicXs=[],basicYs=[],basicPlotted=[];
+let basicEnv=null,basicCurveDrawn=false;
+
+q('#startBasic').onclick=()=>{
+  q('#exampleBlock').classList.add('hidden');
+  q('#basicGame').classList.remove('hidden');
+  loadBasic();
+};
+function loadBasic(){
+  const t=basicTasks[basicIndex];
+  q('#basicProgress').textContent=`Harjoitus ${basicIndex+1} / ${basicTasks.length}`;
+  q('#basicTitle').textContent='Piirrä paraabeli';
+  q('#basicFunction').innerHTML=`\\(${t.label}\\)`;
+  q('#countStep').classList.remove('hidden');
+  q('#xStep').classList.add('hidden');
+  q('#tableStep').classList.add('hidden');
+  q('#plotStep').classList.add('hidden');
+  q('#pointCount').value='';
+  setFeedback(q('#countFeedback'),'');
+  setFeedback(q('#xFeedback'),'');
+  setFeedback(q('#yFeedback'),'');
+  setFeedback(q('#plotFeedback'),'');
+  q('#drawParabola').classList.add('hidden');
+  q('#nextBasic').classList.add('hidden');
+  basicXs=[];basicYs=[];basicPlotted=[];basicCurveDrawn=false;
+  basicEnv=setupCanvas(q('#basicCanvas'),t);
+  typeset();
+}
+q('#checkCount').onclick=()=>{
+  const n=Number(q('#pointCount').value);
+  if(!Number.isInteger(n)||n<5||n>9){
+    setFeedback(q('#countFeedback'),'Valitse pisteiden määräksi kokonaisluku 5–9.','bad');return;
+  }
+  if(n%2===0){
+    setFeedback(q('#countFeedback'),'Koska mukana pitää olla x = 0 ja pisteparit molemmin puolin, valitse pariton määrä: 5, 7 tai 9.','bad');return;
+  }
+  basicCount=n;
+  setFeedback(q('#countFeedback'),'Hyvä. Valitse seuraavaksi symmetriset x-arvot.','ok');
+  buildXInputs('#xInputs',n);
+  q('#xStep').classList.remove('hidden');
+  typeset();
+}
+function buildXInputs(sel,n){
+  const box=q(sel);box.innerHTML='';
+  for(let i=0;i<n;i++){
+    const inp=document.createElement('input');
+    inp.type='number';inp.step='any';inp.placeholder=`x${i+1}`;
+    box.appendChild(inp);
+  }
+}
+q('#checkX').onclick=()=>{
+  const vals=qa('#xInputs input').map(i=>Number(i.value));
+  if(vals.some(v=>!Number.isFinite(v))){
+    setFeedback(q('#xFeedback'),'Täytä kaikki x-arvot.','bad');return;
+  }
+  if(!uniqueNums(vals)){
+    setFeedback(q('#xFeedback'),'Käytä eri x-arvoja.','bad');return;
+  }
+  if(!isSymmetric(vals)){
+    setFeedback(q('#xFeedback'),'Valitse x-arvot symmetrisesti nollan molemmin puolin. Mukana pitää olla 0 ja jokaiselle a:lle myös −a.','bad');return;
+  }
+  basicXs=[...vals].sort((a,b)=>a-b);
+  setFeedback(q('#xFeedback'),'Hyvä! Valinta on symmetrinen.','ok');
+  buildYTable('#valueTable',basicXs,'basicY');
+  q('#tableStep').classList.remove('hidden');
+  typeset();
+}
+function buildYTable(sel,xs,cls){
+  const d=q(sel);
+  let h='<table><tr><th>\\(x\\)</th>'+xs.map(x=>`<td>${formatNum(x)}</td>`).join('')+'</tr>';
+  h+='<tr><th>\\(y\\)</th>'+xs.map(()=>`<td><input type="number" step="any" class="${cls}"></td>`).join('')+'</tr></table>';
+  d.innerHTML=h;
+}
+q('#checkY').onclick=()=>{
+  const t=basicTasks[basicIndex];
+  const vals=qa('.basicY').map(i=>Number(i.value));
+  const correct=basicXs.map(x=>evalPara(t,x));
+  const ok=vals.length===correct.length && vals.every((v,i)=>Number.isFinite(v)&&Math.abs(v-correct[i])<1e-6);
+  if(!ok){setFeedback(q('#yFeedback'),'Jokin arvoista ei vielä täsmää. Tarkista laskut.','bad');return}
+  basicYs=correct;
+  setFeedback(q('#yFeedback'),'Kaikki arvot oikein! Sijoita pisteet koordinaatistoon.','ok');
+  q('#plotStep').classList.remove('hidden');
+  basicPlotted=[];
+};
+
+q('#basicCanvas').addEventListener('click',e=>{
+  if(q('#plotStep').classList.contains('hidden')||basicCurveDrawn) return;
+  const rect=q('#basicCanvas').getBoundingClientRect();
+  const px=(e.clientX-rect.left)*q('#basicCanvas').width/rect.width;
+  const py=(e.clientY-rect.top)*q('#basicCanvas').height/rect.height;
+  const [x,y]=basicEnv.fromPx(px,py);
+  const rx=Math.round(x), ry=Math.round(y);
+  const targets=basicXs.map((x,i)=>[x,basicYs[i]]);
+  let best=null,dist=Infinity,idx=-1;
+  targets.forEach((p,i)=>{
+    if(basicPlotted.includes(i)) return;
+    const d=Math.hypot(x-p[0],y-p[1]);
+    if(d<dist){dist=d;best=p;idx=i}
+  });
+  if(best && dist<0.55){
+    basicPlotted.push(idx);drawPoint(basicEnv,best[0],best[1]);
+    setFeedback(q('#plotFeedback'),`Oikein: (${formatNum(best[0])}, ${formatNum(best[1])}).`,'ok');
+    if(basicPlotted.length===targets.length){
+      setFeedback(q('#plotFeedback'),'Kaikki pisteet oikein! Piirrä nyt paraabeli niiden kautta.','ok');
+      q('#drawParabola').classList.remove('hidden');
+    }
+  } else {
+    setFeedback(q('#plotFeedback'),'Ei aivan. Klikkaa lähemmäs jotakin laskemaasi pistettä.','bad');
+  }
+});
+q('#drawParabola').onclick=()=>{
+  const t=basicTasks[basicIndex];
+  drawParabolaCurve(basicEnv,t.a,t.c);
+  basicCurveDrawn=true;
+  q('#drawParabola').classList.add('hidden');
+  q('#nextBasic').classList.remove('hidden');
+  setFeedback(q('#plotFeedback'),'Valmis! Pisteet muodostavat paraabelin.','ok');
+};
+q('#nextBasic').onclick=()=>{
+  basicIndex++;
+  if(basicIndex>=basicTasks.length){
+    q('#basicGame').classList.add('hidden');
+    q('#basicDone').classList.remove('hidden');
+  }else loadBasic();
+};
+
+/* CHALLENGE */
+let chIndex=0,chXs=[],chYs=[],chParaPlotted=[],chEnv=null;
+let chParaDrawn=false,chLinePts=[],chLineDrawn=false;
+
+function renderChallenge(){
+  if(chIndex>=challengeTasks.length){
+    q('#challengeDone').classList.remove('hidden');return;
+  }
+  q('#challengeDone').classList.add('hidden');
+  const t=challengeTasks[chIndex];
+  q('#challengeProgress').textContent=`Haaste ${chIndex+1} / ${challengeTasks.length}`;
+  q('#challengeEquations').innerHTML=`Paraabeli: \\(${t.para.label}\\)<br>Suora: \\(${t.line.label}\\)`;
+  q('#challengeParaStep').classList.remove('hidden');
+  q('#challengeYArea').classList.add('hidden');
+  q('#challengePlotPara').classList.add('hidden');
+  q('#challengeLineStep').classList.add('hidden');
+  q('#intersectionStep').classList.add('hidden');
+  q('#nextChallenge').classList.add('hidden');
+  setFeedback(q('#challengeXFeedback'),'');
+  setFeedback(q('#challengeYFeedback'),'');
+  setFeedback(q('#challengePlotFeedback'),'');
+  setFeedback(q('#lineFeedback'),'');
+  setFeedback(q('#intersectionFeedback'),'');
+  buildXInputs('#challengeXInputs',5);
+  q('#intersectionInputs').innerHTML='';
+  chXs=[];chYs=[];chParaPlotted=[];chLinePts=[];chParaDrawn=false;chLineDrawn=false;
+  chEnv=setupCanvas(q('#challengeCanvas'),t);
+  typeset();
+}
+q('#checkChallengeX').onclick=()=>{
+  const vals=qa('#challengeXInputs input').map(i=>Number(i.value));
+  if(vals.some(v=>!Number.isFinite(v))){setFeedback(q('#challengeXFeedback'),'Täytä kaikki viisi x-arvoa.','bad');return}
+  if(!uniqueNums(vals)||!isSymmetric(vals)){
+    setFeedback(q('#challengeXFeedback'),'Valitse viisi eri x-arvoa symmetrisesti nollan molemmin puolin.','bad');return;
+  }
+  chXs=[...vals].sort((a,b)=>a-b);
+  setFeedback(q('#challengeXFeedback'),'Hyvä valinta. Laske y-arvot.','ok');
+  buildYTable('#challengeTable',chXs,'challengeY');
+  q('#challengeYArea').classList.remove('hidden');typeset();
+};
+q('#checkChallengeY').onclick=()=>{
+  const t=challengeTasks[chIndex].para;
+  const vals=qa('.challengeY').map(i=>Number(i.value));
+  const correct=chXs.map(x=>t.a*x*x+t.c);
+  if(vals.some((v,i)=>!Number.isFinite(v)||Math.abs(v-correct[i])>1e-6)){
+    setFeedback(q('#challengeYFeedback'),'Jokin y-arvoista on väärin. Tarkista laskut.','bad');return;
+  }
+  chYs=correct;
+  setFeedback(q('#challengeYFeedback'),'Oikein! Sijoita pisteet koordinaatistoon.','ok');
+  q('#challengePlotPara').classList.remove('hidden');
+};
+q('#challengeCanvas').addEventListener('click',e=>{
+  const canvas=q('#challengeCanvas'),rect=canvas.getBoundingClientRect();
+  const px=(e.clientX-rect.left)*canvas.width/rect.width;
+  const py=(e.clientY-rect.top)*canvas.height/rect.height;
+  const [x,y]=chEnv.fromPx(px,py);
+  const t=challengeTasks[chIndex];
+
+  if(!q('#challengePlotPara').classList.contains('hidden')&&!chParaDrawn){
+    const targets=chXs.map((xx,i)=>[xx,chYs[i]]);
+    let best=null,dist=Infinity,idx=-1;
+    targets.forEach((p,i)=>{
+      if(chParaPlotted.includes(i)) return;
+      const d=Math.hypot(x-p[0],y-p[1]);
+      if(d<dist){dist=d;best=p;idx=i}
+    });
+    if(best&&dist<0.55){
+      chParaPlotted.push(idx);drawPoint(chEnv,...best);
+      if(chParaPlotted.length===targets.length){
+        drawParabolaCurve(chEnv,t.para.a,t.para.c);
+        chParaDrawn=true;
+        setFeedback(q('#challengePlotFeedback'),'Paraabeli valmis. Piirrä seuraavaksi suora.','ok');
+        q('#challengeLineStep').classList.remove('hidden');
+      } else setFeedback(q('#challengePlotFeedback'),`Oikein: (${formatNum(best[0])}, ${formatNum(best[1])}).`,'ok');
+    } else setFeedback(q('#challengePlotFeedback'),'Klikkaa lähemmäs jotakin laskemaasi pistettä.','bad');
+    return;
+  }
+
+  if(chParaDrawn&&!chLineDrawn&&!q('#challengeLineStep').classList.contains('hidden')){
+    const rx=Math.round(x),ry=Math.round(y);
+    const expected=t.line.m*rx+t.line.b;
+    if(Math.abs(ry-expected)<1e-9){
+      if(chLinePts.some(p=>p[0]===rx&&p[1]===ry)){
+        setFeedback(q('#lineFeedback'),'Valitse toinen, eri piste samalta suoralta.','bad');return;
+      }
+      chLinePts.push([rx,ry]);drawPoint(chEnv,rx,ry);
+      if(chLinePts.length===2){
+        drawLineCurve(chEnv,t.line.m,t.line.b);
+        chLineDrawn=true;
+        setFeedback(q('#lineFeedback'),'Suora oikein! Lue nyt leikkauspisteet kuvaajasta.','ok');
+        buildIntersectionInputs();
+        q('#intersectionStep').classList.remove('hidden');
+      } else setFeedback(q('#lineFeedback'),`Ensimmäinen suoran piste oikein: (${rx}, ${ry}).`,'ok');
+    } else setFeedback(q('#lineFeedback'),'Tuo piste ei ole annetulla suoralla. Kokeile uudelleen.','bad');
+  }
+});
+q('#resetLine').onclick=()=>{
+  if(!chParaDrawn) return;
+  const t=challengeTasks[chIndex];
+  chEnv=setupCanvas(q('#challengeCanvas'),t);
+  chXs.forEach((x,i)=>drawPoint(chEnv,x,chYs[i]));
+  drawParabolaCurve(chEnv,t.para.a,t.para.c);
+  chLinePts=[];chLineDrawn=false;
+  setFeedback(q('#lineFeedback'),'Suoran pisteet tyhjennetty.');
+  q('#intersectionStep').classList.add('hidden');
+};
+function buildIntersectionInputs(){
+  const n=challengeTasks[chIndex].intersections.length;
+  const box=q('#intersectionInputs');box.innerHTML='';
+  for(let i=0;i<n;i++){
+    const wrap=document.createElement('div');wrap.style.margin='8px 0';
+    wrap.innerHTML=`Leikkauspiste ${i+1}: <input type="text" class="wide intInput" placeholder="(x, y)">`;
+    box.appendChild(wrap);
+  }
+}
+q('#checkIntersections').onclick=()=>{
+  const target=challengeTasks[chIndex].intersections;
+  const vals=qa('.intInput').map(i=>parsePoint(i.value));
+  if(vals.some(v=>!v)){setFeedback(q('#intersectionFeedback'),'Kirjoita piste muodossa esimerkiksi (1, 2).','bad');return}
+  const used=new Set();
+  let ok=true;
+  for(const v of vals){
+    const k=target.findIndex((p,i)=>!used.has(i)&&samePoint(v,p));
+    if(k<0){ok=false;break}
+    used.add(k);
+  }
+  if(!ok||used.size!==target.length){
+    setFeedback(q('#intersectionFeedback'),'Ei vielä. Lue leikkauspisteet tarkasti koordinaatistosta.','bad');return;
+  }
+  setFeedback(q('#intersectionFeedback'),'Oikein! Löysit leikkauspisteet kuvaajien avulla.','ok');
+  q('#nextChallenge').classList.remove('hidden');
+};
+q('#nextChallenge').onclick=()=>{
+  chIndex++;
+  if(chIndex>=challengeTasks.length){
+    q('#challengeParaStep').classList.add('hidden');
+    q('#challengePlotPara').classList.add('hidden');
+    q('#challengeLineStep').classList.add('hidden');
+    q('#intersectionStep').classList.add('hidden');
+    q('#challengeDone').classList.remove('hidden');
+    q('#challengeProgress').textContent='';
+    q('#challengeEquations').innerHTML='';
+  } else renderChallenge();
+};
+
+typeset();
+</script>
+</body>
+</html>
