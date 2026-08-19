@@ -116,12 +116,12 @@ function curve(a,b,color="#172033",w=4){
 function ranges(cuts){let a=[xmin,...cuts,xmax],r=[];for(let i=0;i<a.length-1;i++)r.push([a[i],a[i+1]]);return r}
 function draw(){
  let t=task();ctx.clearRect(0,0,cvs.width,cvs.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,cvs.width,cvs.height);
- ctx.strokeStyle="#e8edf3";ctx.lineWidth=1;
+ ctx.strokeStyle="#d7dee8";ctx.lineWidth=1.15;
  for(let x=-5;x<=5;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()}
  for(let y=-8;y<=10;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(cvs.width,Y(y));ctx.stroke()}
  if(t.domain){ctx.fillStyle="rgba(37,99,235,.07)";ctx.fillRect(X(t.domain[0]),0,X(t.domain[1])-X(t.domain[0]),cvs.height);
   ctx.strokeStyle="#8cb3f7";ctx.lineWidth=2;t.domain.forEach(x=>{ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()})}
- ctx.strokeStyle="#697586";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
+ ctx.strokeStyle="#172033";ctx.lineWidth=2.7;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
  ctx.fillStyle="#596579";ctx.font="15px system-ui";for(let x=-5;x<=5;x++)if(x)ctx.fillText(x,X(x)-5,Y(0)+18);
  for(let y=-8;y<=10;y+=2)if(y)ctx.fillText(y,X(0)+7,Y(y)+5);
  if((t.kind==="sign"||t.kind==="mono")&&selected.size){let rr=ranges(t.cuts);selected.forEach(i=>curve(rr[i][0],rr[i][1],"rgba(37,99,235,.30)",11))}

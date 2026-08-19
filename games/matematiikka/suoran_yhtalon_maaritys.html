@@ -242,12 +242,12 @@ function setupCanvas(canvas){
   function X(x){return (x-min)*scale}
   function Y(y){return H-(y-min)*scale}
   ctx.lineWidth=1;
-  ctx.strokeStyle='#e4e8ef';
+  ctx.strokeStyle='#d5dde8';
   for(let i=min;i<=max;i++){
     ctx.beginPath();ctx.moveTo(X(i),0);ctx.lineTo(X(i),H);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,Y(i));ctx.lineTo(W,Y(i));ctx.stroke();
   }
-  ctx.strokeStyle='#697586';ctx.lineWidth=2;
+  ctx.strokeStyle='#172033';ctx.lineWidth=2.7;
   ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(W,Y(0));ctx.stroke();
   ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),H);ctx.stroke();
   ctx.fillStyle='#697586';ctx.font='14px system-ui';

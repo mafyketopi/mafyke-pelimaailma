@@ -279,7 +279,7 @@ img,svg,table{max-width:100%}
         </div>
 
         <div class="row">
-          <button id="nextBtn" class="action secondary hidden">Seuraava tehtävä</button>
+          <button id="nextBtn" class="action secondary">Seuraava tehtävä</button>
         </div>
       </div>
 
@@ -423,7 +423,7 @@ function loadQuestion() {
   hideFeedback(answerFeedback2);
   answerSection.classList.add('hidden');
   secondAnswerSection.classList.add('hidden');
-  nextBtn.classList.add('hidden');
+  nextBtn.classList.remove('hidden');
 
   modelBox.innerHTML = modelHTML();
   const q = current();

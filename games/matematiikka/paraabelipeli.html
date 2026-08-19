@@ -231,7 +231,7 @@ img,svg,table{max-width:100%}
             <p class="small">Klikkaa mahdollisimman lähelle oikeaa kohtaa. Piste napsahtaa ruudukkoon.</p>
             <div class="feedback" id="plotFeedback"></div>
             <button class="primary hidden" id="drawParabola">Piirrä paraabeli pisteiden kautta</button>
-            <button class="primary hidden" id="nextBasic">Seuraava harjoitus</button>
+            <button class="primary" id="nextBasic">Seuraava harjoitus</button>
           </div>
         </div>
 
@@ -287,7 +287,7 @@ img,svg,table{max-width:100%}
           <div id="intersectionInputs"></div>
           <button class="primary" id="checkIntersections">Tarkista vastaus</button>
           <div class="feedback" id="intersectionFeedback"></div>
-          <button class="primary hidden" id="nextChallenge">Seuraava haaste</button>
+          <button class="primary" id="nextChallenge">Seuraava haaste</button>
         </div>
       </div>
 
@@ -358,7 +358,7 @@ function setupCanvas(canvas, range){
 
   for(let x=Math.ceil(range.xmin);x<=Math.floor(range.xmax);x++){
     const [px]=toPx(x,0);
-    ctx.strokeStyle='#e7ebf0';
+    ctx.strokeStyle='#d7dee8';
     ctx.beginPath();ctx.moveTo(px,pad);ctx.lineTo(px,H-pad);ctx.stroke();
     if(x!==0){
       const [,py0]=toPx(0,0);
@@ -368,7 +368,7 @@ function setupCanvas(canvas, range){
   }
   for(let y=Math.ceil(range.ymin);y<=Math.floor(range.ymax);y++){
     const [,py]=toPx(0,y);
-    ctx.strokeStyle='#e7ebf0';
+    ctx.strokeStyle='#d7dee8';
     ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(W-pad,py);ctx.stroke();
     if(y!==0){
       const [px0]=toPx(0,0);
@@ -379,8 +379,8 @@ function setupCanvas(canvas, range){
     }
   }
 
-  ctx.strokeStyle='#263548';
-  ctx.lineWidth=2;
+  ctx.strokeStyle='#172033';
+  ctx.lineWidth=2.8;
   if(range.ymin<=0 && range.ymax>=0){
     const [,py0]=toPx(0,0);
     ctx.beginPath();ctx.moveTo(pad,py0);ctx.lineTo(W-pad,py0);ctx.stroke();
@@ -389,6 +389,9 @@ function setupCanvas(canvas, range){
     const [px0]=toPx(0,0);
     ctx.beginPath();ctx.moveTo(px0,pad);ctx.lineTo(px0,H-pad);ctx.stroke();
   }
+  ctx.fillStyle='#172033';ctx.font='bold 15px system-ui';ctx.textAlign='center';
+  if(range.ymin<=0&&range.ymax>=0){const [,py0]=toPx(0,0);ctx.fillText('x',W-pad+18,py0);}
+  if(range.xmin<=0&&range.xmax>=0){const [px0]=toPx(0,0);ctx.fillText('y',px0,pad-17);}
   return {ctx,toPx,fromPx,pad,W,H,range};
 }
 
@@ -499,7 +502,7 @@ function loadBasic(){
   setFeedback(q('#yFeedback'),'');
   setFeedback(q('#plotFeedback'),'');
   q('#drawParabola').classList.add('hidden');
-  q('#nextBasic').classList.add('hidden');
+  q('#nextBasic').classList.remove('hidden');
   basicXs=[];basicYs=[];basicPlotted=[];basicCurveDrawn=false;
   basicEnv=setupCanvas(q('#basicCanvas'),t);
   typeset();
@@ -619,7 +622,7 @@ function renderChallenge(){
   q('#challengePlotPara').classList.add('hidden');
   q('#challengeLineStep').classList.add('hidden');
   q('#intersectionStep').classList.add('hidden');
-  q('#nextChallenge').classList.add('hidden');
+  q('#nextChallenge').classList.remove('hidden');
   setFeedback(q('#challengeXFeedback'),'');
   setFeedback(q('#challengeYFeedback'),'');
   setFeedback(q('#challengePlotFeedback'),'');

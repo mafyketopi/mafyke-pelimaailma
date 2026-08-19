@@ -292,7 +292,7 @@ img,svg,table{max-width:100%}
 
         <div class="buttons">
           <button class="primary" id="checkBtn">Tarkista</button>
-          <button class="secondary" id="nextBtn" disabled>Seuraava</button>
+          <button class="secondary" id="nextBtn">Seuraava</button>
         </div>
 
         <div class="feedback" id="feedback"></div>
@@ -378,7 +378,7 @@ function drawBase(canvas,t){
   ctx.fillRect(0,0,W,H);
 
   ctx.lineWidth=1;
-  ctx.strokeStyle="#e5e9ef";
+  ctx.strokeStyle="#d5dde8";
   for(let i=-range;i<=range;i++){
     ctx.beginPath();
     ctx.moveTo(X(i),Y(-range));
@@ -391,7 +391,7 @@ function drawBase(canvas,t){
     ctx.stroke();
   }
 
-  ctx.strokeStyle="#263449";
+  ctx.strokeStyle="#172033";
   ctx.lineWidth=2.2;
   ctx.beginPath();
   ctx.moveTo(X(-range),Y(0)); ctx.lineTo(X(range),Y(0));
@@ -520,7 +520,7 @@ function clearInputs(){
   $("solution").style.display="none";
   $("solution").innerHTML="";
   $("checkBtn").disabled=false;
-  $("nextBtn").disabled=true;
+  $("nextBtn").disabled=false;
   checked=false;
   slopeRevealed=false;
   constantRevealed=false;
