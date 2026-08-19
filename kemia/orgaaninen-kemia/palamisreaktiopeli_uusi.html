@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Palamisreaktiopeli</title>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--line:#d8dee5;--ink:#17212b;--muted:#687583;--blue:#2457a6;--good:#17733b;--bad:#b3261e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1080px;margin:auto;padding:10px 16px}
+header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:8px}
+h1{font-size:23px;margin:0 0 2px} .muted{color:var(--muted)}
+.score{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 11px;text-align:center;min-width:110px}
+.score b{display:block;font-size:23px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 3px 12px #00000008}
+.tasktop{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.taskname{font-size:21px;font-weight:750}
+.wordeq{margin:7px 0 9px;padding:8px 10px;background:#f7f9fb;border:1px solid #e2e7ec;border-radius:9px;text-align:center;font-size:18px;font-weight:650}
+.step{border-top:1px solid #e6eaee;padding-top:9px;margin-top:9px}
+.step h2{font-size:16px;margin:0 0 5px}
+.note{font-size:12px;color:var(--muted);line-height:1.3}
+.eq{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin:7px 0;font-size:20px}
+input{font-size:17px;padding:6px 7px;border:1px solid #b8c1ca;border-radius:8px;text-align:center}
+.formulain{width:82px} .coef{width:52px}
+button{border:0;border-radius:9px;padding:8px 12px;font-size:14px;cursor:pointer}
+.primary{background:var(--blue);color:#fff} .secondary{background:#e9eef4;color:#243342}
+button:disabled{opacity:.45;cursor:default}
+.feedback{min-height:21px;margin-top:4px;font-weight:650;font-size:14px}
+.good{color:var(--good)} .bad{color:var(--bad)} .hidden{display:none!important}
+.balance-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr);gap:10px;align-items:stretch;margin-top:7px}
+.models{border:1px solid #e1e6eb;border-radius:10px;padding:7px;min-height:180px}
+.models-title,.counts-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.reaction-models{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:4px;align-items:center;height:145px}
+.species{min-width:0;text-align:center}
+.molrow{height:112px;display:flex;align-items:center;justify-content:center;gap:4px;overflow:hidden}
+.molrow svg{max-height:94px;max-width:100%}
+.species-label{font-size:14px;font-weight:650}
+.op{font-size:24px;font-weight:700}
+.counts{border:1px solid #e1e6eb;border-radius:10px;padding:7px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:6px 7px;border-bottom:1px solid #e6eaee;text-align:center}
+th:first-child,td:first-child{text-align:left}
+.ok{color:var(--good);font-weight:800} .no{color:var(--bad);font-weight:800}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
+.dot{display:inline-block;border-radius:50%;vertical-align:-2px;margin-right:4px;border:1px solid #777}
+.dot.c{width:14px;height:14px;background:#222} .dot.o{width:14px;height:14px;background:#e53935} .dot.h{width:10px;height:10px;background:#fff}
+.actions{display:flex;gap:7px;margin-top:7px}
+@media(max-width:760px){
+ .balance-grid{grid-template-columns:1fr}
+ .reaction-models{height:130px}
+ .models{min-height:165px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div><h1>Palamisreaktiopeli</h1><div class="muted">Kaavat ja tasapainotus · pallomallit ja atomilaskurit päivittyvät kertoimien mukana</div></div>
+ <div class="score"><span>Pisteet</span><b id="score">0 / 14</b><span id="counter">1 / 7</span></div>
+</header>
+
+<section class="card" id="game">
+ <div class="tasktop">
+   <div><div class="muted">Hiilivety</div><div class="taskname" id="taskName"></div></div>
+   <div class="muted" id="taskScore">0 / 2 p</div>
+ </div>
+ <div class="wordeq" id="wordEquation"></div>
+
+ <section class="step" id="formulaStep">
+   <h2>1. Kirjoita aineiden kaavat</h2>
+   <div class="note">Kirjoita ilman alaindeksejä, esimerkiksi CO2. Hiilidioksidi ja vesi saavat olla kummassa järjestyksessä tahansa.</div>
+   <div class="eq">
+    <input class="formulain" id="f1" placeholder="kaava"><span>+</span>
+    <input class="formulain" id="f2" placeholder="kaava"><span>→</span>
+    <input class="formulain" id="f3" placeholder="kaava"><span>+</span>
+    <input class="formulain" id="f4" placeholder="kaava">
+   </div>
+   <button class="primary" id="checkFormula">Tarkista kaavat</button>
+   <div class="feedback" id="formulaFb"></div>
+ </section>
+
+ <section class="step hidden" id="balanceStep">
+   <h2>2. Tasapainota reaktio</h2>
+   <div class="note">Muuta kertoimia. Atomilaskurit ja pallomallit päivittyvät heti. Pienimmät kokonaislukukertoimet antavat pisteen.</div>
+   <div class="eq">
+    <input class="coef" id="c1" type="number" min="0" step="1"><span id="hf"></span><span>+</span>
+    <input class="coef" id="c2" type="number" min="0" step="1"><span>O₂</span><span>→</span>
+    <input class="coef" id="c3" type="number" min="0" step="1"><span>CO₂</span><span>+</span>
+    <input class="coef" id="c4" type="number" min="0" step="1"><span>H₂O</span>
+   </div>
+
+   <div class="balance-grid">
+    <div class="models">
+      <div class="models-title">Molekyylimallit</div>
+      <div class="reaction-models">
+        <div class="species"><div class="molrow" id="m1"></div><div class="species-label" id="ml1"></div></div>
+        <div class="op">+</div>
+        <div class="species"><div class="molrow" id="m2"></div><div class="species-label">O₂</div></div>
+        <div class="op">→</div>
+        <div class="species"><div class="molrow" id="m3"></div><div class="species-label">CO₂</div></div>
+        <div class="op">+</div>
+        <div class="species"><div class="molrow" id="m4"></div><div class="species-label">H₂O</div></div>
+      </div>
+      <div class="legend"><span><i class="dot c"></i>hiili</span><span><i class="dot o"></i>happi</span><span><i class="dot h"></i>vety</span></div>
+    </div>
+    <div class="counts">
+      <div class="counts-title">Atomilaskurit</div>
+      <table>
+       <thead><tr><th>Atomi</th><th>Lähtöaineet</th><th>Tuotteet</th><th></th></tr></thead>
+       <tbody>
+        <tr><td>C</td><td id="lc">0</td><td id="rc">0</td><td id="sc"></td></tr>
+        <tr><td>H</td><td id="lh">0</td><td id="rh">0</td><td id="sh"></td></tr>
+        <tr><td>O</td><td id="lo">0</td><td id="ro">0</td><td id="so"></td></tr>
+       </tbody>
+      </table>
+      <div class="feedback" id="liveFb"></div>
+    </div>
+   </div>
+
+   <div class="actions">
+    <button class="primary" id="checkBalance">Tarkista tasapainotus</button>
+    <button class="secondary" id="next" disabled>Seuraava tehtävä</button>
+   </div>
+   <div class="feedback" id="balanceFb"></div>
+ </section>
+</section>
+
+<section class="card hidden" id="end">
+ <h2>Kierros valmis!</h2><p id="result"></p>
+ <button class="primary" id="restart">Uusi kierros</button>
+</section>
+
+<script>
+const TASKS=[{"name":"metaani","formula":"CH4","C":1,"H":4,"coeff":[1,2,1,2],"cc":[]},{"name":"etaani","formula":"C2H6","C":2,"H":6,"coeff":[2,7,4,6],"cc":[1]},{"name":"propaani","formula":"C3H8","C":3,"H":8,"coeff":[1,5,3,4],"cc":[1,1]},{"name":"butaani","formula":"C4H10","C":4,"H":10,"coeff":[2,13,8,10],"cc":[1,1,1]},{"name":"oktaani","formula":"C8H18","C":8,"H":18,"coeff":[2,25,16,18],"cc":[1,1,1,1,1,1,1]},{"name":"eteeni","formula":"C2H4","C":2,"H":4,"coeff":[1,3,2,2],"cc":[2]},{"name":"etyyni","formula":"C2H2","C":2,"H":2,"coeff":[2,5,4,2],"cc":[3]}];
+let idx=0,total=0,taskPts=0,formulaAwarded=false,balanceAwarded=false;
+const norm=s=>s.toLowerCase().trim().replace(/\s+/g,"");
+const subs={"0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆","7":"₇","8":"₈","9":"₉"};
+const pretty=s=>s.replace(/\d/g,d=>subs[d]);
+
+function coeffs(){
+ return ["c1","c2","c3","c4"].map(id=>{
+   const v=parseInt(document.getElementById(id).value,10);
+   return Number.isFinite(v)&&v>=0?v:0;
+ });
+}
+function updateScore(){
+ document.getElementById("score").textContent=total+" / "+(TASKS.length*2);
+ document.getElementById("taskScore").textContent=taskPts+" / 2 p";
+}
+function setFb(id,msg,ok){
+ const e=document.getElementById(id);e.textContent=msg;e.className="feedback "+(ok?"good":"bad");
+}
+function circle(cx,cy,r,fill,stroke="#666"){
+ return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>`;
+}
+function stick(x1,y1,x2,y2,w=4){
+ return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#777" stroke-width="${w}" stroke-linecap="round"/>`;
+}
+function svgWrap(body,w=150,h=90){
+ return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true">${body}</svg>`;
+}
+function simpleMol(type,t){
+ if(type==="O2") return svgWrap(stick(48,45,102,45,7)+circle(45,45,18,"#e53935","#a31515")+circle(105,45,18,"#e53935","#a31515"));
+ if(type==="CO2") return svgWrap(stick(32,45,118,45,7)+circle(28,45,18,"#e53935","#a31515")+circle(75,45,19,"#222","#000")+circle(122,45,18,"#e53935","#a31515"));
+ if(type==="H2O") return svgWrap(stick(75,44,45,70,5)+stick(75,44,105,70,5)+circle(75,42,19,"#e53935","#a31515")+circle(42,73,11,"#fff","#888")+circle(108,73,11,"#fff","#888"));
+ // Hydrocarbon ball-and-stick, with explicit small white H atoms.
+ const n=t.C, orders=t.cc;
+ const W=Math.max(120,45+(n-1)*42+45), H=100, y=50;
+ let body="";
+ let xs=[];
+ for(let i=0;i<n;i++) xs.push(45+i*42);
+ for(let i=0;i<n-1;i++) body+=stick(xs[i],y,xs[i+1],y,6);
+ let val=Array(n).fill(0);
+ orders.forEach((o,i)=>{val[i]+=o;val[i+1]+=o;});
+ for(let i=0;i<n;i++){
+   const need=4-val[i], x=xs[i];
+   let slots=[];
+   if(orders[i-1]===3 || orders[i]===3){
+     if(need===1) slots=[[i===0?-31:31,0]];
+   } else if(orders[i-1]===2 || orders[i]===2){
+     slots=need===2?[[0,-31],[0,31]]:[[0,i%2?-31:31]];
+   } else {
+     if(i===0) slots=[[-31,0],[0,-31],[0,31]];
+     else if(i===n-1) slots=[[31,0],[0,-31],[0,31]];
+     else slots=[[0,-31],[0,31]];
+   }
+   slots.slice(0,need).forEach(([dx,dy])=>{
+      body+=stick(x,y,x+dx,y+dy,3);
+      body+=circle(x+dx,y+dy,9,"#fff","#888");
+   });
+ }
+ xs.forEach(x=>body+=circle(x,y,16,"#222","#000"));
+ return svgWrap(body,W,H);
+}
+function moleculeGroup(type,count,t){
+ if(count<=0) return `<span class="muted">0</span>`;
+ const icon=simpleMol(type,t);
+ if(count<=4) return Array(count).fill(icon).join("");
+ return icon+`<span style="font-weight:750;margin-left:4px">× ${count}</span>`;
+}
+function updateVisuals(){
+ const t=TASKS[idx],[a,b,c,d]=coeffs();
+ document.getElementById("m1").innerHTML=moleculeGroup("HC",a,t);
+ document.getElementById("m2").innerHTML=moleculeGroup("O2",b,t);
+ document.getElementById("m3").innerHTML=moleculeGroup("CO2",c,t);
+ document.getElementById("m4").innerHTML=moleculeGroup("H2O",d,t);
+ const L={C:a*t.C,H:a*t.H,O:b*2};
+ const R={C:c,H:d*2,O:c*2+d};
+ [["c","C"],["h","H"],["o","O"]].forEach(([id,k])=>{
+   document.getElementById("l"+id).textContent=L[k];
+   document.getElementById("r"+id).textContent=R[k];
+   const ok=L[k]===R[k] && (L[k]!==0 || R[k]!==0);
+   const s=document.getElementById("s"+id);s.textContent=ok?"✓":"≠";s.className=ok?"ok":"no";
+ });
+ const balanced=L.C===R.C && L.H===R.H && L.O===R.O && (a+b+c+d)>0;
+ const lf=document.getElementById("liveFb");
+ lf.textContent=balanced?"Atomimäärät täsmäävät.":"Muuta kertoimia, kunnes C-, H- ja O-määrät täsmäävät.";
+ lf.className="feedback "+(balanced?"good":"");
+}
+function load(){
+ const t=TASKS[idx];taskPts=0;formulaAwarded=false;balanceAwarded=false;updateScore();
+ document.getElementById("taskName").textContent=t.name;
+ document.getElementById("counter").textContent=(idx+1)+" / "+TASKS.length;
+ document.getElementById("wordEquation").textContent=t.name+" + happi → hiilidioksidi + vesi";
+ document.getElementById("hf").textContent=pretty(t.formula);
+ document.getElementById("ml1").textContent=pretty(t.formula);
+ ["f1","f2","f3","f4"].forEach(id=>document.getElementById(id).value="");
+ ["c1","c2","c3","c4"].forEach(id=>document.getElementById(id).value="1");
+ ["formulaFb","balanceFb"].forEach(id=>{document.getElementById(id).textContent="";document.getElementById(id).className="feedback";});
+ document.getElementById("balanceStep").classList.add("hidden");
+ document.getElementById("checkFormula").disabled=false;
+ document.getElementById("checkBalance").disabled=false;
+ document.getElementById("next").disabled=true;
+ document.getElementById("f1").focus();
+ updateVisuals();
+}
+document.getElementById("checkFormula").onclick=()=>{
+ const t=TASKS[idx];
+ const vals=["f1","f2","f3","f4"].map(id=>norm(document.getElementById(id).value));
+ const react=vals[0]===norm(t.formula)&&vals[1]==="o2";
+ const prod=(vals[2]==="co2"&&vals[3]==="h2o")||(vals[2]==="h2o"&&vals[3]==="co2");
+ if(react&&prod){
+   if(!formulaAwarded){formulaAwarded=true;taskPts++;total++;updateScore();}
+   setFb("formulaFb","Oikein! +1 piste",true);
+ } else {
+   setFb("formulaFb","Jokin kaava on väärin. Oikea kaavamuoto avataan tasapainotusta varten.",false);
+ }
+ document.getElementById("checkFormula").disabled=true;
+ document.getElementById("balanceStep").classList.remove("hidden");
+ updateVisuals();
+ document.getElementById("balanceStep").scrollIntoView({behavior:"smooth",block:"nearest"});
+};
+["c1","c2","c3","c4"].forEach(id=>document.getElementById(id).addEventListener("input",updateVisuals));
+document.getElementById("checkBalance").onclick=()=>{
+ const t=TASKS[idx],v=coeffs();
+ const ok=v.every((x,i)=>x===t.coeff[i]);
+ if(ok){
+   if(!balanceAwarded){balanceAwarded=true;taskPts++;total++;updateScore();}
+   setFb("balanceFb","Oikein! Reaktio on tasapainossa pienimmillä kokonaislukukertoimilla. +1 piste",true);
+   document.getElementById("checkBalance").disabled=true;
+   document.getElementById("next").disabled=false;
+ } else {
+   setFb("balanceFb","Ei vielä oikein. Voit käyttää atomilaskureita, muuttaa kertoimia ja tarkistaa uudelleen – tai siirtyä seuraavaan tehtävään.",false);
+   document.getElementById("next").disabled=false;
+ }
+};
+document.getElementById("next").onclick=()=>{
+ idx++;
+ if(idx>=TASKS.length){
+   document.getElementById("game").classList.add("hidden");
+   document.getElementById("end").classList.remove("hidden");
+   document.getElementById("result").innerHTML="Sait <b>"+total+" / "+(TASKS.length*2)+" pistettä</b>.";
+ } else load();
+};
+document.getElementById("restart").onclick=()=>{
+ idx=0;total=0;
+ document.getElementById("end").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ load();
+};
+load();
+</script>
+</body></html>
