@@ -190,7 +190,7 @@ img,svg,table{max-width:100%}
 .package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
 .package-home:hover{opacity:1}
 @media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:780px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
 @media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
 </style>
 </head>
@@ -377,8 +377,8 @@ function drawBase(canvas,t){
   ctx.fillStyle="#fff";
   ctx.fillRect(0,0,W,H);
 
-  ctx.lineWidth=1;
-  ctx.strokeStyle="#d5dde8";
+  ctx.lineWidth=1.35;
+  ctx.strokeStyle="#c1cad7";
   for(let i=-range;i<=range;i++){
     ctx.beginPath();
     ctx.moveTo(X(i),Y(-range));
@@ -391,8 +391,8 @@ function drawBase(canvas,t){
     ctx.stroke();
   }
 
-  ctx.strokeStyle="#172033";
-  ctx.lineWidth=2.2;
+  ctx.strokeStyle="#0f172a";
+  ctx.lineWidth=3.2;
   ctx.beginPath();
   ctx.moveTo(X(-range),Y(0)); ctx.lineTo(X(range),Y(0));
   ctx.moveTo(X(0),Y(-range)); ctx.lineTo(X(0),Y(range));
@@ -407,8 +407,8 @@ function drawBase(canvas,t){
   arrow(X(range),Y(0),0);
   arrow(X(0),Y(range),-Math.PI/2);
 
-  ctx.font="18px system-ui";
-  ctx.fillStyle="#4e5c70";
+  ctx.font="bold 17px system-ui";
+  ctx.fillStyle="#334155";
   ctx.textAlign="center";
   ctx.textBaseline="top";
   for(let i=-range;i<=range;i++){

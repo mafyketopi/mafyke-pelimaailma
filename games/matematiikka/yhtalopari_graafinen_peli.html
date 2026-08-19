@@ -26,7 +26,7 @@ main{max-width:1180px;margin:auto;padding:18px 4% 28px}
 .eqrow{display:flex;gap:10px;align-items:center}
 .brace{font-size:2.7rem;line-height:1}
 .small-note{font-size:.94rem;color:var(--muted);margin:.4rem 0 .8rem}
-.table-block{margin:10px 0 12px}
+.table-block{display:block;margin:14px 0 18px;width:100%}.table-block+ .table-block{border-top:2px solid #e2e8f0;padding-top:16px}
 .table-title{font-weight:700;margin-bottom:6px}
 table{border-collapse:collapse;width:auto;max-width:100%}
 th,td{border:1px solid #cfd7e2;padding:6px 8px;text-align:center;min-width:58px}
@@ -67,7 +67,7 @@ img,svg,table{max-width:100%}
 .package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
 .package-home:hover{opacity:1}
 @media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:850px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
 @media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
 </style>
 </head>
@@ -275,15 +275,15 @@ function drawGraph(mark=false){
   const t=tasks[taskIndex], R=t.range||6, W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
   const xToPx=x=>(x+R)/(2*R)*W, yToPx=y=>H-(y+R)/(2*R)*H;
-  ctx.lineWidth=1; ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.lineWidth=1.35; ctx.font='bold 15px system-ui'; ctx.textAlign='center'; ctx.textBaseline='top';
   for(let i=-R;i<=R;i++){
     const x=xToPx(i), y=yToPx(i);
-    ctx.strokeStyle=i===0?'#172033':'#d7dee8';
+    ctx.strokeStyle=i===0?'#0f172a':'#c1cad7';
     ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
     if(i!==0){ctx.fillStyle='#6a7584';ctx.fillText(i,x,yToPx(0)+4);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(i,xToPx(0)-5,y);ctx.textAlign='center';ctx.textBaseline='top';}
   }
-  ctx.fillStyle='#172033';ctx.font='bold 16px system-ui';ctx.fillText('x',W-12,yToPx(0)+5);ctx.fillText('y',xToPx(0)+12,6);
+  ctx.fillStyle='#0f172a';ctx.font='bold 19px system-ui';ctx.fillText('x',W-18,yToPx(0)+8);ctx.fillText('y',xToPx(0)+14,8);
   if(state.t1) drawFunction(t.f1,t.type1,'#2457c5',t.xs1,R,xToPx,yToPx);
   if(state.t2) drawFunction(t.f2,t.type2,'#d04848',t.xs2,R,xToPx,yToPx);
   if(mark&&state.done&&t.solutions){
