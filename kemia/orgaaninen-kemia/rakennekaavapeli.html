@@ -83,7 +83,7 @@ kbd{background:#eef2f6;border:1px solid #d5dce3;border-bottom-width:2px;border-r
 
   <div class="hint">
     <b>Käyttö:</b> klikkaa atomia valitaksesi sen. Valitse sidostyyppi ja paina <b>+ C</b> tai <b>+ O</b>, jolloin uusi atomi liitetään valittuun atomiin.
-    Jos piirtoalue on tyhjä, <b>+ C</b> aloittaa hiiliketjun. Vedyt lasketaan automaattisesti hiilen neljän ja hapen kahden sidoksen mukaan. Kaksois- ja kolmoissidoksissa myös sidosten geometria huomioidaan yksinkertaistetusti.
+    Jos piirtoalue on tyhjä, <b>+ C</b> aloittaa hiiliketjun. Vedyt lasketaan automaattisesti hiilen neljän ja hapen kahden sidoksen mukaan. Piirto-ohjelma asettelee hiiliketjun ensisijaisesti vaakasuoraan ja OH-ryhmät hiiliketjun yläpuolelle oppikirjamaiseen tapaan. Tarkistus vertaa silti vain atomeja ja niiden välisiä sidoksia – klikkausjärjestys tai piirroksen sijainti eivät vaikuta vastauksen oikeellisuuteen.
   </div>
 
   <div class="row">
@@ -167,49 +167,44 @@ function suggestedPosition(parentIndex,newEl=null,newOrder=1){
   const p=atoms[parentIndex];
   const neighbours=bonds.filter(b=>b.a===parentIndex||b.b===parentIndex).map(b=>{
     const j=b.a===parentIndex?b.b:b.a;
-    return {j, dx:atoms[j].x-p.x, dy:atoms[j].y-p.y,
-            order:(b.a===parentIndex||b.b===parentIndex)?b.o:1};
+    return {j,el:atoms[j].el,dx:atoms[j].x-p.x,dy:atoms[j].y-p.y,order:b.o};
   });
+  const free=(x,y,min=66)=>!atoms.some(at=>Math.hypot(at.x-x,at.y-y)<min);
 
-  // Carboxyl-group geometry: a double-bonded oxygen is placed diagonally,
-  // leaving the other oxygen to form the other arm of the group.
+  // Hiiliketju ensisijaisesti vaakasuoraan.
+  if(newEl==="C" && atoms[parentIndex].el==="C"){
+    const cn=neighbours.filter(n=>n.el==="C");
+    let dirs;
+    if(cn.length===0) dirs=[[112,0],[-112,0]];
+    else dirs=cn.reduce((s,n)=>s+n.dx,0)<=0?[[112,0],[-112,0]]:[[-112,0],[112,0]];
+    for(const [dx,dy] of dirs) if(free(p.x+dx,p.y+dy)) return [p.x+dx,p.y+dy];
+  }
+
+  // Alkoholin OH: O aina ensisijaisesti hiilen yläpuolelle.
+  if(newEl==="O" && newOrder===1 && atoms[parentIndex].el==="C"){
+    for(const [dx,dy] of [[0,-88],[0,88],[88,0],[-88,0]])
+      if(free(p.x+dx,p.y+dy)) return [p.x+dx,p.y+dy];
+  }
+
+  // Karboksyyliryhmän C=O vinoon.
   if(newEl==="O" && newOrder===2 && atoms[parentIndex].el==="C"){
-    const choices=[[92,-82],[92,82],[-92,-82],[-92,82]];
-    for(const [dx,dy] of choices){
-      const x=p.x+dx,y=p.y+dy;
-      if(!atoms.some(at=>Math.hypot(at.x-x,at.y-y)<70)) return [x,y];
-    }
+    const left=neighbours.filter(n=>n.el==="C").some(n=>n.dx<0);
+    const dirs=left?[[78,-76],[78,76],[-78,-76],[-78,76]]
+                   :[[-78,-76],[-78,76],[78,-76],[78,76]];
+    for(const [dx,dy] of dirs) if(free(p.x+dx,p.y+dy)) return [p.x+dx,p.y+dy];
   }
 
-  // If the selected atom participates in a triple bond, the next sigma bond
-  // continues exactly opposite to it: sp geometry, 180°.
-  const triple=neighbours.find(n=>n.order===3);
-  if(triple){
-    const L=Math.hypot(triple.dx,triple.dy)||1;
-    return [p.x-120*triple.dx/L, p.y-120*triple.dy/L];
+  // O-H jatkuu hapesta poispäin.
+  if(newEl==="H" && atoms[parentIndex].el==="O" && neighbours.length){
+    const q=atoms[neighbours[0].j],dx=p.x-q.x,dy=p.y-q.y,L=Math.hypot(dx,dy)||1;
+    const x=p.x+dx/L*62,y=p.y+dy/L*62;
+    if(free(x,y,45)) return [x,y];
   }
 
-  // With a double bond, prefer approximately 120° directions (sp2).
-  const dbl=neighbours.find(n=>n.order===2);
-  if(dbl){
-    const ang=Math.atan2(dbl.dy,dbl.dx);
-    const choices=[ang+2*Math.PI/3, ang-2*Math.PI/3];
-    for(const a of choices){
-      const x=p.x+120*Math.cos(a), y=p.y+120*Math.sin(a);
-      if(!atoms.some(at=>Math.hypot(at.x-x,at.y-y)<70)) return [x,y];
-    }
-  }
-
-  // Ordinary single-bond schoolbook layout.
-  const dirs=[[120,0],[95,-80],[95,80],[0,-105],[0,105],[-120,0],[-95,-80],[-95,80]];
-  for(const [dx,dy] of dirs){
-    const x=p.x+dx, y=p.y+dy;
-    const collision=atoms.some(a=>Math.hypot(a.x-x,a.y-y)<70);
-    if(!collision) return [x,y];
-  }
-  return [p.x+120,p.y];
+  for(const [dx,dy] of [[112,0],[-112,0],[0,-88],[0,88],[82,-72],[82,72],[-82,-72],[-82,72]])
+    if(free(p.x+dx,p.y+dy)) return [p.x+dx,p.y+dy];
+  return [p.x+92,p.y+72];
 }
-
 function addAtom(el){
   document.getElementById("feedback").textContent="";
   if(atoms.length===0){
@@ -344,7 +339,9 @@ function graphMatchesTarget(){
 
   // Quick element counts
   const count = arr => arr.reduce((m,x)=>(m[x]=(m[x]||0)+1,m),{});
-  if(JSON.stringify(count(atoms.map(a=>a.el)))!==JSON.stringify(count(t.atoms))) return false;
+  const uc=count(atoms.map(a=>a.el)), tc=count(t.atoms);
+  const keys=[...new Set([...Object.keys(uc),...Object.keys(tc)])].sort();
+  if(keys.some(k=>(uc[k]||0)!==(tc[k]||0))) return false;
 
   // all permutations preserving element types (small molecules only)
   const n=atoms.length;
