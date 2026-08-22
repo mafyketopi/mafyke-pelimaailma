@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Funktion arvo ja muuttujan arvo</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(','\\)']],
+        displayMath: [['\\[','\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#667085;
+      --line:#d9e0ea;
+      --accent:#2f6fed;
+      --accent-soft:#eaf1ff;
+      --success:#178a54;
+      --success-soft:#e9f8f0;
+      --danger:#c33d3d;
+      --danger-soft:#fff0f0;
+      --highlight:#d9485f;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      width:min(920px,92vw);
+      margin:36px auto 64px;
+    }
+    h1{
+      font-size:clamp(2rem,5vw,3rem);
+      margin:0 0 10px;
+      line-height:1.05;
+    }
+    .lead{
+      color:var(--muted);
+      font-size:1.05rem;
+      margin-bottom:24px;
+    }
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:20px 0 22px;
+    }
+    .tab{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:12px 16px;
+      border-radius:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .tab:hover{transform:translateY(-1px)}
+    .tab.active{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:24px;
+      box-shadow:0 10px 30px rgba(27,43,70,.06);
+    }
+    .model{
+      background:#f8fafc;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:18px 20px;
+      margin-bottom:20px;
+    }
+    .model h2{
+      font-size:1.08rem;
+      margin:0 0 8px;
+    }
+    .progress{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      color:var(--muted);
+      font-size:.95rem;
+      margin-bottom:18px;
+    }
+    .score{
+      font-weight:700;
+      color:var(--text);
+    }
+    .question{
+      font-size:1.15rem;
+      line-height:1.55;
+      margin-bottom:20px;
+    }
+    .mathbox{
+      border:1px solid var(--line);
+      background:#fbfcfe;
+      border-radius:16px;
+      min-height:76px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:14px 16px;
+      margin:10px 0 14px;
+      font-size:1.2rem;
+      overflow-x:auto;
+    }
+    label{
+      display:block;
+      font-weight:700;
+      margin:16px 0 8px;
+    }
+    input{
+      width:100%;
+      border:1px solid #bfc8d6;
+      border-radius:12px;
+      padding:13px 14px;
+      font-size:1.05rem;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px var(--accent-soft);
+    }
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:14px;
+    }
+    button.action{
+      border:0;
+      background:var(--accent);
+      color:#fff;
+      padding:12px 18px;
+      border-radius:12px;
+      font-weight:800;
+      cursor:pointer;
+      font-size:1rem;
+    }
+    button.action.secondary{
+      background:#eef2f7;
+      color:var(--text);
+    }
+    button.action:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .feedback{
+      margin-top:14px;
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:700;
+      display:none;
+    }
+    .feedback.ok{
+      display:block;
+      background:var(--success-soft);
+      color:var(--success);
+    }
+    .feedback.bad{
+      display:block;
+      background:var(--danger-soft);
+      color:var(--danger);
+    }
+    .hidden{display:none !important}
+    .answerline{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .answerline .prefix{
+      font-size:1.15rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .note{
+      color:var(--muted);
+      font-size:.93rem;
+      margin-top:8px;
+    }
+    .complete{
+      text-align:center;
+      padding:26px 10px 10px;
+    }
+    .complete h2{
+      font-size:1.8rem;
+      margin-bottom:8px;
+    }
+  </style>
+
+<style id="matikkapaketti-responsive-fix">
+html,body{max-width:100%;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
+canvas{max-width:100%!important;height:auto!important}
+img,svg,table{max-width:100%}
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
+.package-home:hover{opacity:1}
+@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
+@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
+  <main class="wrap">
+    <h1>Funktion arvo ja muuttujan arvo</h1>
+    <div class="lead">Valitse harjoitus. Ratkaisu etenee vaiheittain, ja peli tarkistaa ensin muodostamasi lausekkeen tai yhtälön.</div>
+
+    <div class="tabs">
+      <button class="tab active" data-mode="value">Funktion arvo</button>
+      <button class="tab" data-mode="variable">Muuttujan arvo</button>
+      <button class="tab" data-mode="challenge">Haaste</button>
+    </div>
+
+    <section class="card">
+      <div id="modelBox" class="model"></div>
+
+      <div id="gameArea">
+        <div class="progress">
+          <span id="progressText"></span>
+          <span id="scoreText" class="score"></span>
+        </div>
+
+        <div id="questionText" class="question"></div>
+
+        <div id="expressionSection">
+          <label id="expressionLabel" for="expressionInput"></label>
+          <input id="expressionInput" autocomplete="off" spellcheck="false">
+          <div class="note" id="expressionNote"></div>
+          <div id="liveLatex" class="mathbox"></div>
+          <div class="row">
+            <button id="checkExpression" class="action">Tarkista lauseke</button>
+          </div>
+          <div id="expressionFeedback" class="feedback"></div>
+        </div>
+
+        <div id="answerSection" class="hidden">
+          <label id="answerLabel" for="answerInput"></label>
+          <div class="answerline">
+            <span id="answerPrefix" class="prefix"></span>
+            <input id="answerInput" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="row">
+            <button id="checkAnswer" class="action">Tarkista vastaus</button>
+          </div>
+          <div id="answerFeedback" class="feedback"></div>
+        </div>
+
+        <div id="secondAnswerSection" class="hidden">
+          <label>Anna molemmat muuttujan arvot muodossa esimerkiksi 2 tai -2.</label>
+          <div class="answerline">
+            <span class="prefix">x =</span>
+            <input id="answerInput2" placeholder="esim. 2 tai -2" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="row">
+            <button id="checkAnswer2" class="action">Tarkista ratkaisut</button>
+          </div>
+          <div id="answerFeedback2" class="feedback"></div>
+        </div>
+
+        <div class="row">
+          <button id="nextBtn" class="action secondary hidden">Seuraava tehtävä</button>
+        </div>
+      </div>
+
+      <div id="completeBox" class="complete hidden"></div>
+    </section>
+  </main>
+
+<script>
+const datasets = {
+  value: [
+    { f:'x+4', x:3, expected:'3+4', answer:7 },
+    { f:'2x', x:5, expected:'2*5', answer:10 },
+    { f:'3x-2', x:4, expected:'3*4-2', answer:10 },
+    { f:'-2x+5', x:3, expected:'-2*3+5', answer:-1 },
+    { f:'2x+3', x:-4, expected:'2*(-4)+3', answer:-5 },
+    { f:'0.5x-3', displayF:'\\frac12x-3', x:-6, expected:'0.5*(-6)-3', answer:-6 },
+    { f:'x^2+2', x:-3, expected:'(-3)^2+2', answer:11 },
+    { f:'2x^2-3x+1', x:-2, expected:'2*(-2)^2-3*(-2)+1', answer:15 }
+  ],
+  variable: [
+    { f:'x+4', target:9, equation:'x+4=9', answers:[5] },
+    { f:'2x-3', target:7, equation:'2x-3=7', answers:[5] },
+    { f:'-3x+2', target:14, equation:'-3x+2=14', answers:[-4] },
+    { f:'0.5x-3', displayF:'\\frac12x-3', target:2, equation:'0.5x-3=2', answers:[10] }
+  ],
+  challenge: [
+    { f:'x^2-1', target:8, equation:'x^2-1=8', answers:[-3,3] },
+    { f:'x^2+x', target:6, equation:'x^2+x=6', answers:[-3,2] }
+  ]
+};
+
+let mode = 'value';
+let index = 0;
+let score = 0;
+let expressionPassed = false;
+
+const el = id => document.getElementById(id);
+const progressText = el('progressText');
+const scoreText = el('scoreText');
+const questionText = el('questionText');
+const modelBox = el('modelBox');
+const expressionInput = el('expressionInput');
+const liveLatex = el('liveLatex');
+const expressionLabel = el('expressionLabel');
+const expressionNote = el('expressionNote');
+const expressionFeedback = el('expressionFeedback');
+const answerSection = el('answerSection');
+const secondAnswerSection = el('secondAnswerSection');
+const answerInput = el('answerInput');
+const answerInput2 = el('answerInput2');
+const answerLabel = el('answerLabel');
+const answerPrefix = el('answerPrefix');
+const answerFeedback = el('answerFeedback');
+const answerFeedback2 = el('answerFeedback2');
+const nextBtn = el('nextBtn');
+const completeBox = el('completeBox');
+const gameArea = el('gameArea');
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    index = 0;
+    score = 0;
+    loadQuestion();
+  });
+});
+
+function queueMathJax() {
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise();
+  } else {
+    setTimeout(queueMathJax, 120);
+  }
+}
+
+function current() {
+  return datasets[mode][index];
+}
+
+function latexFunction(q) {
+  return q.displayF || jsExprToLatex(q.f);
+}
+
+function jsExprToLatex(s) {
+  return String(s)
+    .replace(/0\.5x/g,'\\frac12x')
+    .replace(/\^2/g,'^{2}')
+    .replace(/\*/g,'\\cdot ');
+}
+
+function modelHTML() {
+  if (mode === 'value') {
+    return `
+      <h2>Malli</h2>
+      <div>Kun \\(f(x)=3x-2\\) ja \\(x=4\\), sijoitetaan muuttujan arvo lausekkeeseen:</div>
+      <div>\\[
+        f(4)=3\\cdot\\mathbf{\\color{#d9485f}{4}}-2=10.
+      \\]</div>
+    `;
+  }
+  if (mode === 'variable') {
+    return `
+      <h2>Malliratkaisu</h2>
+      <div>Millä muuttujan arvolla funktion \\(f(x)=3x-5\\) arvo on \\(7\\)?</div>
+      <div>\\[
+      \\begin{aligned}
+      f(x)&=7\\\\
+      3x-5&=7\\\\
+      3x&=12\\\\
+      x&=4
+      \\end{aligned}
+      \\]</div>
+      <div>Kirjoita tehtävässä ensin yhtälö ja ratkaise vasta sen jälkeen \\(x\\).</div>
+    `;
+  }
+  return `
+    <h2>Haasteen malli</h2>
+    <div>Toisen asteen funktiolla muuttujan arvoja voi olla kaksi.</div>
+    <div>Jos \\(f(x)=x^2\\) ja funktion arvo on \\(9\\), muodostetaan</div>
+    <div>\\[
+      x^2=9
+    \\]</div>
+    <div>ja saadaan kaksi ratkaisua</div>
+    <div>\\[
+      x=-3 \\quad \\text{tai} \\quad x=3.
+    \\]</div>
+  `;
+}
+
+function loadQuestion() {
+  gameArea.classList.remove('hidden');
+  completeBox.classList.add('hidden');
+  expressionPassed = false;
+  expressionInput.value = '';
+  answerInput.value = '';
+  answerInput2.value = '';
+  hideFeedback(expressionFeedback);
+  hideFeedback(answerFeedback);
+  hideFeedback(answerFeedback2);
+  answerSection.classList.add('hidden');
+  secondAnswerSection.classList.add('hidden');
+  nextBtn.classList.add('hidden');
+
+  modelBox.innerHTML = modelHTML();
+  const q = current();
+  progressText.textContent = `Tehtävä ${index+1} / ${datasets[mode].length}`;
+  scoreText.textContent = `Pisteet ${score}`;
+
+  if (mode === 'value') {
+    const useShortPrompt = [1,3,6].includes(index);
+    questionText.innerHTML = useShortPrompt
+      ? `Kun \\(f(x)=${latexFunction(q)}\\), laske \\(f(${q.x})\\).`
+      : `Laske funktion \\(f(x)=${latexFunction(q)}\\) arvo, kun \\(x=${q.x}\\).`;
+    expressionLabel.textContent = 'Kirjoita sijoituslauseke';
+    expressionInput.placeholder = q.x < 0 ? 'esim. 2*(-4)+3' : 'esim. 3*4-2';
+    expressionNote.textContent = 'Kirjoita * kertomerkiksi ja ^2 potenssiksi.';
+    el('checkExpression').textContent = 'Tarkista lauseke';
+    answerLabel.textContent = 'Laske funktion arvo';
+    answerPrefix.innerHTML = `f(${q.x}) =`;
+  } else {
+    questionText.innerHTML = `Millä muuttujan arvolla funktion \\(f(x)=${latexFunction(q)}\\) arvo on \\(${q.target}\\)?`;
+    expressionLabel.textContent = 'Muodosta yhtälö';
+    expressionInput.placeholder = 'esim. 3x-5=7';
+    expressionNote.textContent = 'Kirjoita yhtälö käyttäen x:ää. Peli tarkistaa yhtälön ennen ratkaisua.';
+    el('checkExpression').textContent = 'Tarkista yhtälö';
+    if (mode === 'variable') {
+      answerLabel.textContent = 'Ratkaise yhtälö';
+      answerPrefix.textContent = 'x =';
+    }
+  }
+
+  updateLivePreview();
+  queueMathJax();
+}
+
+function normalize(s) {
+  return String(s)
+    .toLowerCase()
+    .replace(/\s+/g,'')
+    .replace(/,/g,'.')
+    .replace(/·|×/g,'*')
+    .replace(/\*\*/g,'^')
+    .replace(/\(([-+]?\d+(?:\.\d+)?)\)/g,'($1)');
+}
+
+function normalizeExpressionSemantic(s) {
+  return normalize(s)
+    .replace(/(\d|\))x/g,'$1*x')
+    .replace(/x(\d|\()/g,'x*$1');
+}
+
+function evalMath(expr, xVal=null) {
+  let s = normalizeExpressionSemantic(expr);
+  if (xVal !== null) s = s.replace(/x/g, `(${xVal})`);
+  if (!/^[0-9x+\-*/().^=]+$/.test(s)) throw new Error('invalid');
+  s = s.replace(/\^/g,'**');
+  return Function(`"use strict"; return (${s});`)();
+}
+
+function equationSides(s) {
+  const parts = normalizeExpressionSemantic(s).split('=');
+  if (parts.length !== 2) return null;
+  return parts;
+}
+
+function isEquivalentEquation(input, expected) {
+  const a = equationSides(input);
+  const b = equationSides(expected);
+  if (!a || !b) return false;
+
+  const samples = [-5,-2,-1,0,1,2,4,7];
+  const direct = samples.every(x => {
+    try {
+      const ad = evalMath(a[0],x) - evalMath(a[1],x);
+      const bd = evalMath(b[0],x) - evalMath(b[1],x);
+      return Math.abs(ad-bd) < 1e-9;
+    } catch { return false; }
+  });
+  if (direct) return true;
+
+  const reversed = samples.every(x => {
+    try {
+      const ad = evalMath(a[0],x) - evalMath(a[1],x);
+      const bd = evalMath(b[1],x) - evalMath(b[0],x);
+      return Math.abs(ad-bd) < 1e-9;
+    } catch { return false; }
+  });
+  return reversed;
+}
+
+function isEquivalentValueExpression(input, q) {
+  try {
+    const actual = evalMath(input);
+    if (Math.abs(actual-q.answer) > 1e-9) return false;
+
+    // Lisäksi vaaditaan, että annettu x-arvo todella esiintyy sijoituksessa.
+    const norm = normalize(input);
+    if (q.x < 0) {
+      const n = String(q.x);
+      if (!norm.includes(`(${n})`) && !norm.includes(n)) return false;
+    } else {
+      if (!norm.includes(String(q.x))) return false;
+    }
+
+    // Tarkistetaan rakenteellisesti vertaamalla tavoitelausekkeeseen muutamalla tekstimuunnoksella.
+    const stripped = norm.replace(/\*/g,'');
+    const expectedStripped = normalize(q.expected).replace(/\*/g,'');
+    return stripped === expectedStripped;
+  } catch {
+    return false;
+  }
+}
+
+function inputToLatex(s) {
+  let t = String(s).trim();
+  if (!t) return '\\text{Kirjoittamasi lauseke näkyy tässä}';
+
+  t = t
+    .replace(/\\/g,'')
+    .replace(/\s+/g,' ')
+    .replace(/\^2/g,'^{2}')
+    .replace(/\*/g,'\\cdot ')
+    .replace(/0\.5(?=x|\()/g,'\\frac12 ')
+    .replace(/=/g,'=');
+
+  return t;
+}
+
+function highlightInsertedValue(latex, q) {
+  if (mode !== 'value') return latex;
+  const x = q.x;
+  if (x < 0) {
+    const escaped = String(x).replace('-','\\-');
+    latex = latex.replace(
+      new RegExp(`\\(${String(x).replace('-','\\\\-')}\\)`,'g'),
+      `\\left(\\mathbf{\\color{#d9485f}{${x}}}\\right)`
+    );
+    // fallback for plain -n
+    latex = latex.replace(
+      new RegExp(`(?<![0-9])${String(x).replace('-','\\\\-')}(?![0-9])`,'g'),
+      `\\mathbf{\\color{#d9485f}{${x}}}`
+    );
+  } else {
+    latex = latex.replace(
+      new RegExp(`(?<![0-9])${x}(?![0-9])`,'g'),
+      `\\mathbf{\\color{#d9485f}{${x}}}`
+    );
+  }
+  return latex;
+}
+
+function updateLivePreview() {
+  const q = current();
+  let latex = inputToLatex(expressionInput.value);
+  latex = highlightInsertedValue(latex, q);
+  liveLatex.innerHTML = `\\[${latex}\\]`;
+  queueMathJax();
+}
+
+expressionInput.addEventListener('input', updateLivePreview);
+
+function showFeedback(node, ok, msg) {
+  node.className = `feedback ${ok ? 'ok' : 'bad'}`;
+  node.textContent = msg;
+}
+function hideFeedback(node) {
+  node.className = 'feedback';
+  node.textContent = '';
+}
+
+el('checkExpression').addEventListener('click', () => {
+  const q = current();
+  let ok = false;
+
+  if (mode === 'value') {
+    ok = isEquivalentValueExpression(expressionInput.value, q);
+    if (ok) {
+      showFeedback(expressionFeedback, true, 'Oikein. Sijoitus on tehty oikein.');
+      answerSection.classList.remove('hidden');
+      answerInput.focus();
+    } else {
+      showFeedback(expressionFeedback, false, 'Tarkista sijoitus. Kirjoita funktion lauseke niin, että x:n paikalla on annettu muuttujan arvo.');
+    }
+  } else {
+    ok = isEquivalentEquation(expressionInput.value, q.equation);
+    if (ok) {
+      showFeedback(expressionFeedback, true, 'Oikein. Yhtälö on muodostettu oikein.');
+      if (mode === 'variable') {
+        answerSection.classList.remove('hidden');
+        answerInput.focus();
+      } else {
+        secondAnswerSection.classList.remove('hidden');
+        answerInput2.focus();
+      }
+    } else {
+      showFeedback(expressionFeedback, false, `Tarkista yhtälö. Funktion lausekkeen pitää olla yhtä suuri kuin ${q.target}.`);
+    }
+  }
+  expressionPassed = ok;
+});
+
+function parseNumberInput(s) {
+  const t = normalize(s);
+  if (/^-?\d+(?:\.\d+)?$/.test(t)) return Number(t);
+  if (/^-?\d+\/-?\d+$/.test(t)) {
+    const [a,b] = t.split('/').map(Number);
+    if (b !== 0) return a/b;
+  }
+  try { return evalMath(t); } catch { return NaN; }
+}
+
+el('checkAnswer').addEventListener('click', () => {
+  const q = current();
+  if (!expressionPassed) return;
+
+  const ans = parseNumberInput(answerInput.value);
+  const target = mode === 'value' ? q.answer : q.answers[0];
+
+  if (Number.isFinite(ans) && Math.abs(ans-target) < 1e-9) {
+    showFeedback(answerFeedback, true, 'Oikein!');
+    score++;
+    scoreText.textContent = `Pisteet ${score}`;
+    nextBtn.classList.remove('hidden');
+  } else {
+    showFeedback(answerFeedback, false, 'Tarkista lasku ja yritä uudelleen.');
+  }
+});
+
+function parseTwoAnswers(s) {
+  const cleaned = String(s)
+    .toLowerCase()
+    .replace(/x\s*=/g,'')
+    .replace(/\s+ja\s+/g,',')
+    .replace(/\s+tai\s+/g,',')
+    .replace(/;/g,',');
+  return cleaned
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean)
+    .map(parseNumberInput)
+    .filter(Number.isFinite)
+    .sort((a,b)=>a-b);
+}
+
+el('checkAnswer2').addEventListener('click', () => {
+  if (!expressionPassed) return;
+  const q = current();
+  const got = parseTwoAnswers(answerInput2.value);
+  const wanted = [...q.answers].sort((a,b)=>a-b);
+
+  const ok = got.length === 2 &&
+    Math.abs(got[0]-wanted[0]) < 1e-9 &&
+    Math.abs(got[1]-wanted[1]) < 1e-9;
+
+  if (ok) {
+    showFeedback(answerFeedback2, true, 'Oikein. Löysit molemmat muuttujan arvot!');
+    score++;
+    scoreText.textContent = `Pisteet ${score}`;
+    nextBtn.classList.remove('hidden');
+  } else {
+    showFeedback(answerFeedback2, false, 'Tarvitaan kaksi muuttujan arvoa, esimerkiksi 2 tai -2. Tarkista yhtälön ratkaisut.');
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (index < datasets[mode].length - 1) {
+    index++;
+    loadQuestion();
+  } else {
+    finishMode();
+  }
+});
+
+function finishMode() {
+  gameArea.classList.add('hidden');
+  completeBox.classList.remove('hidden');
+  const total = datasets[mode].length;
+  const title = mode === 'value' ? 'Funktion arvo' : mode === 'variable' ? 'Muuttujan arvo' : 'Haaste';
+  completeBox.innerHTML = `
+    <h2>${title} valmis!</h2>
+    <p>Sait ${score} / ${total} pistettä.</p>
+    <button class="action" onclick="index=0;score=0;loadQuestion()">Harjoittele uudelleen</button>
+  `;
+}
+
+loadQuestion();
+</script>
+</body>
+</html>

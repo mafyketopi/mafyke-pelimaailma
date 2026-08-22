@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Funktiopeli – suoran piirtäminen</title>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#617087;--line:#dce3ed;--accent:#315efb;--ok:#138a56;--bad:#c43b3b;--soft:#eef3ff}
+*{box-sizing:border-box}html,body{max-width:100%;overflow-x:hidden}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:20px 5%}header h1{margin:0 0 5px;font-size:clamp(1.7rem,4vw,2.55rem)}header p{margin:0;color:var(--muted)}
+main{max-width:1120px;margin:auto;padding:20px 5% 44px}.modebar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.modeBtn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 14px;border-radius:11px;font-weight:750;cursor:pointer}.modeBtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 20px rgba(30,50,80,.05)}.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.equation{font-size:1.45rem;font-weight:800;background:var(--soft);border-radius:11px;padding:9px 14px}.score{font-weight:750;color:var(--muted)}
+.workarea{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,.75fr);gap:18px;align-items:start}.canvasWrap{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;overflow:hidden}.canvasWrap canvas{display:block;width:100%;height:auto;max-width:600px;margin:auto;touch-action:none}.side{background:#f9fbfd;border:1px solid var(--line);border-radius:14px;padding:15px}.side h2{font-size:1.06rem;margin:0 0 7px}.side p{font-size:.93rem;color:var(--muted);line-height:1.4;margin:0 0 11px}.hidden{display:none!important}
+table{border-collapse:collapse;width:100%;margin:8px 0 12px;table-layout:fixed}th,td{border:1px solid #cfd8e4;padding:7px;text-align:center}th{background:#f1f5f9}.coord{width:100%;max-width:84px;padding:8px;border:1px solid #bfc9d8;border-radius:8px;text-align:center;font-size:1rem}
+button{font:inherit}.primary,.secondary{border:0;border-radius:10px;padding:10px 14px;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#e9eef5;color:var(--ink)}button:disabled{opacity:.45;cursor:not-allowed}.wide{width:100%}.status{min-height:28px;margin:12px 0 5px;font-weight:750}.status.ok{color:var(--ok)}.status.bad{color:var(--bad)}.buttons{display:flex;gap:9px;flex-wrap:wrap;justify-content:space-between;margin-top:12px}.hint{margin-top:9px;color:var(--muted);font-size:.91rem;line-height:1.4}
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:900px){.workarea{grid-template-columns:1fr}.canvasWrap canvas{max-width:560px}}@media(max-width:600px){main{padding:14px 3% 54px}.card{padding:12px}.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
+<header><h1>Funktiopeli: piirrä suora</h1><p>Piirrä annetun funktion kuvaaja joko arvotaulukon tai kahden pisteen avulla.</p></header>
+<main>
+<div class="modebar"><button class="modeBtn active" id="tableModeBtn">1. Arvotaulukon avulla</button><button class="modeBtn" id="clickModeBtn">2. Kahden pisteen avulla</button></div>
+<section class="card">
+<div class="top"><div class="equation" id="equation">\(y=2x+1\)</div><div class="score">Pisteet: <span id="score">0</span> / <span id="tries">0</span></div></div>
+<div class="workarea">
+<div class="canvasWrap"><canvas id="graph" width="600" height="600" aria-label="Koordinaatisto"></canvas></div>
+<div class="side" id="tablePanel"><h2>Arvotaulukko</h2><p>Valitse itse kolme eri kokonaislukua x-arvoiksi ja laske niitä vastaavat y-arvot.</p><table><thead><tr><th>x</th><th>y</th></tr></thead><tbody id="valueTable"></tbody></table><button class="primary wide" id="showPointsBtn">Tarkista ja näytä pisteet</button><button class="secondary wide" id="drawTableBtn" disabled style="margin-top:8px">Piirrä suora</button><div class="hint">Vinkki: murtolukukulmakertoimella kannattaa valita x-arvoja, joilla laskut ovat helppoja.</div></div>
+<div class="side hidden" id="clickPanel"><h2>Kaksi pistettä</h2><p>Valitse koordinaatistosta kaksi eri kokonaislukupistettä, jotka kuuluvat suoralle. Suora piirretään toisen pisteen jälkeen.</p><div class="hint">Klikkaus napsahtaa lähimpään kokonaislukupisteeseen.</div></div>
+</div>
+<div class="status" id="status">Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.</div>
+<div class="buttons"><button class="secondary" id="resetBtn">Tyhjennä yritys</button><button class="primary" id="nextBtn">Seuraava tehtävä</button></div>
+</section>
+</main>
+<script>
+const canvas=document.getElementById('graph'),ctx=canvas.getContext('2d');
+const eqEl=document.getElementById('equation'),statusEl=document.getElementById('status'),scoreEl=document.getElementById('score'),triesEl=document.getElementById('tries');
+const resetBtn=document.getElementById('resetBtn'),nextBtn=document.getElementById('nextBtn'),tableModeBtn=document.getElementById('tableModeBtn'),clickModeBtn=document.getElementById('clickModeBtn'),tablePanel=document.getElementById('tablePanel'),clickPanel=document.getElementById('clickPanel'),valueTable=document.getElementById('valueTable'),drawTableBtn=document.getElementById('drawTableBtn'),showPointsBtn=document.getElementById('showPointsBtn');
+const MIN=-6,MAX=6,PAD=48,SIZE=canvas.width,plot=SIZE-2*PAD,step=plot/(MAX-MIN);
+let mode='table',points=[],current=null,score=0,tries=0,answered=false,tableValidated=false,tableLineVisible=false;
+const tasks=[{an:1,ad:1,b:1},{an:-1,ad:1,b:2},{an:2,ad:1,b:-1},{an:1,ad:2,b:-2},{an:-1,ad:2,b:2},{an:3,ad:1,b:-2},{an:-2,ad:1,b:3},{an:2,ad:3,b:-1},{an:-2,ad:3,b:2},{an:-3,ad:1,b:0}];
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1}function reducedFrac(n,d){const g=gcd(n,d);return[n/g,d/g]}function slopeValue(t){return t.an/t.ad}function yValue(t,x){return slopeValue(t)*x+t.b}
+function equationLatex(t){let[n,d]=reducedFrac(t.an,t.ad),s='y=';if(d===1){if(n===1)s+='x';else if(n===-1)s+='-x';else s+=n+'x'}else{s+=(n<0?'-':'')+'\\frac{'+Math.abs(n)+'}{'+d+'}x'}if(t.b>0)s+='+'+t.b;else if(t.b<0)s+=t.b;return s}
+function renderEquation(){eqEl.innerHTML='\\('+equationLatex(current)+'\\)';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([eqEl])}
+const xToPx=x=>PAD+(x-MIN)*step,yToPx=y=>PAD+(MAX-y)*step,pxToX=px=>MIN+(px-PAD)/step,pxToY=py=>MAX-(py-PAD)/step;
+function drawGrid(){ctx.clearRect(0,0,SIZE,SIZE);ctx.font='14px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';for(let v=MIN;v<=MAX;v++){const px=xToPx(v),py=yToPx(v);ctx.strokeStyle=v===0?'#526276':'#dbe3ec';ctx.lineWidth=v===0?2.2:1.15;ctx.beginPath();ctx.moveTo(px,PAD);ctx.lineTo(px,SIZE-PAD);ctx.stroke();ctx.beginPath();ctx.moveTo(PAD,py);ctx.lineTo(SIZE-PAD,py);ctx.stroke()}ctx.fillStyle='#5f6f82';for(let v=MIN;v<=MAX;v++){if(v!==0){ctx.fillText(v,xToPx(v),yToPx(0)+18);ctx.fillText(v,xToPx(0)-20,yToPx(v))}}ctx.fillText('0',xToPx(0)-14,yToPx(0)+17);ctx.fillStyle='#25364d';ctx.font='bold 16px system-ui';ctx.fillText('x',SIZE-PAD+22,yToPx(0));ctx.fillText('y',xToPx(0),PAD-22)}
+function drawSelected(){for(const p of points){ctx.fillStyle='#315efb';ctx.beginPath();ctx.arc(xToPx(p.x),yToPx(p.y),7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke()}}
+function drawStudentLine(){if(points.length<2)return;const p1=points[0],p2=points[1];if(p1.x===p2.x)return;const m=(p2.y-p1.y)/(p2.x-p1.x),c=p1.y-m*p1.x;ctx.save();ctx.beginPath();ctx.rect(PAD,PAD,SIZE-2*PAD,SIZE-2*PAD);ctx.clip();ctx.strokeStyle='#315efb';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xToPx(MIN),yToPx(m*MIN+c));ctx.lineTo(xToPx(MAX),yToPx(m*MAX+c));ctx.stroke();ctx.restore()}
+function redraw(){drawGrid();if(mode==='click'||tableLineVisible)drawStudentLine();drawSelected()}function pointOnTarget(p){return Math.abs(p.y-yValue(current,p.x))<1e-9}function setStatus(msg,kind=''){statusEl.textContent=msg;statusEl.className='status'+(kind?' '+kind:'')}
+function checkClickAnswer(){tries++;triesEl.textContent=tries;const distinct=points.length===2&&(points[0].x!==points[1].x||points[0].y!==points[1].y),ok=distinct&&points.every(pointOnTarget);answered=true;if(ok){score++;scoreEl.textContent=score;setStatus('Oikein! Molemmat pisteet kuuluvat suoralle.','ok')}else setStatus('Ei aivan – ainakin toinen piste ei kuulu annettuun suoraan.','bad')}
+function buildTable(){valueTable.innerHTML='';for(let i=0;i<3;i++){const tr=document.createElement('tr');tr.innerHTML=`<td><input class="coord xInput" inputmode="decimal" aria-label="x-arvo ${i+1}"></td><td><input class="coord yInput" inputmode="decimal" aria-label="y-arvo ${i+1}"></td>`;valueTable.appendChild(tr)}tableValidated=false;tableLineVisible=false;drawTableBtn.disabled=true;showPointsBtn.disabled=false}
+function parseNumber(s){s=(s??'').trim().replace(',','.');if(/^[-+]?\d+\/\d+$/.test(s)){const[a,b]=s.split('/').map(Number);return b?a/b:NaN}return Number(s)}
+function showPointsFromTable(){const xs=[...document.querySelectorAll('.xInput')].map(i=>parseNumber(i.value)),ys=[...document.querySelectorAll('.yInput')].map(i=>parseNumber(i.value));if(xs.some(v=>!Number.isFinite(v))||ys.some(v=>!Number.isFinite(v))){setStatus('Täytä ensin kaikki kuusi ruutua.','bad');return}if(xs.some(v=>!Number.isInteger(v))){setStatus('Valitse x-arvoiksi kokonaislukuja.','bad');return}if(xs.some(v=>v<MIN||v>MAX)){setStatus(`Valitse x-arvot väliltä ${MIN}…${MAX}.`,'bad');return}if(new Set(xs).size<3){setStatus('Valitse kolme eri x-arvoa.','bad');return}points=xs.map((x,i)=>({x,y:ys[i]}));redraw();tries++;triesEl.textContent=tries;const ok=points.every(pointOnTarget);answered=true;if(ok){score++;scoreEl.textContent=score;tableValidated=true;drawTableBtn.disabled=false;showPointsBtn.disabled=true;setStatus('Oikein! Kolme pistettä ovat suoralla. Piirrä nyt suora.','ok')}else setStatus('Ei aivan – ainakin yksi taulukon pisteistä on väärin. Korjaa arvot ja tarkista uudelleen.','bad')}
+function drawFromTable(){if(!tableValidated)return;tableLineVisible=true;redraw();drawTableBtn.disabled=true;setStatus('Hyvä! Suora kulkee laskemiesi pisteiden kautta.','ok')}
+function resetAttempt(){points=[];answered=false;tableValidated=false;tableLineVisible=false;if(mode==='table'){buildTable();setStatus('Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.')}else setStatus('Valitse ensimmäinen piste.');redraw()}
+function setMode(m){mode=m;points=[];answered=false;tableValidated=false;tableLineVisible=false;const isTable=m==='table';tableModeBtn.classList.toggle('active',isTable);clickModeBtn.classList.toggle('active',!isTable);tablePanel.classList.toggle('hidden',!isTable);clickPanel.classList.toggle('hidden',isTable);if(isTable){buildTable();setStatus('Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.')}else setStatus('Valitse ensimmäinen piste.');redraw()}
+function newTask(){let c;do{c=tasks[Math.floor(Math.random()*tasks.length)]}while(current&&c.an===current.an&&c.ad===current.ad&&c.b===current.b);current=c;renderEquation();resetAttempt()}
+canvas.addEventListener('pointerdown',e=>{if(mode!=='click'||answered||points.length>=2)return;const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,x=Math.round(pxToX((e.clientX-r.left)*sx)),y=Math.round(pxToY((e.clientY-r.top)*sy));if(x<MIN||x>MAX||y<MIN||y>MAX)return;points.push({x,y});if(points.length===1)setStatus(`Ensimmäinen piste: (${x}, ${y}). Valitse toinen piste.`);redraw();if(points.length===2){drawStudentLine();checkClickAnswer()}});
+tableModeBtn.onclick=()=>setMode('table');clickModeBtn.onclick=()=>setMode('click');showPointsBtn.onclick=showPointsFromTable;drawTableBtn.onclick=drawFromTable;resetBtn.onclick=resetAttempt;nextBtn.onclick=newTask;newTask();
+</script>
+</body></html>

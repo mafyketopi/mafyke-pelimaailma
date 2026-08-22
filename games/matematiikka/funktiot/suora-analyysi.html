@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Suora-analyysi</title>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)'], ['$', '$']] },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+<style>
+:root{
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --ink:#172033;
+  --muted:#657286;
+  --line:#dce3ec;
+  --accent:#2563eb;
+  --good:#16803b;
+  --bad:#c62828;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+header{
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  padding:24px 5%;
+}
+header h1{margin:0 0 5px;font-size:clamp(1.8rem,5vw,2.8rem)}
+header p{margin:0;color:var(--muted)}
+main{
+  max-width:1050px;
+  margin:auto;
+  padding:28px 5% 48px;
+}
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+.progress{font-weight:700}
+.score{
+  padding:8px 13px;
+  border-radius:999px;
+  background:#eaf1ff;
+  color:#174db8;
+  font-weight:800;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 7px 24px rgba(31,45,61,.06);
+}
+.game-grid{
+  display:grid;
+  grid-template-columns:minmax(330px,1.08fr) minmax(290px,.92fr);
+  gap:28px;
+  align-items:start;
+}
+@media(max-width:780px){
+  .game-grid{grid-template-columns:1fr}
+}
+.graph-wrap{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+canvas{
+  width:min(100%,520px);
+  aspect-ratio:1/1;
+  background:#fff;
+  border:1px solid #d8dee8;
+  border-radius:12px;
+}
+.question-title{
+  margin:0 0 14px;
+  font-size:1.25rem;
+}
+.field{margin:15px 0}
+.field label{
+  display:block;
+  font-weight:700;
+  margin-bottom:7px;
+}
+select,input{
+  width:100%;
+  border:1px solid #bfc8d5;
+  border-radius:10px;
+  padding:11px 12px;
+  font:inherit;
+  background:#fff;
+  color:var(--ink);
+}
+.xy{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.xy .small-label{
+  color:var(--muted);
+  font-size:.86rem;
+  margin:0 0 4px;
+}
+.hint{
+  color:var(--muted);
+  font-size:.9rem;
+  margin-top:5px;
+}
+.buttons{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+button{
+  border:0;
+  border-radius:11px;
+  padding:11px 17px;
+  font:inherit;
+  font-weight:750;
+  cursor:pointer;
+}
+.primary{background:var(--accent);color:#fff}
+.secondary{background:#edf1f6;color:#263449}
+button:disabled{opacity:.5;cursor:not-allowed}
+.feedback{
+  min-height:28px;
+  margin-top:16px;
+  font-weight:700;
+}
+.feedback.good{color:var(--good)}
+.feedback.bad{color:var(--bad)}
+.solution{
+  display:none;
+  margin-top:14px;
+  padding:13px 15px;
+  border-radius:12px;
+  background:#f5f8fc;
+  border:1px solid var(--line);
+  line-height:1.6;
+}
+.end{
+  text-align:center;
+  padding:28px 10px;
+}
+.end h2{font-size:2rem;margin:.2em}
+.example-box{
+  line-height:1.7;
+}
+.example-box h2{
+  margin-top:0;
+}
+.example-list{
+  margin:12px 0 0;
+  padding-left:1.25rem;
+}
+.example-list li{
+  margin:8px 0;
+}
+.example-note{
+  margin-top:18px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:#eef6ff;
+  border:1px solid #cfe1ff;
+}
+</style>
+
+<style id="matikkapaketti-responsive-fix">
+html,body{max-width:100%;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
+canvas{max-width:100%!important;height:auto!important}
+img,svg,table{max-width:100%}
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
+.package-home:hover{opacity:1}
+@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
+@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
+<header>
+  <h1>Suora-analyysi</h1>
+  <p>Tutki kuvaajaa ja päättele suoran ominaisuudet.</p>
+</header>
+
+<main>
+  <div class="topbar">
+    <div class="progress" id="progress">Esimerkki</div>
+    <div class="score" id="score">Pisteet: 0 / 30</div>
+  </div>
+
+  <section class="card" id="gameCard">
+    <div id="exampleView" class="game-grid">
+      <div class="graph-wrap">
+        <canvas id="graph" width="620" height="620" aria-label="Suoran kuvaaja koordinaatistossa"></canvas>
+      </div>
+      <div class="example-box">
+        <h2>Esimerkki: analysoidaan suora</h2>
+        <p>Kuvaajasta nähdään, että suora kulkee ylöspäin vasemmalta oikealle.</p>
+        <ul class="example-list">
+          <li>Suora on <b>nouseva</b>.</li>
+          <li>Kulmakerroin on \(k=1\). Kun \(x\) kasvaa yhden, myös \(y\) kasvaa yhden.</li>
+          <li>Vakiotermi on \(b=1\), koska suora leikkaa y-akselin kohdassa \(y=1\).</li>
+          <li>x-akselin leikkauspiste on \((-1,0)\).</li>
+          <li>y-akselin leikkauspiste on \((0,1)\).</li>
+        </ul>
+        <div class="example-note">
+          Kuvassa apukolmio havainnollistaa kulmakerrointa ja paksu ympyrä näyttää y-akselin leikkauspisteen.
+        </div>
+        <div class="buttons">
+          <button class="primary" id="startBtn">Aloita tehtävät</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="taskView" class="game-grid" style="display:none">
+      <div class="graph-wrap">
+        <canvas id="taskGraph" width="620" height="620" aria-label="Suoran kuvaaja koordinaatistossa"></canvas>
+      </div>
+
+      <div>
+        <h2 class="question-title">Analysoi suora</h2>
+
+        <div class="field">
+          <label for="direction">1. Millainen suora on?</label>
+          <select id="direction">
+            <option value="">Valitse</option>
+            <option value="nouseva">Nouseva</option>
+            <option value="laskeva">Laskeva</option>
+            <option value="vaakasuora">Vaakasuora</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="slope">2. Kulmakerroin \(k\)</label>
+          <input id="slope" inputmode="decimal" autocomplete="off" placeholder="esim. 2 tai -1/2">
+          <div class="hint">Kun kulmakerroin on oikein, kuvaajaan ilmestyy apukolmio.</div>
+        </div>
+
+        <div class="field">
+          <label for="constant">3. Vakiotermi \(b\)</label>
+          <input id="constant" inputmode="decimal" autocomplete="off" placeholder="esim. -3">
+          <div class="hint">Kun vakiotermi on oikein, y-akselin leikkauspiste korostuu.</div>
+        </div>
+
+        <div class="field">
+          <label>4. Missä pisteessä suora leikkaa x-akselin?</label>
+          <div class="xy">
+            <div>
+              <div class="small-label">x</div>
+              <input id="xInterceptX" inputmode="decimal" autocomplete="off" placeholder="x">
+            </div>
+            <div>
+              <div class="small-label">y</div>
+              <input id="xInterceptY" inputmode="decimal" autocomplete="off" placeholder="y">
+            </div>
+          </div>
+          <div class="hint">Jos suora ei leikkaa x-akselia, kirjoita x-kenttään <b>ei</b>.</div>
+        </div>
+
+        <div class="field">
+          <label>5. Missä pisteessä suora leikkaa y-akselin?</label>
+          <div class="xy">
+            <div>
+              <div class="small-label">x</div>
+              <input id="yInterceptX" inputmode="decimal" autocomplete="off" placeholder="x">
+            </div>
+            <div>
+              <div class="small-label">y</div>
+              <input id="yInterceptY" inputmode="decimal" autocomplete="off" placeholder="y">
+            </div>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button class="primary" id="checkBtn">Tarkista</button>
+          <button class="secondary" id="nextBtn" disabled>Seuraava</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+        <div class="solution" id="solution"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const tasks = [
+  { m:1,   b:-2 },
+  { m:-1,  b:2 },
+  { m:2,   b:-2 },
+  { m:-0.5,b:2 },
+  { m:0.5, b:-2 },
+  { m:0,   b:3 }
+];
+
+let taskIndex = 0;
+let totalScore = 0;
+let checked = false;
+let slopeRevealed = false;
+let constantRevealed = false;
+
+const $ = id => document.getElementById(id);
+
+function nearly(a,b){ return Math.abs(a-b) < 1e-7; }
+
+function parseNumber(s){
+  s = String(s).trim().replace(",", ".");
+  if(!s) return NaN;
+  if(s.includes("/")){
+    const parts=s.split("/");
+    if(parts.length!==2) return NaN;
+    const a=Number(parts[0]), b=Number(parts[1]);
+    if(!Number.isFinite(a)||!Number.isFinite(b)||b===0) return NaN;
+    return a/b;
+  }
+  return Number(s);
+}
+
+function pretty(n){
+  if(nearly(n,0)) n=0;
+  if(Number.isInteger(n)) return String(n);
+  const common = [
+    [0.5,"1/2"],[-0.5,"-1/2"],
+    [1/3,"1/3"],[-1/3,"-1/3"],
+    [2/3,"2/3"],[-2/3,"-2/3"],
+    [1.5,"3/2"],[-1.5,"-3/2"]
+  ];
+  for(const [v,s] of common) if(nearly(n,v)) return s;
+  return String(Math.round(n*100)/100).replace(".",",");
+}
+
+function directionOf(t){
+  if(nearly(t.m,0)) return "vaakasuora";
+  return t.m>0 ? "nouseva" : "laskeva";
+}
+
+function xIntercept(t){
+  if(nearly(t.m,0)) return nearly(t.b,0) ? "all" : null;
+  return [-t.b/t.m, 0];
+}
+
+function getGraphGeometry(canvas){
+  const W=canvas.width, H=canvas.height;
+  const range=6;
+  const margin=44;
+  const scale=(W-2*margin)/(2*range);
+  return {
+    W,H,range,margin,scale,
+    X:x => W/2+x*scale,
+    Y:y => H/2-y*scale
+  };
+}
+
+function drawBase(canvas,t){
+  const ctx=canvas.getContext("2d");
+  const {W,H,range,margin,X,Y}=getGraphGeometry(canvas);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,W,H);
+
+  ctx.lineWidth=1;
+  ctx.strokeStyle="#e5e9ef";
+  for(let i=-range;i<=range;i++){
+    ctx.beginPath();
+    ctx.moveTo(X(i),Y(-range));
+    ctx.lineTo(X(i),Y(range));
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(X(-range),Y(i));
+    ctx.lineTo(X(range),Y(i));
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle="#263449";
+  ctx.lineWidth=2.2;
+  ctx.beginPath();
+  ctx.moveTo(X(-range),Y(0)); ctx.lineTo(X(range),Y(0));
+  ctx.moveTo(X(0),Y(-range)); ctx.lineTo(X(0),Y(range));
+  ctx.stroke();
+
+  ctx.fillStyle="#263449";
+  function arrow(px,py,angle){
+    ctx.save(); ctx.translate(px,py); ctx.rotate(angle);
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-11,-5); ctx.lineTo(-11,5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  arrow(X(range),Y(0),0);
+  arrow(X(0),Y(range),-Math.PI/2);
+
+  ctx.font="18px system-ui";
+  ctx.fillStyle="#4e5c70";
+  ctx.textAlign="center";
+  ctx.textBaseline="top";
+  for(let i=-range;i<=range;i++){
+    if(i===0) continue;
+    ctx.fillText(String(i),X(i),Y(0)+8);
+  }
+  ctx.textAlign="right";
+  ctx.textBaseline="middle";
+  for(let i=-range;i<=range;i++){
+    if(i===0) continue;
+    ctx.fillText(String(i),X(0)-8,Y(i));
+  }
+
+  ctx.font="bold 21px system-ui";
+  ctx.textAlign="left";
+  ctx.fillText("x",X(range)-5,Y(0)+23);
+  ctx.fillText("y",X(0)+12,Y(range)+8);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(margin,margin,W-2*margin,H-2*margin);
+  ctx.clip();
+  ctx.strokeStyle="#2563eb";
+  ctx.lineWidth=5;
+  ctx.lineCap="round";
+  ctx.beginPath();
+  ctx.moveTo(X(-range),Y(t.m*(-range)+t.b));
+  ctx.lineTo(X(range),Y(t.m*range+t.b));
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSlopeTriangle(canvas,t){
+  if(nearly(t.m,0)) return;
+  const ctx=canvas.getContext("2d");
+  const {X,Y}=getGraphGeometry(canvas);
+
+  // Choose a clean run/rise that matches the common slopes in this game.
+  let run=1, rise=t.m;
+  if(nearly(Math.abs(t.m),0.5)){ run=2; rise=2*t.m; }
+
+  let x0 = 0;
+  let y0 = t.b;
+
+  // Shift triangle away from the axes/edges when useful.
+  if(y0 + rise > 4.5 || y0 + rise < -4.5){
+    x0 = -2;
+    y0 = t.m*x0+t.b;
+  }
+
+  const x1=x0+run, y1=y0;
+  const x2=x1, y2=y0+rise;
+
+  ctx.save();
+  ctx.strokeStyle="#16803b";
+  ctx.fillStyle="rgba(22,128,59,.10)";
+  ctx.lineWidth=4;
+  ctx.setLineDash([9,7]);
+
+  ctx.beginPath();
+  ctx.moveTo(X(x0),Y(y0));
+  ctx.lineTo(X(x1),Y(y1));
+  ctx.lineTo(X(x2),Y(y2));
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+  ctx.fillStyle="#16803b";
+  ctx.font="bold 18px system-ui";
+  ctx.textAlign="center";
+  ctx.textBaseline="bottom";
+  ctx.fillText(`Δx = ${pretty(run)}`, (X(x0)+X(x1))/2, Y(y0)-8);
+
+  ctx.textAlign="left";
+  ctx.textBaseline="middle";
+  ctx.fillText(`Δy = ${pretty(rise)}`, X(x1)+10, (Y(y1)+Y(y2))/2);
+  ctx.restore();
+}
+
+function drawYInterceptCircle(canvas,t){
+  const ctx=canvas.getContext("2d");
+  const {X,Y}=getGraphGeometry(canvas);
+
+  ctx.save();
+  ctx.strokeStyle="#c62828";
+  ctx.lineWidth=7;
+  ctx.fillStyle="rgba(198,40,40,.10)";
+  ctx.beginPath();
+  ctx.arc(X(0),Y(t.b),13,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function redrawTask(){
+  const canvas=$("taskGraph");
+  const t=tasks[taskIndex];
+  drawBase(canvas,t);
+  if(slopeRevealed) drawSlopeTriangle(canvas,t);
+  if(constantRevealed) drawYInterceptCircle(canvas,t);
+}
+
+function clearInputs(){
+  ["direction","slope","constant","xInterceptX","xInterceptY","yInterceptX","yInterceptY"]
+    .forEach(id => $(id).value="");
+  $("feedback").textContent="";
+  $("feedback").className="feedback";
+  $("solution").style.display="none";
+  $("solution").innerHTML="";
+  $("checkBtn").disabled=false;
+  $("nextBtn").disabled=true;
+  checked=false;
+  slopeRevealed=false;
+  constantRevealed=false;
+}
+
+function loadTask(){
+  clearInputs();
+  $("progress").textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`;
+  $("score").textContent=`Pisteet: ${totalScore} / ${tasks.length*5}`;
+  redrawTask();
+}
+
+function pointOK(xStr,yStr,point){
+  const x=parseNumber(xStr), y=parseNumber(yStr);
+  return Number.isFinite(x)&&Number.isFinite(y)&&nearly(x,point[0])&&nearly(y,point[1]);
+}
+
+function liveVisualCheck(){
+  if($("taskView").style.display==="none") return;
+  const t=tasks[taskIndex];
+
+  const slopeValue=parseNumber($("slope").value);
+  if(Number.isFinite(slopeValue) && nearly(slopeValue,t.m)){
+    if(!slopeRevealed){
+      slopeRevealed=true;
+      redrawTask();
+    }
+  }
+
+  const constantValue=parseNumber($("constant").value);
+  if(Number.isFinite(constantValue) && nearly(constantValue,t.b)){
+    if(!constantRevealed){
+      constantRevealed=true;
+      redrawTask();
+    }
+  }
+}
+
+function check(){
+  if(checked) return;
+  checked=true;
+  const t=tasks[taskIndex];
+  let pts=0;
+  const results=[];
+
+  const dirOK=$("direction").value===directionOf(t);
+  if(dirOK) pts++;
+  results.push(["suunnan",dirOK]);
+
+  const slopeOK=nearly(parseNumber($("slope").value),t.m);
+  if(slopeOK){
+    pts++;
+    slopeRevealed=true;
+  }
+  results.push(["kulmakertoimen",slopeOK]);
+
+  const constantOK=nearly(parseNumber($("constant").value),t.b);
+  if(constantOK){
+    pts++;
+    constantRevealed=true;
+  }
+  results.push(["vakiotermin",constantOK]);
+
+  redrawTask();
+
+  const xi=xIntercept(t);
+  let xOK=false;
+  if(xi===null){
+    const v=$("xInterceptX").value.trim().toLowerCase();
+    xOK=["ei","eiole","ei ole","-"].includes(v);
+  } else if(xi==="all"){
+    xOK=false;
+  } else {
+    xOK=pointOK($("xInterceptX").value,$("xInterceptY").value,xi);
+  }
+  if(xOK) pts++;
+  results.push(["x-akselin leikkauspisteen",xOK]);
+
+  const yi=[0,t.b];
+  const yOK=pointOK($("yInterceptX").value,$("yInterceptY").value,yi);
+  if(yOK) pts++;
+  results.push(["y-akselin leikkauspisteen",yOK]);
+
+  totalScore += pts;
+  $("score").textContent=`Pisteet: ${totalScore} / ${tasks.length*5}`;
+
+  const fb=$("feedback");
+  if(pts===5){
+    fb.textContent="Kaikki oikein! 5 / 5 pistettä.";
+    fb.className="feedback good";
+  }else{
+    const wrong=results.filter(r=>!r[1]).map(r=>r[0]);
+    fb.textContent=`${pts} / 5 oikein. Tarkista ${wrong.join(", ")}.`;
+    fb.className="feedback bad";
+  }
+
+  const xText = xi===null ? "ei leikkaa x-akselia" : `\\((${pretty(xi[0])},\\,0)\\)`;
+  const eq = nearly(t.m,0)
+    ? `\\(y=${pretty(t.b)}\\)`
+    : `\\(y=${pretty(t.m)}x${t.b>=0?"+":""}${pretty(t.b)}\\)`;
+
+  const sol=$("solution");
+  sol.style.display="block";
+  sol.innerHTML =
+    `<b>Oikeat vastaukset:</b><br>
+     Suora on <b>${directionOf(t)}</b>.<br>
+     Kulmakerroin: \\(k=${pretty(t.m)}\\)<br>
+     Vakiotermi: \\(b=${pretty(t.b)}\\)<br>
+     x-akselin leikkauspiste: ${xText}<br>
+     y-akselin leikkauspiste: \\((0,\\,${pretty(t.b)})\\)<br>
+     <span class="hint">Suoran yhtälö on ${eq}.</span>`;
+
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([sol]);
+
+  $("checkBtn").disabled=true;
+  $("nextBtn").disabled=false;
+  $("nextBtn").textContent = taskIndex===tasks.length-1 ? "Tulokset" : "Seuraava";
+}
+
+function next(){
+  if(!checked) return;
+  if(taskIndex<tasks.length-1){
+    taskIndex++;
+    loadTask();
+  }else{
+    $("gameCard").innerHTML=`
+      <div class="end">
+        <h2>Valmis!</h2>
+        <p style="font-size:1.25rem">Sait <b>${totalScore} / ${tasks.length*5}</b> pistettä.</p>
+        <button class="primary" onclick="location.reload()">Pelaa uudelleen</button>
+      </div>`;
+    $("progress").textContent="Kaikki tehtävät tehty";
+  }
+}
+
+function startGame(){
+  $("exampleView").style.display="none";
+  $("taskView").style.display="grid";
+  taskIndex=0;
+  totalScore=0;
+  loadTask();
+}
+
+$("startBtn").addEventListener("click",startGame);
+$("checkBtn").addEventListener("click",check);
+$("nextBtn").addEventListener("click",next);
+$("slope").addEventListener("input",liveVisualCheck);
+$("constant").addEventListener("input",liveVisualCheck);
+
+// Example graph: y = x + 1, with both visual annotations.
+drawBase($("graph"),{m:1,b:1});
+drawSlopeTriangle($("graph"),{m:1,b:1});
+drawYInterceptCircle($("graph"),{m:1,b:1});
+
+if(window.MathJax?.typesetPromise) MathJax.typesetPromise();
+</script>
+</body>
+</html>
