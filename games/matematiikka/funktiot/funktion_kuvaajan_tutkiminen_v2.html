@@ -50,7 +50,7 @@ img,svg,table{max-width:100%}
 .package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
 .package-home:hover{opacity:1}
 @media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:820px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
 @media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
 </style>
 </head>
@@ -116,14 +116,14 @@ function curve(a,b,color="#172033",w=4){
 function ranges(cuts){let a=[xmin,...cuts,xmax],r=[];for(let i=0;i<a.length-1;i++)r.push([a[i],a[i+1]]);return r}
 function draw(){
  let t=task();ctx.clearRect(0,0,cvs.width,cvs.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,cvs.width,cvs.height);
- ctx.strokeStyle="#e8edf3";ctx.lineWidth=1;
+ ctx.strokeStyle="#c1cad7";ctx.lineWidth=1.35;
  for(let x=-5;x<=5;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()}
  for(let y=-8;y<=10;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(cvs.width,Y(y));ctx.stroke()}
  if(t.domain){ctx.fillStyle="rgba(37,99,235,.07)";ctx.fillRect(X(t.domain[0]),0,X(t.domain[1])-X(t.domain[0]),cvs.height);
   ctx.strokeStyle="#8cb3f7";ctx.lineWidth=2;t.domain.forEach(x=>{ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()})}
- ctx.strokeStyle="#697586";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
- ctx.fillStyle="#596579";ctx.font="15px system-ui";for(let x=-5;x<=5;x++)if(x)ctx.fillText(x,X(x)-5,Y(0)+18);
- for(let y=-8;y<=10;y+=2)if(y)ctx.fillText(y,X(0)+7,Y(y)+5);
+ ctx.strokeStyle="#0f172a";ctx.lineWidth=3.3;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
+ ctx.fillStyle="#334155";ctx.font="bold 16px system-ui";for(let x=-5;x<=5;x++)if(x)ctx.fillText(x,X(x)-5,Y(0)+18);
+ for(let y=-8;y<=10;y+=2)if(y)ctx.fillText(y,X(0)+8,Y(y)+5); ctx.font="bold 20px system-ui";ctx.fillStyle="#0f172a";ctx.fillText("x",cvs.width-22,Y(0)-10);ctx.fillText("y",X(0)+12,22);
  if((t.kind==="sign"||t.kind==="mono")&&selected.size){let rr=ranges(t.cuts);selected.forEach(i=>curve(rr[i][0],rr[i][1],"rgba(37,99,235,.30)",11))}
  curve(xmin,xmax);
  if(highlight){

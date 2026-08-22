@@ -58,7 +58,7 @@ img,svg,table{max-width:100%}
 .package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
 .package-home:hover{opacity:1}
 @media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
+@media (max-width:820px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
 @media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
 </style>
 </head>
@@ -241,16 +241,16 @@ function setupCanvas(canvas){
   const min=-5,max=5, scale=W/(max-min);
   function X(x){return (x-min)*scale}
   function Y(y){return H-(y-min)*scale}
-  ctx.lineWidth=1;
-  ctx.strokeStyle='#e4e8ef';
+  ctx.lineWidth=1.35;
+  ctx.strokeStyle='#c1cad7';
   for(let i=min;i<=max;i++){
     ctx.beginPath();ctx.moveTo(X(i),0);ctx.lineTo(X(i),H);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,Y(i));ctx.lineTo(W,Y(i));ctx.stroke();
   }
-  ctx.strokeStyle='#697586';ctx.lineWidth=2;
+  ctx.strokeStyle='#0f172a';ctx.lineWidth=3.3;
   ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(W,Y(0));ctx.stroke();
   ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),H);ctx.stroke();
-  ctx.fillStyle='#697586';ctx.font='14px system-ui';
+  ctx.fillStyle='#334155';ctx.font='bold 16px system-ui';
   for(let i=min;i<=max;i++){
     if(i!==0){ctx.fillText(i,X(i)+3,Y(0)-5);ctx.fillText(i,X(0)+5,Y(i)-4)}
   }

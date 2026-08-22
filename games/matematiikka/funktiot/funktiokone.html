@@ -280,12 +280,12 @@ img,svg,table{max-width:100%}
 
 <script>
 const tasks = [
-  { a: 2,    b: 0,  xs: [-2,0,1,3,5] },       // y = 2x
-  { a: 1,    b: 3,  xs: [-3,0,2,5,8] },       // y = x + 3
-  { a: 3,    b: 0,  xs: [-2,0,1,3,6] },       // y = 3x
-  { a: 2,    b: -2, xs: [-2,0,2,4,7] },       // y = 2x - 2
-  { a: -2,   b: 3,  xs: [-2,0,1,3,5] },       // y = -2x + 3
-  { a: 1/3,  b: -1, xs: [-6,-3,0,6,12] }      // y = 1/3 x - 1
+  { a: 2,    b: 0,  xs: [-2,0,1,3,4,5] },       // y = 2x
+  { a: 1,    b: 3,  xs: [-3,0,2,4,5,8] },       // y = x + 3
+  { a: 3,    b: 0,  xs: [-2,0,1,3,4,6] },       // y = 3x
+  { a: 2,    b: -2, xs: [-2,0,1,2,4,7] },       // y = 2x - 2
+  { a: -2,   b: 3,  xs: [-2,0,1,3,4,5] },       // y = -2x + 3
+  { a: 1/3,  b: -1, xs: [-6,-3,0,3,6,12] }      // y = 1/3 x - 1
 ];
 
 let taskIndex = 0;
@@ -351,7 +351,7 @@ function renderTask(){
     const right = document.createElement('div');
     right.className = 'answer-cell';
 
-    if (i < 2) {
+    if (i < 3) {
       right.innerHTML = `\\(${latexNumber(ys[i])}\\)`;
     } else {
       const input = document.createElement('input');
