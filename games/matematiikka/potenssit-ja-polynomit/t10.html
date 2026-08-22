@@ -1,0 +1,55 @@
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T10 – Laskutoimituksen muodostaminen</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:920px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:flex-end;color:var(--muted);margin-bottom:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{margin:0 0 7px;font-size:clamp(1.65rem,4vw,2.35rem)}.lead{color:var(--muted);line-height:1.5;margin:0 0 18px}
+.progress{height:9px;background:#e7ebef;border-radius:99px;overflow:hidden;margin:14px 0 22px}.progress div{height:100%;background:var(--accent)}
+.task{font-size:1.13rem;line-height:1.55}.math{font-size:1.38rem;margin:12px 0 16px;min-height:30px}
+.inputs{display:grid;gap:12px}.field label{display:block;font-weight:700;margin-bottom:6px}.field input{width:100%;font:inherit;padding:11px;border:1px solid #b9c3cc;border-radius:10px}
+.preview{min-height:42px;margin-top:6px;padding:8px 10px;background:#fafbfd;border:1px dashed #d5dde5;border-radius:9px;font-size:1.18rem}
+.preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.9rem}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#e9eef3}.feedback{display:none;margin-top:14px;padding:12px 14px;border-radius:10px}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.svgbox{max-width:680px;margin:12px auto 18px;background:#fbfcfd;border:1px solid #e0e5ea;border-radius:12px;padding:8px}.svgbox svg{display:block;width:100%;height:auto}
+.note{background:var(--soft);padding:12px 14px;border-radius:10px;margin-bottom:18px;line-height:1.5}.done{text-align:center;padding:24px}.done b{font-size:2rem}
+</style><script>
+window.MathJax={tex:{inlineMath:[['','']]},svg:{fontCache:'global'}};
+function norm(s){return String(s||'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
+function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
+function okAny(s,arr){let n=canon(s);return arr.some(a=>n===canon(a))}
+function latexify(s){s=String(s||'').trim();if(!s)return'';s=s.replace(/,/g,'{,}').replace(/\*/g,'\\cdot ');s=s.replace(/\^(-?\d+|[a-zA-Z])/g,'^{$1}');return s}
+function preview(inp,el){let x=latexify(inp.value);el.innerHTML=x?''+x+'':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([el])}
+function setMath(el,x){el.innerHTML=x?''+x+'':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([el])}
+function A(arr,hint='Sievennä lauseke huolellisesti.'){return v=>({ok:okAny(v.a,arr),msg:okAny(v.a,arr)?'Oikein!':hint})}
+function game(tasks){
+let i=0,score=0;const q=document.querySelector('#q'),m=document.querySelector('#m'),fs=document.querySelector('#fields'),fb=document.querySelector('#fb'),pr=document.querySelector('#prog'),ct=document.querySelector('#count'),pic=document.querySelector('#pic');
+function render(){let t=tasks[i];ct.textContent=`${i+1} / ${tasks.length}`;pr.style.width=`${100*i/tasks.length}%`;q.innerHTML=t.prompt||'';setMath(m,t.latex||'');m.style.display=t.latex?'block':'none';pic.innerHTML=t.svg||'';pic.style.display=t.svg?'block':'none';fs.innerHTML='';fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}
+(t.fields||[{name:'a',label:'Vastaus'}]).forEach(f=>{let d=document.createElement('div');d.className='field';d.innerHTML=`<label>${f.label}</label><input name="${f.name}" autocomplete="off"><div class="preview"></div>`;fs.appendChild(d);let inp=d.querySelector('input'),pv=d.querySelector('.preview');inp.addEventListener('input',()=>preview(inp,pv))});document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([pic])}
+function vals(){return Object.fromEntries([...fs.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+document.querySelector('#check').onclick=()=>{let r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg;if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';};if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb,sol].filter(Boolean))}
+document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{document.querySelector('.card').innerHTML=`<div class="done"><b>Valmis!</b><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+render()}
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head><body><main class="wrap"><div class="top" id="count"></div><section class="card"><h1>T10 – Laskutoimituksen muodostaminen</h1><p class="lead">Muodosta ensin pyydetty polynomilasku ja sievennä vasta sen jälkeen. Potenssitehtävissä vaaditaan myös tulomuoto.</p><div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Muodosta lauseke</h2>
+<p>Esimerkiksi polynomien \(a+3\) ja \(a-4\) summa:</p><p>\((a+3)+(a-4)=2a-1\)</p>
+<h2>Potenssi</h2><p>\((a+2)^2=(a+2)(a+2)=a^2+4a+4\)</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="q" class="task"></div><div id="m" class="math"></div><div id="pic" class="svgbox" style="display:none"></div><div id="fields" class="inputs"></div><div id="fb" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div><div class="actions"><button id="check" class="primary">Tarkista</button><button id="next" class="secondary">Seuraava</button></div></div></section></main><script>
+function two(form,ans,midlabel='Muodostettu lauseke'){return v=>{let o=okAny(v.m,form)&&okAny(v.a,ans);return {ok:o,msg:o?'Sekä merkintä että sievennetty vastaus ovat oikein!':'Tarkista sekä muodostettu lasku että sievennetty vastaus.'}}}
+function three(form,prod,ans){return v=>{let o=okAny(v.m,form)&&okAny(v.p,prod)&&okAny(v.a,ans);return {ok:o,msg:o?'Kaikki kolme vaihetta ovat oikein!':'Tarkista muodostettu potenssi, tulomuoto ja lopullinen polynomi.'}}}
+const F=[{name:'m',label:'Muodostettu lauseke'},{name:'a',label:'Sievennetty vastaus'}];
+const P=[{name:'m',label:'Potenssimuoto'},{name:'p',label:'Kirjoita potenssi tulona'},{name:'a',label:'Sievennetty polynomi'}];
+const tasks=[
+{prompt:'Muodosta polynomien a+3 ja a-4 summa ja sievennä.',fields:F,check:two(['(a+3)+(a-4)','a+3+a-4'],['2a-1','-1+2a'])},
+{prompt:'Muodosta polynomien a+3 ja a-4 erotus tässä järjestyksessä ja sievennä.',fields:F,check:two(['(a+3)-(a-4)','a+3-(a-4)'],['7'])},
+{prompt:'Muodosta polynomien 2x+5 ja x-3 summa ja sievennä.',fields:F,check:two(['(2x+5)+(x-3)','2x+5+x-3'],['3x+2','2+3x'])},
+{prompt:'Muodosta polynomien 4x-1 ja 2x+6 erotus ja sievennä.',fields:F,check:two(['(4x-1)-(2x+6)','4x-1-(2x+6)'],['2x-7','-7+2x'])},
+{prompt:'Muodosta polynomien x+2 ja x+3 tulo ja sievennä.',fields:F,check:two(['(x+2)(x+3)','(x+2)*(x+3)'],['x^2+5x+6'])},
+{prompt:'Muodosta polynomien 2x-1 ja x+4 tulo ja sievennä.',fields:F,check:two(['(2x-1)(x+4)','(2x-1)*(x+4)'],['2x^2+7x-4'])},
+{prompt:'Muodosta trinomien x^2+x+1 ja 2x^2-3x+4 summa ja sievennä.',fields:F,check:two(['(x^2+x+1)+(2x^2-3x+4)','x^2+x+1+2x^2-3x+4'],['3x^2-2x+5'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(a+2)^2'],['(a+2)(a+2)','(a+2)*(a+2)'],['a^2+4a+4'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(x-3)^2'],['(x-3)(x-3)','(x-3)*(x-3)'],['x^2-6x+9'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(2x+1)^2'],['(2x+1)(2x+1)','(2x+1)*(2x+1)'],['4x^2+4x+1'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(a+1)^3'],['(a+1)(a+1)(a+1)','(a+1)*(a+1)*(a+1)'],['a^3+3a^2+3a+1'])}
+];game(tasks);
+
+const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
+</script></body></html>

@@ -1,0 +1,102 @@
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T6 – Kymmenpotenssimuoto</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.badge{font-size:.92rem;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font-size:1.2rem}
+.lead{color:var(--muted);margin:0 0 18px;line-height:1.55}.intro{background:var(--soft);border-radius:12px;padding:14px 16px;margin:10px 0 18px;line-height:1.55}
+.progress{height:9px;background:#e7ebef;border-radius:99px;overflow:hidden;margin:14px 0 22px}.progress>div{height:100%;background:var(--accent);width:0;transition:.25s}
+.task{font-size:1.15rem;line-height:1.55;margin:10px 0 10px}.math{font-size:1.42rem;margin:12px 0 16px;min-height:32px}
+.inputs{display:grid;gap:12px}.field label{display:block;font-weight:650;margin-bottom:6px}.field input{width:100%;font:inherit;padding:11px 12px;border:1px solid #b9c3cc;border-radius:10px;background:white}
+.field input:focus{outline:3px solid rgba(39,76,119,.16);border-color:var(--accent)}
+.preview{min-height:42px;margin-top:7px;padding:8px 10px;border-radius:9px;background:#fafbfd;border:1px dashed #d5dde5;font-size:1.2rem;color:#24313d}
+.preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#e9eef3;color:#22303c}.ghost{background:white;color:#22303c;border:1px solid var(--line)}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:10px;display:none;line-height:1.45}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.modebar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}.modebar button.active{background:var(--accent);color:white}.done{text-align:center;padding:22px 0}.done .big{font-size:2rem;font-weight:800}
+.small{font-size:.92rem;color:var(--muted)}
+.numberline{position:relative;height:120px;margin:30px 14px 12px}.axis{position:absolute;left:2%;right:2%;top:58px;height:3px;background:#27313a}.tick{position:absolute;top:49px;width:2px;height:21px;background:#27313a}.tick span{position:absolute;top:24px;transform:translateX(-50%);font-size:.82rem;color:#52606d}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.slot{min-height:56px;border:2px dashed #b9c4ce;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;font-size:1.05rem}
+.tokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.token{background:#e9eef3;color:#17212b}.token.used{opacity:.35}
+@media(max-width:620px){.wrap{padding:16px 12px 36px}.card{padding:17px}.math{font-size:1.26rem}.slots{gap:4px}.slot{min-height:52px;font-size:.9rem}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+
+function norm(s){return String(s??'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
+function numericEq(a,b,tol=1e-9){const x=Number(norm(a));return Number.isFinite(x)&&Math.abs(x-b)<=tol*Math.max(1,Math.abs(b))}
+function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
+function anyMatch(input,accepted){const n=canon(input);return accepted.some(a=>n===canon(a))}
+function setMath(el,latex){el.innerHTML='\\('+latex+'\\)'; if(window.MathJax?.typesetPromise) MathJax.typesetPromise([el]);}
+function toLatex(raw){
+ let s=String(raw||'').trim();
+ if(!s) return '';
+ s=s.replace(/,/g,'{,}').replace(/\*/g,'\\cdot ');
+ s=s.replace(/([A-Za-z0-9\)\}]+)\^(-?\([^)]+\)|-?[A-Za-z0-9+\-]+)/g,(m,b,e)=>{
+   let ee=e; if(ee.startsWith('(')&&ee.endsWith(')')) ee=ee.slice(1,-1);
+   return b+'^{'+ee+'}';
+ });
+ // simple fractions such as -3/8, 4/9
+ s=s.replace(/(^|[=(+\-\s])(-?\d+)\s*\/\s*(-?\d+)/g,(m,p,a,b)=>p+'\\frac{'+a+'}{'+b+'}');
+ return s;
+}
+function typesetPreview(inp, prev){
+ const lx=toLatex(inp.value);
+ if(!lx){prev.innerHTML='';return}
+ prev.innerHTML='\\('+lx+'\\)';
+ if(window.MathJax?.typesetPromise) MathJax.typesetPromise([prev]);
+}
+function basicGame(tasks){
+ let i=0,score=0;
+ const q=document.querySelector('#question'),m=document.querySelector('#math'),f=document.querySelector('#fields'),fb=document.querySelector('#feedback'),p=document.querySelector('#prog'),c=document.querySelector('#count');
+ function render(){
+  const t=tasks[i]; fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}c.textContent=`${i+1} / ${tasks.length}`;p.style.width=`${(i/tasks.length)*100}%`;
+  q.innerHTML=t.prompt||''; if(t.latex){m.style.display='block';setMath(m,t.latex)}else{m.style.display='none';m.innerHTML=''}
+  f.innerHTML='';
+  (t.fields||[{name:'a',label:'Vastaus'}]).forEach(x=>{
+    const d=document.createElement('div');d.className='field';
+    d.innerHTML=`<label>${x.label||'Vastaus'}</label><input name="${x.name}" autocomplete="off"><div class="preview"></div>`;
+    f.appendChild(d); const inp=d.querySelector('input'),pr=d.querySelector('.preview');inp.addEventListener('input',()=>typesetPreview(inp,pr));
+  });
+  document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';
+ }
+ function vals(){return Object.fromEntries([...f.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+ document.querySelector('#check').onclick=()=>{const r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg|| (r.ok?'Oikein!':'Ei vielä.');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb]);if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([sol]);}}
+ document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+ render();
+}
+function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><main class="wrap"><div class="top"><span></span><span class="badge" id="count"></span></div>
+<div class="card"><h1>T6 – Kymmenpotenssimuoto</h1><p class="lead">Muunna suuria ja pieniä lukuja molempiin suuntiin ja käytä kymmenpotenssimuotoa laskuissa.</p><div class="intro"><b>Malli tavallisesta luvusta kymmenpotenssimuotoon:</b>
+\(\;5\,700\,000=5{,}7\cdot10^6\).<br>
+<b>Malli kymmenpotenssimuodosta tavalliseksi luvuksi:</b>
+\(\;3{,}2\cdot10^{-5}=0{,}000032\).<br><span class="small">Kymmenpotenssimuodossa ensimmäinen kerroin on vähintään 1 ja pienempi kuin 10.</span></div>
+<div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Kymmenpotenssimuoto</h2>
+<p>\(5\,700\,000=5{,}7\cdot10^6\)</p><p>\(3{,}2\cdot10^{-5}=0{,}000032\)</p>
+<h2>Etuliitteet</h2><p>\(1\ \mathrm{km}=10^3\ \mathrm m\), \(1\ \mathrm{mm}=10^{-3}\ \mathrm m\)</p>
+<p>\(1\ \mathrm{kg}=10^3\ \mathrm g\), \(1\ \mathrm{mg}=10^{-3}\ \mathrm g\)</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="question" class="task"></div><div id="math" class="math"></div>
+<div id="fields" class="inputs"></div><div id="feedback" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div>
+<div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
+</div></main><script>
+function E2(ans){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':'Tarkista kymmenpotenssin eksponentti ja desimaalipilkun paikka.'})}
+const tasks=[
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'4\\,500\\,000',check:E2(['4.5*10^6','4,5*10^6','4.5·10^6','4,5·10^6'])},
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'72\\,000\\,000',check:E2(['7.2*10^7','7,2*10^7','7.2·10^7','7,2·10^7'])},
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'0{,}000\\,038',check:E2(['3.8*10^-5','3,8*10^-5','3.8·10^-5','3,8·10^-5'])},
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'0{,}000\\,000\\,62',check:E2(['6.2*10^-7','6,2*10^-7','6.2·10^-7','6,2·10^-7'])},
+{prompt:'Kirjoita tavallisena lukuna.',latex:'3{,}2\\cdot10^5',check:v=>({ok:numericEq(v.a,320000),msg:numericEq(v.a,320000)?'Oikein!':'Siirrä desimaalipilkkua 5 askelta oikealle.'})},
+{prompt:'Kirjoita tavallisena lukuna.',latex:'6{,}4\\cdot10^{-4}',check:v=>({ok:numericEq(v.a,.00064),msg:numericEq(v.a,.00064)?'Oikein!':'Negatiivinen eksponentti siirtää pilkkua vasemmalle.'})},
+{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(3\\cdot10^5)(2\\cdot10^3)',check:E2(['6*10^8','6·10^8'])},
+{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'\\frac{8\\cdot10^9}{2\\cdot10^4}',check:E2(['4*10^5','4·10^5'])},
+{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(5\\cdot10^{-3})(4\\cdot10^6)',check:E2(['2*10^4','2·10^4'])},
+{prompt:'Laske.',latex:'\\frac{6\\cdot10^{-8}}{3\\cdot10^{-10}}',check:v=>({ok:numericEq(v.a,200)||anyMatch(v.a,['2*10^2']),msg:(numericEq(v.a,200)||anyMatch(v.a,['2*10^2']))?'Oikein!':'Jaa kertoimet ja vähennä eksponentit.'})}
+,
+{prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'3{,}2\ \mathrm{km}',check:E2(['3.2*10^3','3,2*10^3']),solution:'\(3{,}2\ \mathrm{km}=3{,}2\cdot10^3\ \mathrm m\)'},
+{prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'4{,}5\ \mathrm{mm}',check:E2(['4.5*10^-3','4,5*10^-3']),solution:'\(4{,}5\ \mathrm{mm}=4{,}5\cdot10^{-3}\ \mathrm m\)'}
+];basicGame(tasks);
+
+const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
+</script></body></html>

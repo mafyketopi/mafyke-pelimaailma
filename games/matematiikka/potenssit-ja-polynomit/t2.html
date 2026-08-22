@@ -1,0 +1,99 @@
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T2 – Neliö, kuutio ja laskujärjestys</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.badge{font-size:.92rem;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font-size:1.2rem}
+.lead{color:var(--muted);margin:0 0 18px;line-height:1.55}.intro{background:var(--soft);border-radius:12px;padding:14px 16px;margin:10px 0 18px;line-height:1.55}
+.progress{height:9px;background:#e7ebef;border-radius:99px;overflow:hidden;margin:14px 0 22px}.progress>div{height:100%;background:var(--accent);width:0;transition:.25s}
+.task{font-size:1.15rem;line-height:1.55;margin:10px 0 10px}.math{font-size:1.42rem;margin:12px 0 16px;min-height:32px}
+.inputs{display:grid;gap:12px}.field label{display:block;font-weight:650;margin-bottom:6px}.field input{width:100%;font:inherit;padding:11px 12px;border:1px solid #b9c3cc;border-radius:10px;background:white}
+.field input:focus{outline:3px solid rgba(39,76,119,.16);border-color:var(--accent)}
+.preview{min-height:42px;margin-top:7px;padding:8px 10px;border-radius:9px;background:#fafbfd;border:1px dashed #d5dde5;font-size:1.2rem;color:#24313d}
+.preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#e9eef3;color:#22303c}.ghost{background:white;color:#22303c;border:1px solid var(--line)}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:10px;display:none;line-height:1.45}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.modebar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}.modebar button.active{background:var(--accent);color:white}.done{text-align:center;padding:22px 0}.done .big{font-size:2rem;font-weight:800}
+.small{font-size:.92rem;color:var(--muted)}
+.numberline{position:relative;height:120px;margin:30px 14px 12px}.axis{position:absolute;left:2%;right:2%;top:58px;height:3px;background:#27313a}.tick{position:absolute;top:49px;width:2px;height:21px;background:#27313a}.tick span{position:absolute;top:24px;transform:translateX(-50%);font-size:.82rem;color:#52606d}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.slot{min-height:56px;border:2px dashed #b9c4ce;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;font-size:1.05rem}
+.tokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.token{background:#e9eef3;color:#17212b}.token.used{opacity:.35}
+@media(max-width:620px){.wrap{padding:16px 12px 36px}.card{padding:17px}.math{font-size:1.26rem}.slots{gap:4px}.slot{min-height:52px;font-size:.9rem}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+
+function norm(s){return String(s??'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
+function numericEq(a,b,tol=1e-9){const x=Number(norm(a));return Number.isFinite(x)&&Math.abs(x-b)<=tol*Math.max(1,Math.abs(b))}
+function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
+function anyMatch(input,accepted){const n=canon(input);return accepted.some(a=>n===canon(a))}
+function setMath(el,latex){el.innerHTML='\\('+latex+'\\)'; if(window.MathJax?.typesetPromise) MathJax.typesetPromise([el]);}
+function toLatex(raw){
+ let s=String(raw||'').trim();
+ if(!s) return '';
+ s=s.replace(/,/g,'{,}').replace(/\*/g,'\\cdot ');
+ s=s.replace(/([A-Za-z0-9\)\}]+)\^(-?\([^)]+\)|-?[A-Za-z0-9+\-]+)/g,(m,b,e)=>{
+   let ee=e; if(ee.startsWith('(')&&ee.endsWith(')')) ee=ee.slice(1,-1);
+   return b+'^{'+ee+'}';
+ });
+ // simple fractions such as -3/8, 4/9
+ s=s.replace(/(^|[=(+\-\s])(-?\d+)\s*\/\s*(-?\d+)/g,(m,p,a,b)=>p+'\\frac{'+a+'}{'+b+'}');
+ return s;
+}
+function typesetPreview(inp, prev){
+ const lx=toLatex(inp.value);
+ if(!lx){prev.innerHTML='';return}
+ prev.innerHTML='\\('+lx+'\\)';
+ if(window.MathJax?.typesetPromise) MathJax.typesetPromise([prev]);
+}
+function basicGame(tasks){
+ let i=0,score=0;
+ const q=document.querySelector('#question'),m=document.querySelector('#math'),f=document.querySelector('#fields'),fb=document.querySelector('#feedback'),p=document.querySelector('#prog'),c=document.querySelector('#count');
+ function render(){
+  const t=tasks[i]; fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}c.textContent=`${i+1} / ${tasks.length}`;p.style.width=`${(i/tasks.length)*100}%`;
+  q.innerHTML=t.prompt||''; if(t.latex){m.style.display='block';setMath(m,t.latex)}else{m.style.display='none';m.innerHTML=''}
+  f.innerHTML='';
+  (t.fields||[{name:'a',label:'Vastaus'}]).forEach(x=>{
+    const d=document.createElement('div');d.className='field';
+    d.innerHTML=`<label>${x.label||'Vastaus'}</label><input name="${x.name}" autocomplete="off"><div class="preview"></div>`;
+    f.appendChild(d); const inp=d.querySelector('input'),pr=d.querySelector('.preview');inp.addEventListener('input',()=>typesetPreview(inp,pr));
+  });
+  document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';
+ }
+ function vals(){return Object.fromEntries([...f.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+ document.querySelector('#check').onclick=()=>{const r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg|| (r.ok?'Oikein!':'Ei vielä.');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb]);if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'')+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([sol]);}}
+ document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+ render();
+}
+function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><main class="wrap"><div class="top"><span></span><span class="badge" id="count"></span></div>
+<div class="card"><h1>T2 – Neliö, kuutio ja laskujärjestys</h1><p class="lead">Merkitse tarvittaessa lasku potenssien avulla ja laske. Loppua kohti tehtävät ovat monivaiheisia.</p>
+<div id="introScreen"><div class="note"><h2>Neliö ja kuutio</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+<div><svg viewBox="0 0 220 180"><rect x="45" y="25" width="120" height="120" fill="#eef3f8" stroke="#26323c" stroke-width="3"/><text x="105" y="165" text-anchor="middle">sivu a</text></svg><p>\(a^2=a\cdot a\). Neliön pinta-ala on \(a^2\).</p></div>
+<div><svg viewBox="0 0 240 190"><path d="M55 65 L145 65 L185 43 L95 43 Z M145 65 L145 155 L185 133 L185 43 M55 65 L55 155 L145 155" fill="none" stroke="#26323c" stroke-width="3"/><text x="100" y="175">särmä a</text></svg><p>\(a^3=a\cdot a\cdot a\). Kuution tilavuus on \(a^3\).</p></div></div>
+<h2>Laskujärjestys</h2><p>Potenssit ennen kerto- ja jakolaskuja. Sen jälkeen yhteen- ja vähennyslaskut.</p>
+<p>\(3+2^3\cdot4=3+8\cdot4=35\)</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="question" class="task"></div><div id="math" class="math"></div>
+<div id="fields" class="inputs"></div><div id="feedback" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div>
+<div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
+</div></main><script>
+function two(a,b){return v=>{let ok=anyMatch(v.m,a)&&numericEq(v.a,b);return {ok,msg:ok?'Sekä merkintä että arvo ovat oikein!':'Tarkista sekä potenssimerkintä että laskettu arvo.'}}}
+const tasks=[
+{prompt:'Merkitse potenssina ja laske: luvun 6 neliö.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],check:two(['6^2'],36)},
+{prompt:'Merkitse potenssina ja laske: luvun 4 kuutio.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],check:two(['4^3'],64)},
+{prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 3 ja 5 neliöiden summa.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],check:two(['3^2+5^2','5^2+3^2'],34)},
+{prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 5 ja 2 kuutioiden erotus.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],check:two(['5^3-2^3'],117)},
+{prompt:'Laske laskujärjestyksen mukaan.',latex:'3+2^3\\cdot4',solution:"\\(3+2^3\\cdot4=3+8\\cdot4=35\\)",check:v=>({ok:numericEq(v.a,35),msg:numericEq(v.a,35)?'Oikein!':'Potenssi lasketaan ennen kertolaskua.'})},
+{prompt:'Laske laskujärjestyksen mukaan.',latex:'24-2\\cdot3^2',solution:"\\(24-2\\cdot3^2=24-18=6\\)",check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Laske ensin potenssi.'})},
+{prompt:'Laske.',latex:'2^4+3^2-5',solution:"\\(16+9-5=20\\)",check:v=>({ok:numericEq(v.a,20),msg:numericEq(v.a,20)?'Oikein!':'Laske potenssit ensin.'})},
+{prompt:'Laske.',latex:'2\\cdot(3^2+4)-5^2',solution:"\\(2(9+4)-25=26-25=1\\)",check:v=>({ok:numericEq(v.a,1),msg:numericEq(v.a,1)?'Oikein!':'Sulkeet ja potenssit ennen muuta laskemista.'})},
+{prompt:'Laske.',latex:'3^3-2\\cdot(5+2^2)',solution:"\\(27-2(5+4)=27-18=9\\)",check:v=>({ok:numericEq(v.a,9),msg:numericEq(v.a,9)?'Oikein!':'Etene laskujärjestyksen mukaan.'})},
+{prompt:'Laske.',latex:'\\frac{2^5-2^3}{3}+4^2',solution:"\\(\\frac{32-8}{3}+16=8+16=24\\)",check:v=>({ok:numericEq(v.a,24),msg:numericEq(v.a,24)?'Oikein!':'Laske osoittajan potenssit ja erotus ennen jakoa.'})},
+{prompt:'Laske.',latex:'5^2-[2^3+3\\cdot(4^2-14)]',solution:"\\(25-[8+3(16-14)]=25-14=11\\)",check:v=>({ok:numericEq(v.a,11),msg:numericEq(v.a,11)?'Oikein!':'Huomioi sisimmät sulkeet ja potenssit ensin.'})}
+];basicGame(tasks);
+
+const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
+</script></body></html>

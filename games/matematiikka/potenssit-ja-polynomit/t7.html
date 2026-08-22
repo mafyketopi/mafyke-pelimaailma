@@ -1,0 +1,145 @@
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T7 – Neliöjuuri</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.badge{font-size:.92rem;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font-size:1.2rem}
+.lead{color:var(--muted);margin:0 0 18px;line-height:1.55}.intro{background:var(--soft);border-radius:12px;padding:14px 16px;margin:10px 0 18px;line-height:1.55}
+.progress{height:9px;background:#e7ebef;border-radius:99px;overflow:hidden;margin:14px 0 22px}.progress>div{height:100%;background:var(--accent);width:0;transition:.25s}
+.task{font-size:1.15rem;line-height:1.55;margin:10px 0 10px}.math{font-size:1.42rem;margin:12px 0 16px;min-height:32px}
+.inputs{display:grid;gap:12px}.field label{display:block;font-weight:650;margin-bottom:6px}.field input{width:100%;font:inherit;padding:11px 12px;border:1px solid #b9c3cc;border-radius:10px;background:white}
+.field input:focus{outline:3px solid rgba(39,76,119,.16);border-color:var(--accent)}
+.preview{min-height:42px;margin-top:7px;padding:8px 10px;border-radius:9px;background:#fafbfd;border:1px dashed #d5dde5;font-size:1.2rem;color:#24313d}
+.preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#e9eef3;color:#22303c}.ghost{background:white;color:#22303c;border:1px solid var(--line)}
+.feedback{margin-top:14px;padding:12px 14px;border-radius:10px;display:none;line-height:1.45}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.modebar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}.modebar button.active{background:var(--accent);color:white}.done{text-align:center;padding:22px 0}.done .big{font-size:2rem;font-weight:800}
+.small{font-size:.92rem;color:var(--muted)}
+.numberline{position:relative;height:120px;margin:30px 14px 12px}.axis{position:absolute;left:2%;right:2%;top:58px;height:3px;background:#27313a}.tick{position:absolute;top:49px;width:2px;height:21px;background:#27313a}.tick span{position:absolute;top:24px;transform:translateX(-50%);font-size:.82rem;color:#52606d}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.slot{min-height:56px;border:2px dashed #b9c4ce;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;font-size:1.05rem}
+.tokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.token{background:#e9eef3;color:#17212b}.token.used{opacity:.35}
+@media(max-width:620px){.wrap{padding:16px 12px 36px}.card{padding:17px}.math{font-size:1.26rem}.slots{gap:4px}.slot{min-height:52px;font-size:.9rem}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+
+function norm(s){return String(s??'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
+function numericEq(a,b,tol=1e-9){const x=Number(norm(a));return Number.isFinite(x)&&Math.abs(x-b)<=tol*Math.max(1,Math.abs(b))}
+function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
+function anyMatch(input,accepted){const n=canon(input);return accepted.some(a=>n===canon(a))}
+function setMath(el,latex){el.innerHTML='\\('+latex+'\\)'; if(window.MathJax?.typesetPromise) MathJax.typesetPromise([el]);}
+function toLatex(raw){
+ let s=String(raw||'').trim();
+ if(!s) return '';
+ s=s.replace(/,/g,'{,}').replace(/\*/g,'\\cdot ');
+ s=s.replace(/([A-Za-z0-9\)\}]+)\^(-?\([^)]+\)|-?[A-Za-z0-9+\-]+)/g,(m,b,e)=>{
+   let ee=e; if(ee.startsWith('(')&&ee.endsWith(')')) ee=ee.slice(1,-1);
+   return b+'^{'+ee+'}';
+ });
+ // simple fractions such as -3/8, 4/9
+ s=s.replace(/(^|[=(+\-\s])(-?\d+)\s*\/\s*(-?\d+)/g,(m,p,a,b)=>p+'\\frac{'+a+'}{'+b+'}');
+ return s;
+}
+function typesetPreview(inp, prev){
+ const lx=toLatex(inp.value);
+ if(!lx){prev.innerHTML='';return}
+ prev.innerHTML='\\('+lx+'\\)';
+ if(window.MathJax?.typesetPromise) MathJax.typesetPromise([prev]);
+}
+function basicGame(tasks){
+ let i=0,score=0;
+ const q=document.querySelector('#question'),m=document.querySelector('#math'),f=document.querySelector('#fields'),fb=document.querySelector('#feedback'),p=document.querySelector('#prog'),c=document.querySelector('#count');
+ function render(){
+  const t=tasks[i]; fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}c.textContent=`${i+1} / ${tasks.length}`;p.style.width=`${(i/tasks.length)*100}%`;
+  q.innerHTML=t.prompt||''; if(t.latex){m.style.display='block';setMath(m,t.latex)}else{m.style.display='none';m.innerHTML=''}
+  f.innerHTML='';
+  (t.fields||[{name:'a',label:'Vastaus'}]).forEach(x=>{
+    const d=document.createElement('div');d.className='field';
+    d.innerHTML=`<label>${x.label||'Vastaus'}</label><input name="${x.name}" autocomplete="off"><div class="preview"></div>`;
+    f.appendChild(d); const inp=d.querySelector('input'),pr=d.querySelector('.preview');inp.addEventListener('input',()=>typesetPreview(inp,pr));
+  });
+  document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';
+ }
+ function vals(){return Object.fromEntries([...f.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+ document.querySelector('#check').onclick=()=>{const r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg|| (r.ok?'Oikein!':'Ei vielä.');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb]);if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([sol]);}}
+ document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+ render();
+}
+function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+<body><main class="wrap"><div class="top"><span></span><span class="badge" id="count"></span></div>
+<div class="card"><h1>T7 – Neliöjuuri</h1><p class="lead">Harjoittele täydellisiä neliöitä, desimaali- ja murtolukujuuria, negatiivista juurrettavaa sekä laskulausekkeita. Lukusuora-osiossa vertaillaan myös irrationaalisia juuria.</p>
+<div class="modebar"><button id="rootBtn" class="secondary active">Neliöjuuret</button><button id="lineBtn" class="secondary">Lukusuora</button></div>
+<div id="rootGame">
+<div id="introScreen"><div class="note"><h2>Neliöt ja neliöjuuret</h2>
+<div style="overflow-x:auto"><p>\(0^2=0\quad 1^2=1\quad 2^2=4\quad 3^2=9\quad 4^2=16\quad 5^2=25\quad 6^2=36\quad 7^2=49\quad 8^2=64\quad 9^2=81\quad 10^2=100\quad 11^2=121\quad 12^2=144\quad 13^2=169\quad 14^2=196\quad 15^2=225\)</p><p>\(\sqrt{0}=0\quad \sqrt{1}=1\quad \sqrt{4}=2\quad \sqrt{9}=3\quad \sqrt{16}=4\quad \sqrt{25}=5\quad \sqrt{36}=6\quad \sqrt{49}=7\quad \sqrt{64}=8\quad \sqrt{81}=9\quad \sqrt{100}=10\quad \sqrt{121}=11\quad \sqrt{144}=12\quad \sqrt{169}=13\quad \sqrt{196}=14\quad \sqrt{225}=15\)</p></div>
+<p>Neliöjuuri kysyy: <b>minkä ei-negatiivisen luvun neliö on juurrettava?</b></p>
+<p>\(7\xrightarrow{\text{neliöön}}49\qquad49\xrightarrow{\text{neliöjuuri}}7\)</p>
+<h2>Laskujärjestys</h2><p>\(3+2\sqrt{25}=3+2\cdot5=13\)</p><p>\(\sqrt{64}+2^3=8+8=16\)</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="question" class="task"></div><div id="math" class="math"></div>
+<div id="fields" class="inputs"></div><div id="feedback" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div>
+<div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
+</div>
+<div id="lineGame" style="display:none">
+<div id="linePrompt" class="task"></div><div id="lineMath" class="math"></div>
+<div class="tokens" id="tokens"></div>
+<p class="small">Valitse luvut järjestyksessä pienimmästä suurimpaan. Valinnat sijoittuvat lukusuoralle vasemmalta oikealle.</p>
+<div class="slots" id="slots"></div><div id="lineFb" class="feedback"></div>
+<div class="actions"><button id="undo" class="ghost">Peru viimeinen</button><button id="lineCheck" class="primary">Tarkista</button><button id="lineNext" class="secondary">Seuraava</button></div>
+</div>
+</div></main><script>
+function N(t,alts=[]){return v=>{let ok=numericEq(v.a,t)||anyMatch(v.a,alts);return {ok,msg:ok?'Oikein!':'Tarkista neliöjuuren arvo ja laskujärjestys.'}}}
+const roots=[
+{prompt:'Laske.',latex:'\\sqrt{0}',check:N(0)},{prompt:'Laske.',latex:'\\sqrt{25}',check:N(5)},{prompt:'Laske.',latex:'\\sqrt{81}',check:N(9)},
+{prompt:'Laske.',latex:'\\sqrt{144}',check:N(12)},{prompt:'Laske.',latex:'\\sqrt{225}',check:N(15)},
+{prompt:'Laske. Vihje: mieti, minkä desimaaliluvun neliö on 0,64.',latex:'\\sqrt{0{,}64}',check:N(.8)},{prompt:'Laske.',latex:'\\sqrt{1{,}21}',check:N(1.1)},
+{prompt:'Laske.',latex:'\\sqrt{\\frac{9}{16}}',check:N(.75,['3/4'])},
+{prompt:'Laske. Vihje: muuta sekaluku ensin murtoluvuksi.',latex:'\\sqrt{2\\frac14}',check:N(1.5,['3/2'])},
+{prompt:'Voiko tämän laskea reaalilukuna? Vastaa kyllä tai ei.',latex:'\\sqrt{-16}',check:v=>({ok:anyMatch(v.a,['ei']),msg:anyMatch(v.a,['ei'])?'Oikein! Negatiivisella luvulla ei ole reaalista neliöjuurta.':'Reaaliluvuissa negatiivisen luvun neliöjuurta ei ole.'})},
+{prompt:'Laske.',latex:'\\sqrt{64}+\\sqrt{36}',check:N(14)},
+{prompt:'Laske.',latex:'3+2\\sqrt{49}',check:N(17)},
+{prompt:'Laske laskujärjestyksen mukaan.',latex:'2\\sqrt{81}-3^2',check:N(9)},
+{prompt:'Laske laskujärjestyksen mukaan.',latex:'\\frac{\\sqrt{144}+\\sqrt{36}}{3}',check:N(6)},
+{prompt:'Laske.',latex:'\\sqrt{0{,}25}+\\sqrt{2{,}25}',check:N(2)}
+,
+{prompt:'Laske.',latex:'\sqrt{196}',check:N(14),solution:'\(\sqrt{196}=14\)'},
+{prompt:'Laske. Vihje: mieti sopivaa desimaalilukua.',latex:'\sqrt{0{,}09}',check:N(.3),solution:'\(0{,}3^2=0{,}09\), joten \(\sqrt{0{,}09}=0{,}3\)'},
+{prompt:'Laske.',latex:'5+3\sqrt{16}-2^3',check:N(9),solution:'\(5+3\cdot4-8=9\)'}
+];
+basicGame(roots);
+
+const lineSets=[
+ {items:[['-1','-1'],['0{,}5','0.5'],['\\sqrt2','1.41421356'],['2','2'],['\\sqrt9','3']]},
+ {items:[['-2','-2'],['-\\sqrt2','-1.41421356'],['0','0'],['\\sqrt3','1.7320508'],['1{,}8','1.8']]},
+ {items:[['0{,}6','0.6'],['\\sqrt{0{,}5}','0.7071068'],['0{,}8','0.8'],['\\sqrt{0{,}81}','0.9'],['1','1']]},
+ {items:[['\\sqrt5','2.2360679'],['2{,}3','2.3'],['\\sqrt6','2.4494897'],['2{,}5','2.5'],['\\sqrt7','2.6457513']]}
+];
+let li=0, chosen=[];
+function renderLine(){
+ chosen=[];document.querySelector('#lineFb').className='feedback';
+ const set=lineSets[li], toks=document.querySelector('#tokens'), slots=document.querySelector('#slots'); toks.innerHTML='';slots.innerHTML='';
+ document.querySelector('#linePrompt').textContent='Sijoita luvut lukusuoralle oikeaan järjestykseen.';
+ document.querySelector('#count').textContent=`${li+1} / ${lineSets.length}`;
+ set.items.slice().sort(()=>Math.random()-.5).forEach((it,idx)=>{
+   const b=document.createElement('button');b.className='token';b.dataset.latex=it[0];b.dataset.value=it[1];b.innerHTML='\\('+it[0]+'\\)';
+   b.onclick=()=>{if(b.classList.contains('used')||chosen.length>=5)return;chosen.push({latex:b.dataset.latex,value:+b.dataset.value,el:b});b.classList.add('used');paintSlots()};toks.appendChild(b);
+ });
+ for(let i=0;i<5;i++){const s=document.createElement('div');s.className='slot';slots.appendChild(s)}
+ if(window.MathJax?.typesetPromise)MathJax.typesetPromise([toks]);
+}
+function paintSlots(){
+ [...document.querySelectorAll('.slot')].forEach((s,i)=>{s.innerHTML=chosen[i]?'\\('+chosen[i].latex+'\\)':''});
+ if(window.MathJax?.typesetPromise)MathJax.typesetPromise([...document.querySelectorAll('.slot')]);
+}
+document.querySelector('#undo').onclick=()=>{const x=chosen.pop();if(x)x.el.classList.remove('used');paintSlots()};
+document.querySelector('#lineCheck').onclick=()=>{
+ const ok=chosen.length===5 && chosen.every((x,i,a)=>i===0||a[i-1].value<=x.value);
+ const fb=document.querySelector('#lineFb');fb.className='feedback '+(ok?'ok':'bad');fb.textContent=ok?'Oikein! Luvut kasvavat vasemmalta oikealle.':'Järjestys ei vielä ole oikea. Arvioi erityisesti irrationaalisten neliöjuurten suuruutta.';
+};
+document.querySelector('#lineNext').onclick=()=>{li=(li+1)%lineSets.length;renderLine()};
+document.querySelector('#rootBtn').onclick=()=>{document.querySelector('#rootGame').style.display='block';document.querySelector('#lineGame').style.display='none';document.querySelector('#rootBtn').classList.add('active');document.querySelector('#lineBtn').classList.remove('active')};
+document.querySelector('#lineBtn').onclick=()=>{document.querySelector('#rootGame').style.display='none';document.querySelector('#lineGame').style.display='block';document.querySelector('#lineBtn').classList.add('active');document.querySelector('#rootBtn').classList.remove('active');renderLine()};
+
+const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
+</script></body></html>

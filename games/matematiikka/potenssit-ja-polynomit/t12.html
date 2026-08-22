@@ -1,0 +1,57 @@
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T12 – Polynomit geometriassa</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:920px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:flex-end;color:var(--muted);margin-bottom:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{margin:0 0 7px;font-size:clamp(1.65rem,4vw,2.35rem)}.lead{color:var(--muted);line-height:1.5;margin:0 0 18px}
+.progress{height:9px;background:#e7ebef;border-radius:99px;overflow:hidden;margin:14px 0 22px}.progress div{height:100%;background:var(--accent)}
+.task{font-size:1.13rem;line-height:1.55}.math{font-size:1.38rem;margin:12px 0 16px;min-height:30px}
+.inputs{display:grid;gap:12px}.field label{display:block;font-weight:700;margin-bottom:6px}.field input{width:100%;font:inherit;padding:11px;border:1px solid #b9c3cc;border-radius:10px}
+.preview{min-height:42px;margin-top:6px;padding:8px 10px;background:#fafbfd;border:1px dashed #d5dde5;border-radius:9px;font-size:1.18rem}
+.preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.9rem}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#e9eef3}.feedback{display:none;margin-top:14px;padding:12px 14px;border-radius:10px}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.svgbox{max-width:680px;margin:12px auto 18px;background:#fbfcfd;border:1px solid #e0e5ea;border-radius:12px;padding:8px}.svgbox svg{display:block;width:100%;height:auto}
+.note{background:var(--soft);padding:12px 14px;border-radius:10px;margin-bottom:18px;line-height:1.5}.done{text-align:center;padding:24px}.done b{font-size:2rem}
+</style><script>
+window.MathJax={tex:{inlineMath:[['','']]},svg:{fontCache:'global'}};
+function norm(s){return String(s||'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
+function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
+function okAny(s,arr){let n=canon(s);return arr.some(a=>n===canon(a))}
+function latexify(s){s=String(s||'').trim();if(!s)return'';s=s.replace(/,/g,'{,}').replace(/\*/g,'\\cdot ');s=s.replace(/\^(-?\d+|[a-zA-Z])/g,'^{$1}');return s}
+function preview(inp,el){let x=latexify(inp.value);el.innerHTML=x?''+x+'':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([el])}
+function setMath(el,x){el.innerHTML=x?''+x+'':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([el])}
+function A(arr,hint='Sievennä lauseke huolellisesti.'){return v=>({ok:okAny(v.a,arr),msg:okAny(v.a,arr)?'Oikein!':hint})}
+function game(tasks){
+let i=0,score=0;const q=document.querySelector('#q'),m=document.querySelector('#m'),fs=document.querySelector('#fields'),fb=document.querySelector('#fb'),pr=document.querySelector('#prog'),ct=document.querySelector('#count'),pic=document.querySelector('#pic');
+function render(){let t=tasks[i];ct.textContent=`${i+1} / ${tasks.length}`;pr.style.width=`${100*i/tasks.length}%`;q.innerHTML=t.prompt||'';setMath(m,t.latex||'');m.style.display=t.latex?'block':'none';pic.innerHTML=t.svg||'';pic.style.display=t.svg?'block':'none';fs.innerHTML='';fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}
+(t.fields||[{name:'a',label:'Vastaus'}]).forEach(f=>{let d=document.createElement('div');d.className='field';d.innerHTML=`<label>${f.label}</label><input name="${f.name}" autocomplete="off"><div class="preview"></div>`;fs.appendChild(d);let inp=d.querySelector('input'),pv=d.querySelector('.preview');inp.addEventListener('input',()=>preview(inp,pv))});document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([pic])}
+function vals(){return Object.fromEntries([...fs.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+document.querySelector('#check').onclick=()=>{let r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg;if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';};if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb,sol].filter(Boolean))}
+document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{document.querySelector('.card').innerHTML=`<div class="done"><b>Valmis!</b><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+render()}
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head><body><main class="wrap"><div class="top" id="count"></div><section class="card"><h1>T12 – Polynomit geometriassa</h1><p class="lead"></p><div class='note'>Kuvissa vaikeus tulee matematiikasta: mitat on merkitty selkeästi, mutta loppupään tehtävissä alue täytyy itse jakaa osiin tai muodostaa erotuksena.</div><div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Polynomit geometriassa</h2>
+<p>Muodosta kuvasta ensin piirin, pinta-alan tai tilavuuden lauseke ja sievennä sitten.</p>
+<p>Suorakulmion pinta-ala \(A=ab\). Suorakulmaisen särmiön tilavuus \(V=abc\).</p>
+<p>Tummennettu alue voidaan usein laskea vähentämällä aukon pinta-ala suuresta pinta-alasta.</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="q" class="task"></div><div id="m" class="math"></div><div id="pic" class="svgbox" style="display:none"></div><div id="fields" class="inputs"></div><div id="fb" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div><div class="actions"><button id="check" class="primary">Tarkista</button><button id="next" class="secondary">Seuraava</button></div></div></section></main><script>
+function both(expr,ans){return v=>{let o=okAny(v.e,expr)&&okAny(v.a,ans);return {ok:o,msg:o?'Lauseke ja sievennetty vastaus ovat oikein!':'Tarkista sekä kuvasta muodostettu lauseke että sen sievennys.'}}}
+const F=[{name:'e',label:'Muodosta lauseke'},{name:'a',label:'Sievennetty vastaus'}];
+const rect=(top,right,bottom,left)=>`<svg viewBox="0 0 600 270" aria-label="suorakulmio"><rect x="150" y="55" width="300" height="150" fill="white" stroke="#26323c" stroke-width="3"/><text x="300" y="38" text-anchor="middle" font-size="22">${top}</text><text x="474" y="135" font-size="22">${right}</text><text x="300" y="238" text-anchor="middle" font-size="22">${bottom||top}</text><text x="90" y="135" font-size="22">${left||right}</text></svg>`;
+const lshape=`<svg viewBox="0 0 620 330"><path d="M110 55 H500 V145 H340 V275 H110 Z" fill="#eef3f8" stroke="#26323c" stroke-width="3"/><text x="300" y="38" text-anchor="middle" font-size="20">x + 8</text><text x="65" y="170" font-size="20">x + 5</text><text x="420" y="130" font-size="20">2</text><text x="355" y="225" font-size="20">3</text></svg>`;
+const frame=`<svg viewBox="0 0 620 330"><rect x="80" y="45" width="460" height="230" fill="#d7dde3" stroke="#26323c" stroke-width="3"/><rect x="205" y="105" width="210" height="110" fill="white" stroke="#26323c" stroke-width="3"/><text x="310" y="32" text-anchor="middle" font-size="20">x + 8</text><text x="550" y="165" font-size="20">x + 6</text><text x="310" y="98" text-anchor="middle" font-size="20">x + 2</text><text x="425" y="165" font-size="20">x</text></svg>`;
+const multi=`<svg viewBox="0 0 640 340"><path d="M80 60 H500 V130 H570 V285 H230 V230 H80 Z" fill="#d7dde3" stroke="#26323c" stroke-width="3"/><line x1="230" y1="60" x2="230" y2="230" stroke="#89939c" stroke-width="2" stroke-dasharray="6 5"/><line x1="500" y1="130" x2="230" y2="130" stroke="#89939c" stroke-width="2" stroke-dasharray="6 5"/><text x="285" y="42" text-anchor="middle" font-size="19">x + 5</text><text x="510" y="105" font-size="19">2</text><text x="578" y="215" font-size="19">x + 1</text><text x="390" y="312" font-size="19">x + 3</text></svg>`;
+const prism=`<svg viewBox="0 0 640 350"><path d="M150 110 L420 110 L520 55 L250 55 Z M420 110 L420 270 L520 215 L520 55 M150 110 L150 270 L420 270" fill="none" stroke="#26323c" stroke-width="3"/><text x="285" y="300" font-size="20">x + 2</text><text x="95" y="195" font-size="20">x</text><text x="455" y="285" font-size="20">3</text></svg>`;
+const cube=`<svg viewBox="0 0 620 350"><path d="M165 105 L395 105 L455 75 L225 75 Z M395 105 L395 285 L455 255 L455 75 M165 105 L165 285 L395 285" fill="none" stroke="#26323c" stroke-width="3"/><text x="280" y="315" text-anchor="middle" font-size="21">x + 2</text></svg>`;
+const tasks=[
+{prompt:'Suorakulmion sivut ovat x ja x+3. Muodosta piirin lauseke ja sievennä.',svg:rect('x','x + 3'),fields:F,check:both(['2*x+2*(x+3)','x+(x+3)+x+(x+3)','2x+2(x+3)'],['4x+6','6+4x'])},
+{prompt:'Suorakulmion sivut ovat x+2 ja x+5. Muodosta piirin lauseke ja sievennä.',svg:rect('x + 2','x + 5'),fields:F,check:both(['2*(x+2)+2*(x+5)','2(x+2)+2(x+5)'],['4x+14','14+4x'])},
+{prompt:'Muodosta suorakulmion pinta-alan lauseke ja sievennä.',svg:rect('x + 2','x + 4'),fields:F,check:both(['(x+2)(x+4)','(x+2)*(x+4)'],['x^2+6x+8'])},
+{prompt:'L-kuvio voidaan jakaa suorakulmioihin. Muodosta sen piirin lauseke ja sievennä. Kuvan sisämitat auttavat puuttuvien sivujen päättelyssä.',svg:lshape,fields:F,check:both(['2*(x+8)+2*(x+5)','2(x+8)+2(x+5)'],['4x+26','26+4x'])},
+{prompt:'Muodosta särmiön tilavuuden lauseke ja sievennä.',svg:prism,fields:F,check:both(['x*(x+2)*3','3x(x+2)','3*x*(x+2)'],['3x^2+6x'])},
+{prompt:'Kuution särmä on x+2. Muodosta tilavuuden lauseke ja sievennä.',svg:cube,fields:F,check:both(['(x+2)^3','(x+2)(x+2)(x+2)'],['x^3+6x^2+12x+8'])},
+{prompt:'Tummennettu alue saadaan vähentämällä sisempi suorakulmio ulommasta. Muodosta pinta-alan lauseke ja sievennä.',svg:frame,fields:F,check:both(['(x+8)(x+6)-(x+2)*x','(x+8)*(x+6)-(x+2)*x'],['12x+48','48+12x'])},
+{prompt:'Haaste: tummennettu alue muodostuu useasta suorakulmiosta. Jaa kuvio mielessäsi sopiviin osiin, muodosta pinta-alan lauseke ja sievennä.',svg:multi,fields:F,check:both(['(x+5)*2+(x+3)*(x+1)','2*(x+5)+(x+3)*(x+1)'],['x^2+6x+13'])}
+];game(tasks);
+
+const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
+</script></body></html>

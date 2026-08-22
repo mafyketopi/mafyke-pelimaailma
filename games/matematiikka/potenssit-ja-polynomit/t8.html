@@ -1,0 +1,56 @@
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>T8 – Monomien laskutoimitukset</title><style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:920px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:flex-end;color:var(--muted);margin-bottom:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+h1{margin:0 0 7px;font-size:clamp(1.65rem,4vw,2.35rem)}.lead{color:var(--muted);line-height:1.5;margin:0 0 18px}
+.progress{height:9px;background:#e7ebef;border-radius:99px;overflow:hidden;margin:14px 0 22px}.progress div{height:100%;background:var(--accent)}
+.task{font-size:1.13rem;line-height:1.55}.math{font-size:1.38rem;margin:12px 0 16px;min-height:30px}
+.inputs{display:grid;gap:12px}.field label{display:block;font-weight:700;margin-bottom:6px}.field input{width:100%;font:inherit;padding:11px;border:1px solid #b9c3cc;border-radius:10px}
+.preview{min-height:42px;margin-top:6px;padding:8px 10px;background:#fafbfd;border:1px dashed #d5dde5;border-radius:9px;font-size:1.18rem}
+.preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.9rem}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white}.secondary{background:#e9eef3}.feedback{display:none;margin-top:14px;padding:12px 14px;border-radius:10px}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
+.svgbox{max-width:680px;margin:12px auto 18px;background:#fbfcfd;border:1px solid #e0e5ea;border-radius:12px;padding:8px}.svgbox svg{display:block;width:100%;height:auto}
+.note{background:var(--soft);padding:12px 14px;border-radius:10px;margin-bottom:18px;line-height:1.5}.done{text-align:center;padding:24px}.done b{font-size:2rem}
+</style><script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+function norm(s){return String(s||'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
+function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
+function okAny(s,arr){let n=canon(s);return arr.some(a=>n===canon(a))}
+function latexify(s){s=String(s||'').trim();if(!s)return'';s=s.replace(/,/g,'{,}').replace(/\*/g,'\\cdot ');s=s.replace(/\^(-?\d+|[a-zA-Z])/g,'^{$1}');return s}
+function preview(inp,el){let x=latexify(inp.value);el.innerHTML=x?'\\('+x+'\\)':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([el])}
+function setMath(el,x){el.innerHTML=x?'\\('+x+'\\)':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([el])}
+function A(arr,hint='Sievennä lauseke huolellisesti.'){return v=>({ok:okAny(v.a,arr),msg:okAny(v.a,arr)?'Oikein!':hint})}
+function game(tasks){
+let i=0,score=0;const q=document.querySelector('#q'),m=document.querySelector('#m'),fs=document.querySelector('#fields'),fb=document.querySelector('#fb'),pr=document.querySelector('#prog'),ct=document.querySelector('#count'),pic=document.querySelector('#pic');
+function render(){let t=tasks[i];ct.textContent=`${i+1} / ${tasks.length}`;pr.style.width=`${100*i/tasks.length}%`;q.innerHTML=t.prompt||'';setMath(m,t.latex||'');m.style.display=t.latex?'block':'none';pic.innerHTML=t.svg||'';pic.style.display=t.svg?'block':'none';fs.innerHTML='';fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}
+(t.fields||[{name:'a',label:'Vastaus'}]).forEach(f=>{let d=document.createElement('div');d.className='field';d.innerHTML=`<label>${f.label}</label><input name="${f.name}" autocomplete="off"><div class="preview"></div>`;fs.appendChild(d);let inp=d.querySelector('input'),pv=d.querySelector('.preview');inp.addEventListener('input',()=>preview(inp,pv))});document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([pic])}
+function vals(){return Object.fromEntries([...fs.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+document.querySelector('#check').onclick=()=>{let r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg;if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'Katso oikea eteneminen opettajan mallista.')+'</div>';};if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb,sol].filter(Boolean))}
+document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{document.querySelector('.card').innerHTML=`<div class="done"><b>Valmis!</b><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+render()}
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head><body><main class="wrap"><div class="top" id="count"></div><section class="card"><h1>T8 – Monomien laskutoimitukset</h1><p class="lead">Runsaasti harjoittelua monomien summasta, erotuksesta, tulosta ja osamäärästä. Vaikeus kasvaa vähitellen.</p><div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Monomit</h2>
+<p>\(8x+6x=14x\)</p><p>\(3x\cdot4x=12x^2\)</p><p>\(\frac{18x^3}{6x}=3x^2\)</p>
+<p>Yhteen- ja vähennyslaskussa yhdistä samanmuotoiset termit. Tulossa kerro kertoimet ja muuttujat.</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="q" class="task"></div><div id="m" class="math"></div><div id="pic" class="svgbox" style="display:none"></div><div id="fields" class="inputs"></div><div id="fb" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div><div class="actions"><button id="check" class="primary">Tarkista</button><button id="next" class="secondary">Seuraava</button></div></div></section></main><script>
+const tasks=[
+{prompt:'Sievennä.',latex:'8x+6x',solution:"\\(8x+6x=14x\\)",check:A(['14x'])},
+{prompt:'Sievennä.',latex:'8x-6x',solution:"\\(8x-6x=2x\\)",check:A(['2x'])},
+{prompt:'Sievennä.',latex:'-3a+8a',solution:"\\(-3a+8a=5a\\)",check:A(['5a'])},
+{prompt:'Sievennä.',latex:'7x^2-11x^2',solution:"\\(7x^2-11x^2=-4x^2\\)",check:A(['-4x^2'])},
+{prompt:'Sievennä.',latex:'3x\\cdot4x',solution:"\\(3x\\cdot4x=12x^2\\)",check:A(['12x^2','12*x^2'])},
+{prompt:'Sievennä.',latex:'-5a\\cdot3a',solution:"\\(-5a\\cdot3a=-15a^2\\)",check:A(['-15a^2','-15*a^2'])},
+{prompt:'Sievennä.',latex:'2x^2\\cdot6x^3',solution:"\\(2x^2\\cdot6x^3=12x^5\\)",check:A(['12x^5','12*x^5'])},
+{prompt:'Sievennä.',latex:'-4a^3b\\cdot2ab^2',solution:"\\(-4a^3b\\cdot2ab^2=-8a^4b^3\\)",check:A(['-8a^4b^3','-8*a^4*b^3'])},
+{prompt:'Sievennä.',latex:'\\frac{12x}{3}',solution:"\\(\\frac{12x}{3}=4x\\)",check:A(['4x'])},
+{prompt:'Sievennä.',latex:'\\frac{18x^3}{6x}',solution:"\\(\\frac{18x^3}{6x}=3x^2\\)",check:A(['3x^2','3*x^2'])},
+{prompt:'Sievennä.',latex:'\\frac{-24a^5}{8a^2}',solution:"\\(\\frac{-24a^5}{8a^2}=-3a^3\\)",check:A(['-3a^3','-3*a^3'])},
+{prompt:'Sievennä.',latex:'\\frac{30x^4y^3}{5x^2y}',solution:"\\(\\frac{30x^4y^3}{5x^2y}=6x^2y^2\\)",check:A(['6x^2y^2','6*x^2*y^2'])},
+{prompt:'Sievennä.',latex:'9x^3+4x^3-6x^3',solution:"\\(9x^3+4x^3-6x^3=7x^3\\)",check:A(['7x^3'])},
+{prompt:'Sievennä.',latex:'-2a^2b+9a^2b-3a^2b',solution:"\\(-2a^2b+9a^2b-3a^2b=4a^2b\\)",check:A(['4a^2b','4*a^2*b'])},
+{prompt:'Sievennä.',latex:'\\frac{-42x^6y^2}{7x^2y}',solution:"\\(\\frac{-42x^6y^2}{7x^2y}=-6x^4y\\)",check:A(['-6x^4y','-6*x^4*y'])},
+{prompt:'Sievennä.',latex:'(-3x^2y)(-4xy^3)',solution:"\\((-3x^2y)(-4xy^3)=12x^3y^4\\)",check:A(['12x^3y^4','12*x^3*y^4'])}
+];game(tasks);
+
+const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
+</script></body></html>
