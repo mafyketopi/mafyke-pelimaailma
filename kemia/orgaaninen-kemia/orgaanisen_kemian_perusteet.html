@@ -27,6 +27,33 @@ const Q=[["Hiilivedyissä hiilen ja vedyn lisäksi",["on happea","on typpeä","e
 ["Mikä yhdisteistä on alkoholi?",["etaani","etanoli","etaanihappo"],1],
 ["Moniarvoisessa alkoholissa on",["vähintään kaksi hydroksyyliryhmää","aina yksi karboksyyliryhmä","vain hiiltä ja vetyä"],0],
 ["Karboksyylihappojen vesiliuos on yleensä",["emäksinen","hapan","neutraali"],1],
-["Etikkahapon eli etaanihapon rakenneosana on",["–COOH","–OH ilman karbonyyliä","C=C-kaksoissidos"],0]];
-mc.innerHTML=Q.map((q,i)=>`<div class=mcq><p>${i+1}) ${q[0]}</p>${q[1].map((a,j)=>`<label><input type=radio name=q${i} value=${j}> ${"abc"[j]}) ${a}</label>`).join("")}</div>`).join("");function checkQ(){let n=0;Q.forEach((q,i)=>{let x=document.querySelector(`input[name=q${i}]:checked`);if(x&&+x.value===q[2])n++});qf.textContent=`Oikein ${n} / ${Q.length}`;qf.className="fb "+(n===Q.length?"good":"bad")}
+["Etikkahapon eli etaanihapon tunnusomainen ryhmä on",["–COOH","–OH","C=C"],0]];
+mc.innerHTML=Q.map((q,i)=>`<div class=mcq><p>${i+1}) ${q[0]}</p>${q[1].map((a,j)=>`<label><input type=radio name=q${i} value=${j}> ${"abc"[j]}) ${a}</label>`).join("")}</div>`).join("");function checkQ(){
+ let n=0;
+ Q.forEach((q,i)=>{
+   const radios=[...document.querySelectorAll(`input[name=q${i}]`)];
+   radios.forEach(r=>{
+     const lab=r.closest("label");
+     if(lab){lab.style.background="";lab.style.borderRadius="6px";lab.style.padding="2px 4px";}
+   });
+   const chosen=radios.find(r=>r.checked);
+   const correct=radios.find(r=>+r.value===q[2]);
+   if(chosen && +chosen.value===q[2]){
+     n++;
+     const lab=chosen.closest("label");
+     if(lab) lab.style.background="#e8f5ec";
+   }else{
+     if(chosen){
+       const lab=chosen.closest("label");
+       if(lab) lab.style.background="#fdeceb";
+     }
+     if(correct){
+       const lab=correct.closest("label");
+       if(lab) lab.style.background="#e8f5ec";
+     }
+   }
+ });
+ qf.textContent=`Oikein ${n} / ${Q.length}. Väärä valinta näkyy punaisena ja oikea vastaus vihreänä.`;
+ qf.className="fb "+(n===Q.length?"good":"bad");
+}
 </script></body></html>
