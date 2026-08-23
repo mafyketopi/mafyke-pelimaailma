@@ -94,8 +94,8 @@ const tasks=[
 {prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(5\\cdot10^{-3})(4\\cdot10^6)',check:E2(['2*10^4','2·10^4'])},
 {prompt:'Laske.',latex:'\\frac{6\\cdot10^{-8}}{3\\cdot10^{-10}}',check:v=>({ok:numericEq(v.a,200)||anyMatch(v.a,['2*10^2']),msg:(numericEq(v.a,200)||anyMatch(v.a,['2*10^2']))?'Oikein!':'Jaa kertoimet ja vähennä eksponentit.'})}
 ,
-{prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'3{,}2\ \mathrm{km}',check:E2(['3.2*10^3','3,2*10^3']),solution:'\(3{,}2\ \mathrm{km}=3{,}2\cdot10^3\ \mathrm m\)'},
-{prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'4{,}5\ \mathrm{mm}',check:E2(['4.5*10^-3','4,5*10^-3']),solution:'\(4{,}5\ \mathrm{mm}=4{,}5\cdot10^{-3}\ \mathrm m\)'}
+{prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'3{,}2\\ \\mathrm{km}',check:E2(['3.2*10^3','3,2*10^3']),solution:'\\(3{,}2\\ \\mathrm{km}=3{,}2\\cdot10^3\\ \\mathrm{m}\\)'},
+{prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'4{,}5\\ \\mathrm{mm}',check:E2(['4.5*10^-3','4,5*10^-3']),solution:'\\(4{,}5\\ \\mathrm{mm}=4{,}5\\cdot10^{-3}\\ \\mathrm{m}\\)'}
 ];basicGame(tasks);
 
 const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
