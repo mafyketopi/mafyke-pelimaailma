@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Virta–jännite-kuvaajat</title>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#eef1f4;color:#17212b;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:22px 20px 32px}
+h1{margin:0 0 6px;font-size:clamp(2rem,4vw,2.8rem)}
+.lead{margin:0 0 16px;color:#5e6974}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.progress{font-weight:800;color:#40505e}
+.task{background:#fff;border:1px solid #cfd7df;border-radius:16px;padding:16px 18px;box-shadow:0 3px 12px rgba(0,0,0,.035)}
+.task h2{margin:0 0 4px;font-size:1.35rem}
+.tasklead{margin:0 0 12px;color:#5e6974}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:18px;align-items:start}
+table{width:100%;border-collapse:collapse;background:#fafbfc;font-size:1rem}
+th,td{border:1px solid #c7d0d8;padding:7px 8px;text-align:center}
+th{background:#e9eef2;font-weight:800}
+.graphbox{border:1px solid #c7d0d8;border-radius:12px;padding:8px;background:#fff}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+.tools,.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer;font-size:.98rem}
+.mode{background:#e7ecf1;color:#17212b}
+.mode.active{background:#235e98;color:#fff}
+.check{background:#235e98;color:#fff}
+.clear,.nav button{background:#e7ecf1;color:#17212b}
+.nav{justify-content:space-between;margin-top:14px}
+.answers{margin-top:12px;padding-top:10px;border-top:1px solid #d9e0e6}
+.resrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+input{width:105px;padding:9px;border:1px solid #aab5bf;border-radius:8px;font-size:1rem}
+.feedback{margin-top:10px;padding:11px;border-radius:9px;font-weight:650;display:none}
+.ok{display:block;background:#e8f6ec;color:#1d6b36}
+.bad{display:block;background:#fff0f0;color:#9d2b2b}
+.info{font-size:.93rem;color:#64717d;margin-top:8px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.wrap{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar">
+  <div>
+    <h1>Virta–jännite-kuvaajat</h1>
+    <p class="lead">Merkitse mittauspisteet ja piirrä niiden perusteella paras suora tai käyrä.</p>
+  </div>
+  <div class="progress" id="progress"></div>
+</div>
+
+<div id="taskHost"></div>
+
+<div class="nav">
+  <button id="prevBtn">← Edellinen</button>
+  <button id="nextBtn">Seuraava →</button>
+</div>
+</div>
+
+<script>
+const tasks=[
+{
+ title:"Tehtävä 1 – ohminen vastus",
+ type:"line",
+ // around R ≈ 10 ohm, intentionally not exact
+ data:[[0.10,1.1],[0.20,1.9],[0.30,3.1],[0.40,3.9],[0.50,5.1],[0.60,5.8],[0.70,7.1],[0.80,8.0],[0.90,8.9]],
+ xmax:1.0,ymax:10,
+ majorX:0.10,majorY:1,
+ trueSlope:10
+},
+{
+ title:"Tehtävä 2 – ohminen vastus",
+ type:"line",
+ // around R ≈ 20 ohm, slight measurement scatter
+ data:[[0.05,1.0],[0.10,2.1],[0.15,2.9],[0.20,4.1],[0.25,4.9],[0.30,6.1],[0.35,6.9],[0.40,8.1],[0.45,8.9],[0.50,10.1]],
+ xmax:0.55,ymax:11,
+ majorX:0.05,majorY:1,
+ trueSlope:20
+},
+{
+ title:"Tehtävä 3 – hehkulamppu",
+ type:"curve",
+ data:[[0.05,0.3],[0.10,0.7],[0.15,1.2],[0.20,1.8],[0.25,2.6],[0.30,3.5],[0.35,4.6],[0.40,5.8],[0.45,7.1],[0.50,8.6]],
+ xmax:0.55,ymax:10,
+ majorX:0.05,majorY:1
+}
+];
+
+let current=0;
+const state=tasks.map(()=>({mode:"points",points:[],curve:[],drawing:false,resistance:"",showTriangle:false,fittedSlope:null}));
+
+function parseVal(s){return Number(String(s).trim().replace(",","."))}
+function near(a,b,t){return Number.isFinite(a)&&Math.abs(a-b)<=t}
+
+function render(){
+ const t=tasks[current],st=state[current];
+ document.getElementById("progress").textContent=`Tehtävä ${current+1} / ${tasks.length}`;
+ const rows=t.data.map(([i,u])=>`<tr><td>${i.toFixed(2).replace(".",",")}</td><td>${u.toFixed(1).replace(".",",")}</td></tr>`).join("");
+ document.getElementById("taskHost").innerHTML=`
+ <section class="task">
+   <h2>${t.title}</h2>
+   <p class="tasklead">${t.type==="line"
+     ? "Merkitse kaikki mittauspisteet. Kun pisteet ovat paikoillaan, sovitesuora ilmestyy automaattisesti."
+     : "Merkitse mittauspisteet. Piirrä sitten pistejoukon muotoa seuraava tasainen käyrä."}</p>
+   <div class="layout">
+     <div>
+       <table><thead><tr><th>I (A)</th><th>U (V)</th></tr></thead><tbody>${rows}</tbody></table>
+       ${t.type==="line" ? `
+       <div class="answers">
+         <div class="resrow"><strong>Resistanssi:</strong><input id="resInput" inputmode="decimal" value="${st.resistance}"><span>Ω</span></div>
+         <div class="info">Määritä resistanssi sovitesuoran perusteella. Voit käyttää halutessasi apukolmiota.</div>
+       </div>` : `<div class="info">Huomaa: pisteet eivät muodosta suoraa.</div>`}
+     </div>
+     <div class="graphbox">
+       <canvas id="graph" width="820" height="570"></canvas>
+       <div class="tools">
+         <button class="mode ${st.mode==="points"?"active":""}" data-mode="points">Merkitse pisteitä</button>
+         ${t.type==="curve" ? `<button class="mode ${st.mode==="curve"?"active":""}" data-mode="curve">Piirrä käyrä</button>` : `<button class="mode" id="triangleBtn" type="button">${st.showTriangle?"Piilota apukolmio":"Näytä apukolmio"}</button>`}
+         <button class="clear" id="clearBtn">Tyhjennä piirros</button>
+         <button class="check" id="checkBtn">Tarkista</button>
+       </div>
+       <div id="feedback" class="feedback"></div>
+     </div>
+   </div>
+ </section>`;
+ setup();
+ document.getElementById("prevBtn").disabled=current===0;
+ document.getElementById("nextBtn").disabled=current===tasks.length-1;
+}
+
+function geom(c){return{L:88,R:c.width-36,T:34,B:c.height-74}}
+function toPix(c,t,I,U){
+ const g=geom(c);
+ return[g.L+(I/t.xmax)*(g.R-g.L),g.B-(U/t.ymax)*(g.B-g.T)];
+}
+function fromPix(c,t,x,y){
+ const g=geom(c);
+ return[((x-g.L)/(g.R-g.L))*t.xmax,((g.B-y)/(g.B-g.T))*t.ymax];
+}
+function fmtAxis(v,digits=2){
+ let s=Number(v.toFixed(digits)).toString();
+ return s.replace(".",",");
+}
+
+
+function leastSquaresThroughOrigin(data){
+ let sxy=0,sxx=0;
+ data.forEach(([x,y])=>{sxy+=x*y;sxx+=x*x});
+ return sxx ? sxy/sxx : 0;
+}
+
+function helperPoint(t,slope){
+ // Choose a major-grid x-value that puts y as close as possible to a major-grid value,
+ // while keeping the triangle comfortably large and inside the graph.
+ let best=null;
+ const maxK=Math.floor(t.xmax/t.majorX+1e-9);
+ for(let k=2;k<=maxK;k++){
+   const I=k*t.majorX, U=slope*I;
+   if(U<=0 || U>t.ymax*0.92) continue;
+   const nearestY=Math.round(U/t.majorY)*t.majorY;
+   const err=Math.abs(U-nearestY)/t.majorY;
+   const sizeScore=I/t.xmax;
+   const score=err - 0.12*sizeScore;
+   if(!best || score<best.score) best={I,U,score};
+ }
+ if(!best){
+   const I=Math.min(t.xmax*0.7,(t.ymax*0.7)/slope);
+   best={I,U:slope*I};
+ }
+ return best;
+}
+
+function updateAutoFit(t,st,c){
+ if(t.type!=="line") return;
+ let matched=0;
+ t.data.forEach(([I,U])=>{
+   const q=toPix(c,t,I,U);
+   if(st.points.some(p=>Math.hypot(p.x-q[0],p.y-q[1])<=15)) matched++;
+ });
+ st.fittedSlope = matched===t.data.length ? leastSquaresThroughOrigin(t.data) : null;
+}
+
+function drawGraph(c,t,st){
+ const ctx=c.getContext("2d"),g=geom(c);
+ ctx.clearRect(0,0,c.width,c.height);
+
+ // graph-paper background
+ ctx.fillStyle="#fff";ctx.fillRect(g.L,g.T,g.R-g.L,g.B-g.T);
+
+ const majorCols=Math.round(t.xmax/t.majorX);
+ const majorRows=Math.round(t.ymax/t.majorY);
+ const minorPerMajor=5;
+
+ // minor grid (millimetre-paper feel)
+ ctx.strokeStyle="#dce3e9";ctx.lineWidth=0.8;
+ for(let k=0;k<=majorCols*minorPerMajor;k++){
+   const x=g.L+k*(g.R-g.L)/(majorCols*minorPerMajor);
+   ctx.beginPath();ctx.moveTo(x,g.T);ctx.lineTo(x,g.B);ctx.stroke();
+ }
+ for(let k=0;k<=majorRows*minorPerMajor;k++){
+   const y=g.T+k*(g.B-g.T)/(majorRows*minorPerMajor);
+   ctx.beginPath();ctx.moveTo(g.L,y);ctx.lineTo(g.R,y);ctx.stroke();
+ }
+
+ // major grid
+ ctx.strokeStyle="#9eabb6";ctx.lineWidth=1.35;
+ for(let k=0;k<=majorCols;k++){
+   const x=g.L+k*(g.R-g.L)/majorCols;
+   ctx.beginPath();ctx.moveTo(x,g.T);ctx.lineTo(x,g.B);ctx.stroke();
+ }
+ for(let k=0;k<=majorRows;k++){
+   const y=g.B-k*(g.B-g.T)/majorRows;
+   ctx.beginPath();ctx.moveTo(g.L,y);ctx.lineTo(g.R,y);ctx.stroke();
+ }
+
+ // axes
+ ctx.strokeStyle="#17212b";ctx.lineWidth=2.4;
+ ctx.beginPath();ctx.moveTo(g.L,g.T);ctx.lineTo(g.L,g.B);ctx.lineTo(g.R,g.B);ctx.stroke();
+
+ // scale labels
+ ctx.fillStyle="#17212b";ctx.font="bold 16px system-ui";
+ ctx.textAlign="center";ctx.textBaseline="top";
+ for(let k=0;k<=majorCols;k++){
+   const x=g.L+k*(g.R-g.L)/majorCols;
+   const val=k*t.majorX;
+   ctx.fillText(fmtAxis(val,2),x,g.B+9);
+ }
+ ctx.textAlign="right";ctx.textBaseline="middle";
+ for(let k=0;k<=majorRows;k++){
+   const y=g.B-k*(g.B-g.T)/majorRows;
+   ctx.fillText(fmtAxis(k*t.majorY,1),g.L-12,y);
+ }
+
+ // axis titles
+ ctx.font="bold 19px system-ui";ctx.textAlign="center";ctx.textBaseline="alphabetic";
+ ctx.fillText("I (A)",(g.L+g.R)/2,c.height-13);
+ ctx.save();ctx.translate(24,(g.T+g.B)/2);ctx.rotate(-Math.PI/2);ctx.fillText("U (V)",0,0);ctx.restore();
+
+ // student points
+ ctx.fillStyle="#245f9b";
+ st.points.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,5.5,0,Math.PI*2);ctx.fill()});
+
+ // automatic least-squares fit through the origin for ohmic tasks
+ if(t.type==="line" && st.fittedSlope!==null){
+   const slope=st.fittedSlope;
+   const xEnd=Math.min(t.xmax,t.ymax/slope);
+   const p0=toPix(c,t,0,0);
+   const p1=toPix(c,t,xEnd,slope*xEnd);
+
+   ctx.strokeStyle="#b3261e";
+   ctx.lineWidth=4;
+   ctx.lineCap="round";
+   ctx.beginPath();
+   ctx.moveTo(p0[0],p0[1]);
+   ctx.lineTo(p1[0],p1[1]);
+   ctx.stroke();
+
+   if(st.showTriangle){
+     const hp=helperPoint(t,slope);
+     const po=toPix(c,t,0,0);
+     const px=toPix(c,t,hp.I,0);
+     const py=toPix(c,t,hp.I,hp.U);
+
+     ctx.strokeStyle="#2f6f3e";
+     ctx.lineWidth=3;
+     ctx.setLineDash([8,5]);
+
+     ctx.beginPath();
+     ctx.moveTo(po[0],po[1]);
+     ctx.lineTo(px[0],px[1]);
+     ctx.lineTo(py[0],py[1]);
+     ctx.stroke();
+     ctx.setLineDash([]);
+
+     ctx.fillStyle="#183b24";
+     ctx.font="bold 16px system-ui";
+     ctx.textAlign="center";
+     ctx.fillText(`ΔI = ${fmtAxis(hp.I,2)} A`,(po[0]+px[0])/2,po[1]-10);
+
+     ctx.save();
+     ctx.translate(px[0]+22,(px[1]+py[1])/2);
+     ctx.rotate(-Math.PI/2);
+     ctx.fillText(`ΔU = ${fmtAxis(hp.U,1)} V`,0,0);
+     ctx.restore();
+
+     ctx.fillStyle="#2f6f3e";
+     ctx.beginPath();
+     ctx.arc(py[0],py[1],5.5,0,Math.PI*2);
+     ctx.fill();
+   }
+ }
+
+ // smoothed student curve
+ if(st.curve.length>1){
+   ctx.strokeStyle="#b3261e";ctx.lineWidth=5;ctx.lineCap="round";ctx.lineJoin="round";
+   ctx.beginPath();ctx.moveTo(st.curve[0].x,st.curve[0].y);
+   if(st.curve.length===2)ctx.lineTo(st.curve[1].x,st.curve[1].y);
+   else{
+     for(let i=1;i<st.curve.length-1;i++){
+       const p=st.curve[i],n=st.curve[i+1];
+       ctx.quadraticCurveTo(p.x,p.y,(p.x+n.x)/2,(p.y+n.y)/2);
+     }
+     const q=st.curve[st.curve.length-1];ctx.lineTo(q.x,q.y);
+   }
+   ctx.stroke();
+ }
+}
+
+function setup(){
+ const t=tasks[current],st=state[current],c=document.getElementById("graph");
+ drawGraph(c,t,st);
+
+ function pos(e){
+   const r=c.getBoundingClientRect();
+   return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};
+ }
+ c.onpointerdown=e=>{
+   const p=pos(e),g=geom(c);
+   if(p.x<g.L||p.x>g.R||p.y<g.T||p.y>g.B)return;
+   if(st.mode==="points"){
+     st.points.push(p);
+     updateAutoFit(t,st,c);
+   }else if(st.mode==="curve"){
+     st.drawing=true;st.curve=[p];c.setPointerCapture(e.pointerId);
+   }
+   drawGraph(c,t,st);
+ };
+ c.onpointermove=e=>{
+   if(st.mode!=="curve"||!st.drawing)return;
+   const raw=pos(e),last=st.curve[st.curve.length-1];
+   const alpha=.26;
+   const p={x:last.x+alpha*(raw.x-last.x),y:last.y+alpha*(raw.y-last.y)};
+   if(Math.hypot(p.x-last.x,p.y-last.y)>3.5){st.curve.push(p);drawGraph(c,t,st)}
+ };
+ c.onpointerup=()=>st.drawing=false;
+
+ document.querySelectorAll(".mode[data-mode]").forEach(b=>b.onclick=()=>{
+   document.querySelectorAll(".mode[data-mode]").forEach(x=>x.classList.remove("active"));
+   b.classList.add("active");st.mode=b.dataset.mode;
+ });
+ if(t.type==="line"){
+   const tb=document.getElementById("triangleBtn");
+   tb.onclick=()=>{
+     if(st.fittedSlope===null){
+       const f=document.getElementById("feedback");
+       f.className="feedback bad";
+       f.textContent="Merkitse ensin kaikki mittauspisteet. Sovitesuora ja apukolmio tulevat näkyviin sen jälkeen.";
+       return;
+     }
+     st.showTriangle=!st.showTriangle;
+     tb.textContent=st.showTriangle?"Piilota apukolmio":"Näytä apukolmio";
+     drawGraph(c,t,st);
+   };
+ }
+
+ document.getElementById("clearBtn").onclick=()=>{
+   st.points=[];st.curve=[];st.fittedSlope=null;st.showTriangle=false;drawGraph(c,t,st);
+   const f=document.getElementById("feedback");f.className="feedback";f.style.display="none";
+ };
+
+ if(t.type==="line"){
+   document.getElementById("resInput").oninput=e=>st.resistance=e.target.value;
+ }
+ document.getElementById("checkBtn").onclick=()=>checkTask();
+}
+
+function pointMatches(c,t,st){
+ let matched=0;
+ t.data.forEach(([I,U])=>{
+   const q=toPix(c,t,I,U);
+   if(st.points.some(p=>Math.hypot(p.x-q[0],p.y-q[1])<=15))matched++;
+ });
+ return matched;
+}
+
+function checkTask(){
+ const t=tasks[current],st=state[current],c=document.getElementById("graph");
+ const f=document.getElementById("feedback");
+ const matched=pointMatches(c,t,st);
+ const pointOK=matched>=Math.ceil(t.data.length*.8);
+
+ if(t.type==="line"){
+   updateAutoFit(t,st,c);
+   const allPointsOK=matched===t.data.length;
+   const fitted=st.fittedSlope;
+   const rv=parseVal(st.resistance);
+   const rOK=fitted!==null && near(rv,fitted,Math.max(.25,fitted*.05));
+
+   if(allPointsOK&&rOK){
+     f.className="feedback ok";
+     f.textContent="Oikein. Kaikki mittauspisteet ovat paikoillaan ja resistanssi vastaa sovitesuoran kulmakerrointa.";
+   }else{
+     let msg=[];
+     if(!allPointsOK)msg.push(`Mittaustuloksista ${matched}/${t.data.length} on riittävän lähellä oikeaa kohtaa.`);
+     if(allPointsOK&&!rOK)msg.push("Sovitesuora on näkyvissä. Määritä resistanssi sen kulmakertoimesta; apukolmion saa näkyviin painikkeesta.");
+     f.className="feedback bad";
+     f.textContent=msg.join(" ");
+   }
+ }else{
+   let hits=0;
+   if(st.curve.length>5){
+     t.data.forEach(([I,U])=>{
+       const q=toPix(c,t,I,U);
+       let d=Infinity;
+       st.curve.forEach(p=>d=Math.min(d,Math.hypot(p.x-q[0],p.y-q[1])));
+       if(d<=27)hits++;
+     });
+   }
+   const curveOK=hits>=7;
+   if(pointOK&&curveOK){
+     f.className="feedback ok";f.textContent="Oikein. Pisteet muodostavat selvästi kaartuvan virta–jännite-kuvaajan.";
+   }else{
+     let msg=[];
+     if(!pointOK)msg.push(`Mittaustuloksista ${matched}/${t.data.length} on riittävän lähellä oikeaa kohtaa.`);
+     if(!curveOK)msg.push("Piirrä tasainen käyrä, joka seuraa pistejoukon muotoa.");
+     f.className="feedback bad";f.textContent=msg.join(" ");
+   }
+ }
+}
+
+document.getElementById("prevBtn").onclick=()=>{if(current>0){current--;render()}};
+document.getElementById("nextBtn").onclick=()=>{if(current<tasks.length-1){current++;render()}};
+render();
+</script>
+</body>
+</html>
