@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desimaalilukujen laskuharjoittelu – 7. lk</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#172033;--muted:#607083;--line:#d9e0e7;--blue:#2457a7;--good:#16794b;--bad:#b02a37}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:20px 5% 14px} h1{margin:0;font-size:clamp(1.7rem,4vw,2.5rem)}
+header p{margin:5px 0 0;color:var(--muted)} main{max-width:1000px;margin:auto;padding:20px 5% 35px}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.tab{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px;box-shadow:0 7px 22px rgba(0,0,0,.04)}
+h2{margin:0 0 8px}.intro{color:var(--muted);margin:0 0 14px}.examples{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0 17px}
+.example{background:#f7f9fb;border:1px solid #e0e6ec;border-radius:11px;padding:12px;line-height:1.45}.example b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.item{border:1px solid var(--line);border-radius:11px;padding:11px 12px;min-height:66px}
+.item.good{background:#f6fcf8;border-color:#9dd4b7}.item.bad{background:#fff8f9;border-color:#e2a5ab}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.calc{font-size:1.08rem;font-weight:750;white-space:nowrap}.letter{color:var(--muted);font-weight:800;width:22px}
+input{width:115px;max-width:42vw;padding:8px 9px;border:1px solid #bfc9d3;border-radius:8px;font:inherit;font-size:1rem}
+.step{margin-top:7px;padding-top:7px;border-top:1px dashed #d8dee5}.step label{font-size:.83rem;color:var(--muted);margin-right:6px}.step input{width:155px}
+.mark{font-weight:900}.correct{font-size:.8rem;color:var(--bad);min-height:16px;margin-top:3px}.actions{display:flex;justify-content:center;gap:9px;margin-top:15px;flex-wrap:wrap}
+button.action{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-weight:750;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f6;color:var(--ink);border:1px solid var(--line)!important}
+.score{text-align:center;font-weight:800;margin-top:10px}.note{font-size:.88rem;color:var(--muted);margin-top:12px}.hidden{display:none}
+.numberline{position:relative;height:64px;margin:8px 4px 0;user-select:none;touch-action:none}
+.axis{position:absolute;left:18px;right:18px;top:25px;height:3px;background:#344255;border-radius:3px}
+.tick{position:absolute;top:18px;width:2px;height:17px;background:#344255;transform:translateX(-1px)}
+.tick.minor{top:21px;height:11px;background:#778391}
+.ticklabel{position:absolute;top:38px;transform:translateX(-50%);font-size:.78rem;color:#526071;white-space:nowrap}
+.targetdot{position:absolute;top:17px;width:18px;height:18px;border-radius:50%;background:var(--blue);transform:translateX(-9px);cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.22)}
+.targetdot:active{cursor:grabbing}.lineprompt{font-weight:750;margin-bottom:2px}.linehint{font-size:.8rem;color:var(--muted)}
+.linevalue{font-size:.8rem;color:var(--blue);font-weight:800;margin-top:2px;min-height:18px}
+@media(max-width:700px){.grid,.examples{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Desimaalilukujen laskuharjoittelu</h1><p>7. luokka · ilman laskinta</p></header>
+<main>
+<div class="tabs">
+<button class="tab active" data-page="add">Yhteen- ja vähennyslasku</button>
+<button class="tab" data-page="ten">10, 100 ja 1000</button>
+<button class="tab" data-page="mul">Kertolasku</button>
+<button class="tab" data-page="div">Jakolasku</button>
+<button class="tab" data-page="line">Lukusuora</button>
+</div>
+<section class="card">
+<h2 id="title"></h2><p class="intro" id="intro"></p><div class="examples" id="examples"></div>
+<div class="grid" id="grid"></div>
+<div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Arvo uudet</button></div>
+<div class="score" id="score"></div><div class="note">Kirjoita desimaaliluvut desimaalipilkulla.</div>
+</section>
+</main>
+<script>
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, P=a=>a[R(0,a.length-1)];
+const F=n=>String(Math.round((n+Number.EPSILON)*1000000)/1000000).replace('.',',');
+const parse=s=>Number(String(s).trim().replace(/\s/g,'').replace(',','.'));
+const eq=(s,n)=>Number.isFinite(parse(s))&&Math.abs(parse(s)-n)<1e-8;
+let page='add', tasks=[];
+
+const info={
+add:{title:'Yhteen- ja vähennyslasku',intro:'Laske päässä. Hyödynnä kokonaisia ja helppoja osia.',examples:[]},
+ten:{title:'Kertominen ja jakaminen 10:n kerrannaisilla',intro:'Tarkkaile, miten lukuyksiköt muuttuvat.',examples:[
+'<b>3,47 · 100 = 347</b><br>3 ykkösestä tulee 3 sataa, 4 kymmenesosasta 4 kymmentä ja 7 sadasosasta 7 ykköstä.',
+'<b>52,6 : 10 = 5,26</b><br>5 kymmenestä tulee 5 ykköstä, 2 ykkösestä 2 kymmenesosaa ja 6 kymmenesosasta 6 sadasosaa.'
+]},
+mul:{title:'Desimaalilukujen kertolasku',intro:'Laske ensin kuin luvuissa ei olisi desimaalipilkkuja. Päättele sitten tulon desimaalien määrä.',examples:[
+'<b>1,2 · 0,4</b><br>12 · 4 = 48. Tekijöissä on yhteensä kaksi desimaalia → <b>0,48</b>.',
+'<b>0,25 · 2</b><br>25 · 2 = 50. Tekijöissä on yhteensä kaksi desimaalia → <b>0,50 = 0,5</b>.'
+]},
+line:{title:'Desimaaliluku lukusuoralla',intro:'Siirrä sininen piste annetun luvun kohdalle. Päättele ensin, mitä yksi pieni väli tarkoittaa.',examples:[
+'<b>Esimerkki:</b> Jos 0:n ja 1:n väli on jaettu kymmeneen yhtä suureen osaan, yksi pieni väli on 0,1. Luku 0,7 on seitsemän pientä väliä nollasta.',
+'<b>Tarkkuus:</b> Pisteen ei tarvitse osua aivan pikselintarkasti. Se lukittuu lähimpään lukusuoran jakoviivaan.'
+]},
+div:{title:'Desimaalilukujen jakolasku',intro:'Kun jakaja on desimaaliluku, muuta jako ensin vastaavaksi jaoksi, jossa jakaja on kokonaisluku.',examples:[
+'<b>8,4 : 4 = 2,1</b><br>8 ykköstä : 4 = 2 ykköstä ja 4 kymmenesosaa : 4 = 1 kymmenesosa.',
+'<b>4,8 : 0,6 = 48 : 6 = 8</b><br>Kerro sekä jaettava että jakaja 10:llä. Osamäärä ei muutu.'
+]}};
+
+function addTasks(){
+ const levels=[
+   [[2.8,'+',1.4],[3.6,'+',2.7],[5.2,'-',1.8]],
+   [[4.7,'+',2.6],[6.3,'-',2.7],[3.8,'+',4.5]],
+   [[7.5,'-',3.8],[5.6,'+',2.75],[8.4,'-',3.65]],
+   [[6.75,'+',4.6],[12.3,'-',4.75],[8.35,'+',2.9]],
+   [[14.25,'+',5.8],[15.2,'-',6.85],[10.1,'-',4.65]]
+ ];
+ const chosen=[
+   P(levels[0]),P(levels[0]),
+   P(levels[1]),P(levels[1]),
+   P(levels[2]),P(levels[2]),
+   P(levels[3]),P(levels[4])
+ ];
+ return chosen.map(x=>({text:`${F(x[0])} ${x[1]} ${F(x[2])} =`,ans:x[1]=='+'?x[0]+x[2]:x[0]-x[2]}));
+}
+function tenTasks(){
+ const mult=[10,100,1000], out=[];
+ for(let i=0;i<8;i++){
+   let op=i<4?'·':':', k=P(mult), n;
+   if(op==='·') n=P([0.037,0.48,1.25,2.06,3.47,5.08,12.4,26.05,0.604]);
+   else {
+     let q=P([0.037,0.48,1.25,2.06,3.47,5.08,12.4,26.05]);
+     n=q*k;
+   }
+   out.push({text:`${F(n)} ${op} ${k} =`,ans:op==='·'?n*k:n/k});
+ }
+ return shuffle(out);
+}
+function mulTasks(){
+ const bank=[
+ [1.2,.4],[.6,.7],[2.5,1.4],[.8,1.5],[.3,2.4],[1.25,.4],[.25,1.6],[.12,5],
+ [.45,2],[2.5,.6],[.04,7],[1.5,1.2],[.75,.8],[.32,2],[.05,1.4],[2.4,.5]
+ ];
+ return shuffle(bank).slice(0,8).map(x=>({text:`${F(x[0])} · ${F(x[1])} =`,ans:x[0]*x[1]}));
+}
+function divTasks(){
+ const whole=[
+ [8.4,4],[7.2,3],[9.6,4],[6.3,3],[4.8,2],[12.5,5],[3.6,4],[8.4,7]
+ ];
+ const dec=[
+ [4.8,.6],[3.6,1.2],[2.4,.8],[6.3,.7],[1.5,.5],[2.1,.3],[.84,.2],[1.2,.4],
+ [4.2,1.4],[2.5,.5],[.72,.08],[3.2,.4]
+ ];
+ let a=shuffle(whole).slice(0,3).map(x=>({text:`${F(x[0])} : ${F(x[1])} =`,ans:x[0]/x[1]}));
+ let b=shuffle(dec).slice(0,5).map(x=>{
+   let factor=Number.isInteger(x[1]*10)?10:100;
+   return {text:`${F(x[0])} : ${F(x[1])} =`,ans:x[0]/x[1],step:true,stepAns:`${F(x[0]*factor)}:${F(x[1]*factor)}`};
+ });
+ return shuffle(a.concat(b));
+}
+
+function lineTasks(){
+ const bank=[
+  {min:0,max:1,step:.1,target:.7,labels:[0,1]},
+  {min:0,max:2,step:.2,target:1.4,labels:[0,1,2]},
+  {min:0,max:3,step:.25,target:1.75,labels:[0,1,2,3]},
+  {min:0,max:4,step:.2,target:2.6,labels:[0,1,2,3,4]},
+  {min:0,max:1,step:.05,target:.65,labels:[0,.5,1]},
+  {min:0,max:1.5,step:.05,target:1.35,labels:[0,.5,1,1.5]},
+  {min:0,max:.5,step:.05,target:.35,labels:[0,.25,.5]},
+  {min:0,max:4,step:.2,target:3.4,labels:[0,1,2,3,4]},
+  {min:0,max:1,step:.02,target:.86,labels:[0,.5,1]},
+  {min:0,max:2,step:.05,target:1.85,labels:[0,.5,1,1.5,2]},
+  {min:0,max:.2,step:.02,target:.14,labels:[0,.1,.2]},
+  {min:0,max:5,step:.05,target:4.75,labels:[0,1,2,3,4,5]}
+ ];
+ return bank.map(t=>({...t,pos:t.min}));
+}
+function makeLine(t,i){
+ const count=Math.round((t.max-t.min)/t.step), parts=[];
+ for(let k=0;k<=count;k++){
+   const v=t.min+k*t.step, left=18+(100-36/10)*(k/count); // unused fallback
+   const pct=k/count*100;
+   const major=t.labels.some(x=>Math.abs(x-v)<1e-8);
+   parts.push(`<span class="tick ${major?'':'minor'}" style="left:calc(18px + (100% - 36px)*${pct/100})"></span>`);
+ }
+ t.labels.forEach(v=>{
+   const pct=(v-t.min)/(t.max-t.min)*100;
+   parts.push(`<span class="ticklabel" style="left:calc(18px + (100% - 36px)*${pct/100})">${F(v)}</span>`);
+ });
+ const pct=(t.pos-t.min)/(t.max-t.min)*100;
+ return `<div class="item" id="it${i}"><div class="lineprompt">${String.fromCharCode(97+i)}) Sijoita luku <b>${F(t.target)}</b> lukusuoralle.</div>
+ <div class="numberline" id="nl${i}"><div class="axis"></div>${parts.join('')}<div class="targetdot" id="dot${i}" style="left:calc(18px + (100% - 36px)*${pct/100})"></div></div>
+ <div class="linevalue" id="lv${i}">Piste: ${F(t.pos)}</div><div class="correct" id="c${i}"></div></div>`;
+}
+function bindLines(){
+ tasks.forEach((t,i)=>{
+  const nl=document.getElementById('nl'+i),dot=document.getElementById('dot'+i),lv=document.getElementById('lv'+i);
+  const move=e=>{
+   const r=nl.getBoundingClientRect(), x=Math.max(18,Math.min(r.width-18,e.clientX-r.left));
+   const raw=t.min+(x-18)/(r.width-36)*(t.max-t.min);
+   let k=Math.round((raw-t.min)/t.step);
+   t.pos=+(t.min+k*t.step).toFixed(8);
+   const pct=(t.pos-t.min)/(t.max-t.min)*100;
+   dot.style.left=`calc(18px + (100% - 36px)*${pct/100})`; lv.textContent='Piste: '+F(t.pos);
+  };
+  dot.onpointerdown=e=>{dot.setPointerCapture(e.pointerId);move(e)};
+  dot.onpointermove=e=>{if(dot.hasPointerCapture(e.pointerId))move(e)};
+  nl.onclick=e=>{if(e.target!==dot)move(e)};
+ });
+}
+
+function shuffle(a){a=[...a];for(let i=a.length-1;i;i--){let j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a}
+function generate(){tasks=page==='add'?addTasks():page==='ten'?tenTasks():page==='mul'?mulTasks():page==='div'?divTasks():lineTasks();render()}
+function normStep(s){return String(s).replace(/\s/g,'').replace(/÷/g,':').replace(/,/g,'.')}
+function render(){
+ let I=info[page]; document.getElementById('title').textContent=I.title;document.getElementById('intro').textContent=I.intro;
+ let ex=document.getElementById('examples');ex.innerHTML=I.examples.map(x=>`<div class="example">${x}</div>`).join('');ex.classList.toggle('hidden',!I.examples.length);
+ if(page==='line'){
+   document.getElementById('grid').innerHTML=tasks.map((t,i)=>makeLine(t,i)).join('');
+   bindLines();
+ } else {
+   document.getElementById('grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}">
+   <div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span class="calc">${t.text}</span><input id="a${i}" inputmode="decimal"><span class="mark" id="m${i}"></span></div>
+   ${t.step?`<div class="step"><label>Lavennettu jako:</label><input id="s${i}" placeholder="esim. 48 : 6"></div>`:''}
+   <div class="correct" id="c${i}"></div></div>`).join('');
+ }
+ document.getElementById('score').textContent='';
+}
+function check(){
+ let points=0,total=tasks.length;
+ if(page==='line'){
+  tasks.forEach((t,i)=>{
+   const ok=Math.abs(t.pos-t.target)<1e-8, el=document.getElementById('it'+i),c=document.getElementById('c'+i);
+   el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');
+   if(ok){points++;c.textContent='✓ Oikein'}else c.textContent='Oikea kohta: '+F(t.target);
+  });
+  document.getElementById('score').textContent=`Tulos: ${points} / ${total}`; return;
+ }
+ tasks.forEach((t,i)=>{
+  let ok=eq(document.getElementById('a'+i).value,t.ans), stepok=true;
+  if(t.step){stepok=normStep(document.getElementById('s'+i).value)===normStep(t.stepAns)}
+  let all=ok&&stepok, el=document.getElementById('it'+i), c=document.getElementById('c'+i);
+  el.classList.remove('good','bad');el.classList.add(all?'good':'bad');document.getElementById('m'+i).textContent=all?'✓':'✗';
+  if(all){points++;c.textContent=''} else {
+    let msg='Oikea vastaus: '+F(t.ans);
+    if(t.step&&!stepok) msg='Lavennettu jako: '+t.stepAns.replace(':',' : ')+' · '+msg;
+    c.textContent=msg;
+  }
+ });
+ document.getElementById('score').textContent=`Tulos: ${points} / ${total}`;
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;generate()});
+document.getElementById('check').onclick=check;document.getElementById('new').onclick=generate;generate();
+</script>
+</body></html>
