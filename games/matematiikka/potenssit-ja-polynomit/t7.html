@@ -17,9 +17,7 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 .feedback{margin-top:14px;padding:12px 14px;border-radius:10px;display:none;line-height:1.45}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
 .modebar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 18px}.modebar button.active{background:var(--accent);color:white}.done{text-align:center;padding:22px 0}.done .big{font-size:2rem;font-weight:800}
 .small{font-size:.92rem;color:var(--muted)}
-.numberline{position:relative;height:120px;margin:30px 14px 12px}.axis{position:absolute;left:2%;right:2%;top:58px;height:3px;background:#27313a}.tick{position:absolute;top:49px;width:2px;height:21px;background:#27313a}.tick span{position:absolute;top:24px;transform:translateX(-50%);font-size:.82rem;color:#52606d}
-.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.slot{min-height:56px;border:2px dashed #b9c4ce;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;font-size:1.05rem}
-.tokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.token{background:#e9eef3;color:#17212b}.token.used{opacity:.35}
+.numberline{position:relative;height:145px;margin:24px 8px 10px;cursor:crosshair;user-select:none}.axis{position:absolute;left:5%;right:5%;top:66px;height:3px;background:#27313a}.tick{position:absolute;top:56px;width:2px;height:23px;background:#27313a;transform:translateX(-50%)}.tick span{position:absolute;top:26px;left:50%;transform:translateX(-50%);font-size:.86rem;color:#52606d}.minor-tick{position:absolute;top:61px;width:1px;height:13px;background:#85909b;transform:translateX(-50%)}.marker{position:absolute;top:43px;transform:translateX(-50%);display:none;pointer-events:none}.marker-dot{width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid white;box-shadow:0 0 0 2px var(--accent)}.marker-label{position:absolute;top:-32px;left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:750;background:white;border:1px solid var(--line);border-radius:8px;padding:3px 7px}.line-help{background:var(--soft);padding:12px 14px;border-radius:10px;line-height:1.5}.line-target{font-size:1.45rem;font-weight:750;margin:10px 0}.line-result{min-height:24px;color:var(--muted);margin-top:8px}
 @media(max-width:620px){.wrap{padding:16px 12px 36px}.card{padding:17px}.math{font-size:1.26rem}.slots{gap:4px}.slot{min-height:52px;font-size:.9rem}}
 </style>
 <script>
@@ -81,14 +79,15 @@ function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,
 <div id="fields" class="inputs"></div><div id="feedback" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div>
 <div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
 </div>
-<div id="lineGame" style="display:none">
-<div id="linePrompt" class="task"></div><div id="lineMath" class="math"></div>
-<div class="tokens" id="tokens"></div>
-<p class="small">Valitse luvut järjestyksessä pienimmästä suurimpaan. Valinnat sijoittuvat lukusuoralle vasemmalta oikealle.</p>
-<div class="slots" id="slots"></div><div id="lineFb" class="feedback"></div>
-<div class="actions"><button id="undo" class="ghost">Peru viimeinen</button><button id="lineCheck" class="primary">Tarkista</button><button id="lineNext" class="secondary">Seuraava</button></div>
 </div>
-</div></main><script>
+<div id="lineGame" style="display:none">
+<div class="line-help"><b>Sijoita irrationaalinen neliöjuuri lukusuoralle.</b><br>Arvioi juuren paikka kokonaislukujen avulla ja napsauta lukusuoraa. Vastaus hyväksytään, kun sijoitus on enintään 0,2 yksikköä oikeasta arvosta.</div>
+<div id="linePrompt" class="task" style="margin-top:18px"></div><div id="lineMath" class="line-target"></div>
+<div class="numberline" id="numberline" aria-label="Napsautettava lukusuora"><div class="axis"></div><div id="marker" class="marker"><div id="markerLabel" class="marker-label"></div><div class="marker-dot"></div></div></div>
+<div id="lineResult" class="line-result"></div><div id="lineFb" class="feedback"></div>
+<div class="actions"><button id="lineCheck" class="primary">Tarkista</button><button id="lineNext" class="secondary">Seuraava</button></div>
+</div>
+</main><script>
 function N(t,alts=[]){return v=>{let ok=numericEq(v.a,t)||anyMatch(v.a,alts);return {ok,msg:ok?'Oikein!':'Tarkista neliöjuuren arvo ja laskujärjestys.'}}}
 const roots=[
 {prompt:'Laske.',latex:'\\sqrt{0}',check:N(0)},{prompt:'Laske.',latex:'\\sqrt{25}',check:N(5)},{prompt:'Laske.',latex:'\\sqrt{81}',check:N(9)},
@@ -103,41 +102,66 @@ const roots=[
 {prompt:'Laske laskujärjestyksen mukaan.',latex:'\\frac{\\sqrt{144}+\\sqrt{36}}{3}',check:N(6)},
 {prompt:'Laske.',latex:'\\sqrt{0{,}25}+\\sqrt{2{,}25}',check:N(2)}
 ,
-{prompt:'Laske.',latex:'\\sqrt{196}',check:N(14),solution:'\(\\sqrt{196}=14\)'},
-{prompt:'Laske. Vihje: mieti sopivaa desimaalilukua.',latex:'\\sqrt{0{,}09}',check:N(.3),solution:'\(0{,}3^2=0{,}09\), joten \(\\sqrt{0{,}09}=0{,}3\)'},
-{prompt:'Laske.',latex:'5+3\\sqrt{16}-2^3',check:N(9),solution:'\(5+3\cdot4-8=9\)'}
+{prompt:'Laske.',latex:'\\sqrt{196}',check:N(14),solution:'\\(\\sqrt{196}=14\\)'},
+{prompt:'Laske. Vihje: mieti sopivaa desimaalilukua.',latex:'\\sqrt{0{,}09}',check:N(.3),solution:'\\(0{,}3^2=0{,}09\\), joten \\(\\sqrt{0{,}09}=0{,}3\\)'},
+{prompt:'Laske.',latex:'5+3\\sqrt{16}-2^3',check:N(9),solution:'\\(5+3\\cdot4-8=9\\)'}
 ];
 basicGame(roots);
 
-const lineSets=[
- {items:[['-1','-1'],['0{,}5','0.5'],['\\sqrt2','1.41421356'],['2','2'],['\\sqrt9','3']]},
- {items:[['-2','-2'],['-\\sqrt2','-1.41421356'],['0','0'],['\\sqrt3','1.7320508'],['1{,}8','1.8']]},
- {items:[['0{,}6','0.6'],['\\sqrt{0{,}5}','0.7071068'],['0{,}8','0.8'],['\\sqrt{0{,}81}','0.9'],['1','1']]},
- {items:[['\\sqrt5','2.2360679'],['2{,}3','2.3'],['\\sqrt6','2.4494897'],['2{,}5','2.5'],['\\sqrt7','2.6457513']]}
+const lineTasks=[
+ {latex:'\\sqrt{17}',value:Math.sqrt(17)},
+ {latex:'\\sqrt{3}',value:Math.sqrt(3)},
+ {latex:'\\sqrt{30}',value:Math.sqrt(30)},
+ {latex:'\\sqrt{8}',value:Math.sqrt(8)},
+ {latex:'\\sqrt{22}',value:Math.sqrt(22)},
+ {latex:'\\sqrt{5}',value:Math.sqrt(5)},
+ {latex:'\\sqrt{35}',value:Math.sqrt(35)},
+ {latex:'\\sqrt{13}',value:Math.sqrt(13)},
+ {latex:'\\sqrt{2}',value:Math.sqrt(2)},
+ {latex:'\\sqrt{27}',value:Math.sqrt(27)}
 ];
-let li=0, chosen=[];
+let li=0, placedValue=null;
 function renderLine(){
- chosen=[];document.querySelector('#lineFb').className='feedback';
- const set=lineSets[li], toks=document.querySelector('#tokens'), slots=document.querySelector('#slots'); toks.innerHTML='';slots.innerHTML='';
- document.querySelector('#linePrompt').textContent='Sijoita luvut lukusuoralle oikeaan järjestykseen.';
- document.querySelector('#count').textContent=`${li+1} / ${lineSets.length}`;
- set.items.slice().sort(()=>Math.random()-.5).forEach((it,idx)=>{
-   const b=document.createElement('button');b.className='token';b.dataset.latex=it[0];b.dataset.value=it[1];b.innerHTML='\\('+it[0]+'\\)';
-   b.onclick=()=>{if(b.classList.contains('used')||chosen.length>=5)return;chosen.push({latex:b.dataset.latex,value:+b.dataset.value,el:b});b.classList.add('used');paintSlots()};toks.appendChild(b);
- });
- for(let i=0;i<5;i++){const s=document.createElement('div');s.className='slot';slots.appendChild(s)}
- if(window.MathJax?.typesetPromise)MathJax.typesetPromise([toks]);
+ const t=lineTasks[li], numberline=document.querySelector('#numberline'), marker=document.querySelector('#marker');
+ placedValue=null; marker.style.display='none';
+ document.querySelector('#lineFb').className='feedback';document.querySelector('#lineFb').innerHTML='';
+ document.querySelector('#lineResult').textContent='';
+ document.querySelector('#linePrompt').textContent='Sijoita tämä luku mahdollisimman tarkasti lukusuoralle:';
+ document.querySelector('#lineMath').innerHTML='\\('+t.latex+'\\)';
+ document.querySelector('#count').textContent=`${li+1} / ${lineTasks.length}`;
+ numberline.querySelectorAll('.tick,.minor-tick').forEach(x=>x.remove());
+ const left=5,right=95, min=0,max=6, span=6;
+ for(let x=min;x<=max;x++){
+   const pos=left+(x-min)/span*(right-left);
+   const tick=document.createElement('div');tick.className='tick';tick.style.left=pos+'%';
+   const label=document.createElement('span');label.textContent=x;tick.appendChild(label);numberline.appendChild(tick);
+   if(x<max){for(const frac of [0.2,0.4,0.6,0.8]){const mp=left+((x+frac)-min)/span*(right-left);const mt=document.createElement('div');mt.className='minor-tick';mt.style.left=mp+'%';numberline.appendChild(mt)}}
+ }
+ if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#lineMath')]);
 }
-function paintSlots(){
- [...document.querySelectorAll('.slot')].forEach((s,i)=>{s.innerHTML=chosen[i]?'\\('+chosen[i].latex+'\\)':''});
- if(window.MathJax?.typesetPromise)MathJax.typesetPromise([...document.querySelectorAll('.slot')]);
+function placeOnLine(clientX){
+ const t=lineTasks[li], line=document.querySelector('#numberline'), rect=line.getBoundingClientRect();
+ const leftPx=rect.left+rect.width*.05, rightPx=rect.left+rect.width*.95;
+ const x=Math.max(leftPx,Math.min(rightPx,clientX));
+ const ratio=(x-leftPx)/(rightPx-leftPx);
+ placedValue=ratio*6;
+ const pct=5+ratio*90, marker=document.querySelector('#marker');
+ marker.style.left=pct+'%';marker.style.display='block';
+ document.querySelector('#markerLabel').innerHTML='\\('+t.latex+'\\)';
+ document.querySelector('#lineResult').textContent='Paikka valittu. Voit muuttaa sitä napsauttamalla uudelleen.';
+ if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#markerLabel')]);
 }
-document.querySelector('#undo').onclick=()=>{const x=chosen.pop();if(x)x.el.classList.remove('used');paintSlots()};
+document.querySelector('#numberline').addEventListener('click',e=>placeOnLine(e.clientX));
+document.querySelector('#numberline').addEventListener('touchend',e=>{if(e.changedTouches?.[0]){e.preventDefault();placeOnLine(e.changedTouches[0].clientX)}},{passive:false});
 document.querySelector('#lineCheck').onclick=()=>{
- const ok=chosen.length===5 && chosen.every((x,i,a)=>i===0||a[i-1].value<=x.value);
- const fb=document.querySelector('#lineFb');fb.className='feedback '+(ok?'ok':'bad');fb.textContent=ok?'Oikein! Luvut kasvavat vasemmalta oikealle.':'Järjestys ei vielä ole oikea. Arvioi erityisesti irrationaalisten neliöjuurten suuruutta.';
+ const fb=document.querySelector('#lineFb'),t=lineTasks[li];
+ if(placedValue===null){fb.className='feedback bad';fb.textContent='Napsauta ensin lukusuoralta kohta, johon sijoitat luvun.';return}
+ const diff=Math.abs(placedValue-t.value),ok=diff<=0.2;
+ fb.className='feedback '+(ok?'ok':'bad');
+ fb.innerHTML=ok?`Oikein! \\(${t.latex}\\approx ${t.value.toFixed(2).replace('.', '{,}')}\\).`:`Ei vielä. Sijoitus oli liian kaukana. Mieti, minkä kahden kokonaisluvun välissä \\(${t.latex}\\) on.`;
+ if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb]);
 };
-document.querySelector('#lineNext').onclick=()=>{li=(li+1)%lineSets.length;renderLine()};
+document.querySelector('#lineNext').onclick=()=>{li=(li+1)%lineTasks.length;renderLine()};
 document.querySelector('#rootBtn').onclick=()=>{document.querySelector('#rootGame').style.display='block';document.querySelector('#lineGame').style.display='none';document.querySelector('#rootBtn').classList.add('active');document.querySelector('#lineBtn').classList.remove('active')};
 document.querySelector('#lineBtn').onclick=()=>{document.querySelector('#rootGame').style.display='none';document.querySelector('#lineGame').style.display='block';document.querySelector('#lineBtn').classList.add('active');document.querySelector('#rootBtn').classList.remove('active');renderLine()};
 
