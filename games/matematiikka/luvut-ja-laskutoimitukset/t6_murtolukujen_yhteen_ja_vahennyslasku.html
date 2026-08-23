@@ -1,62 +1,74 @@
 <!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Murtolukujen yhteen- ja vähennyslasku</title><style>
-:root{--bg:#f4f6f8;--card:#fff;--ink:#172033;--muted:#637184;--line:#d7dfe8;--blue:#2457a7;--ok:#137647;--bad:#ad2634}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line);padding:18px 5% 13px}h1{margin:0;font-size:clamp(1.65rem,3.7vw,2.45rem)}header p{margin:5px 0 0;color:var(--muted)}
-main{max-width:1100px;margin:auto;padding:18px 4% 34px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
-.tab{font:inherit;font-weight:750;border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer}.tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
-.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:18px;box-shadow:0 7px 22px rgba(0,0,0,.035)}h2{margin:0 0 5px}.intro{margin:0 0 12px;color:var(--muted)}
-.examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0 14px}.example{background:#f7f9fb;border:1px solid #e0e6ed;border-radius:11px;padding:12px;line-height:1.45}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.item{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 12px;min-height:74px}.item.good{background:#f6fcf8;border-color:#9ed3b7}.item.bad{background:#fff8f9;border-color:#e1a4ab}
-.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.letter{color:var(--muted);font-weight:800;min-width:21px}.math{font-size:1.08rem;font-weight:720}.small{font-size:.84rem;color:var(--muted)}
-input,select{font:inherit;background:#fff;border:1px solid #bac6d3;border-radius:8px;padding:7px 9px}input{width:96px}.xs{width:56px}.wide{width:180px;max-width:65vw}.correct{font-size:.8rem;color:var(--bad);min-height:16px;margin-top:4px}
-.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:14px}.action{font:inherit;font-weight:750;border-radius:9px;padding:10px 15px;cursor:pointer;border:0}.primary{background:var(--blue);color:#fff}.secondary{border:1px solid var(--line);background:#eef2f6;color:var(--ink)}
-.score{text-align:center;font-weight:850;margin-top:10px}.frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1;vertical-align:middle;min-width:28px}.frac>.num{border-bottom:1.6px solid currentColor;padding:0 4px 3px}.frac>.den{padding:3px 4px 0}.mixed{display:inline-flex;align-items:center;gap:3px}
-.note{font-size:.87rem;color:var(--muted);margin-top:10px}.stage{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}.intermediate{margin-top:8px;padding-top:8px;border-top:1px dashed #d6dee7;color:#526071;font-size:.88rem}
-.numberline{position:relative;height:68px;margin:9px 2px 0;user-select:none;touch-action:none}.axis{position:absolute;left:18px;right:18px;top:27px;height:3px;background:#334257}.tick{position:absolute;top:19px;width:2px;height:18px;background:#334257}.tick.minor{top:22px;height:12px;background:#8490a0}.ticklabel{position:absolute;top:43px;transform:translateX(-50%);font-size:.76rem;color:#526071}.dot{position:absolute;top:18px;width:18px;height:18px;border-radius:50%;background:var(--blue);transform:translateX(-9px);cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.fracbar{display:flex;width:220px;height:28px;border:1px solid #445266;border-radius:5px;overflow:hidden}.fracbar span{flex:1;border-right:1px solid #778391}.fracbar span:last-child{border-right:0}.fracbar .fill{background:#cbd8eb}
-.finnish{display:inline-grid;align-items:start;grid-template-columns:auto auto;column-gap:3px}.finnish .factor{font-weight:800;font-size:.9rem;margin-top:-2px;white-space:nowrap}.finnish.reduce{grid-template-columns:auto auto}.finnish.reduce .factor{grid-column:2;margin-left:2px}
-.mcgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.mcitem{font-size:.9rem;min-height:0}.mcitem label{display:block;margin:4px 0}.mcitem input[type=radio]{width:auto;padding:0}
-@media(max-width:820px){.grid,.examples{grid-template-columns:1fr}.mcgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:570px){.mcgrid{grid-template-columns:1fr}}
-</style></head><body>
-<header><h1>Murtolukujen yhteen- ja vähennyslasku</h1><p>7. luokka · monisteen kappaleen 5 tehtävistä rakennettu vaikeutuva harjoitus</p></header><main><div class="tabs"><button class="tab active" data-page="mental1">Päässä I</button><button class="tab" data-page="mental2">Päässä II</button><button class="tab" data-page="steps">Välivaiheittain</button><button class="tab" data-page="challenge">Haaste</button></div><section class="card"><h2 id="title"></h2><p id="intro" class="intro"></p><div id="examples" class="examples"></div><div id="grid" class="grid"></div>
-<div class="actions"><button id="check" class="action primary">Tarkista kaikki</button><button id="new" class="action secondary">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const V=s=>Number(String(s).trim().replace(/\s/g,'').replace(',','.')); const EQ=(s,x)=>Number.isFinite(V(s))&&Math.abs(V(s)-x)<1e-9;
-const G=(a,b)=>b?G(b,a%b):Math.abs(a), L=(a,b)=>Math.abs(a*b)/G(a,b); function simp(n,d){if(d<0){n=-n;d=-d}let g=G(n,d);return[n/g,d/g]}
-const F=(n,d)=>`<span class="frac"><span class="num">${n}</span><span class="den">${d}</span></span>`; const MIX=(w,n,d)=>`<span class="mixed">${w} ${F(n,d)}</span>`;
-function result(i,ok,msg){let e=$('#it'+i),c=$('#c'+i);e.classList.remove('good','bad');e.classList.add(ok?'good':'bad');c.innerHTML=ok?'✓ Oikein':msg}
-function tabs(cb){$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');cb(b.dataset.page)})}
-
-let page='mental1',tasks=[];const S={mental1:['Päässälaskut I','Aloita samannimisistä murtoluvuista ja kokonaisluvun sekä murtoluvun laskuista.'],mental2:['Päässälaskut II','Nyt mukaan tulee erinimisiä murtolukuja, sekalukuja ja desimaalilukuja.'],steps:['Välivaiheittain','Lavenna tarvittaessa samannimisiksi. Täytä myös välivaihe.'],challenge:['Haaste','Yhdistä murtolukuja, sekalukuja ja desimaalilukuja.']};
-const a=[[1,3,'+',1,3],[4,7,'+',3,7],[5,2,'+',3,2],[4,1,'-',2,3],[6,7,'-',3,7],[11,5,'-',4,5]];
-const b=[{q:`${F(1,2)} + ${F(1,4)}`,n:3,d:4},{q:`3 + ${F(1,2)} + ${F(1,3)}`,n:23,d:6},{q:`${F(4,5)} − ${F(1,3)}`,n:7,d:15},{q:`${MIX(1,1,3)} − ${F(1,2)}`,n:5,d:6},{q:`0,3 + ${F(1,5)}`,n:1,d:2},{q:`${F(9,10)} − 0,25`,n:13,d:20}];
-const step=[
- {q:`${F(2,5)} + ${F(4,5)} − ${F(3,5)}`,n:3,d:5,step:`${F(6,5)} − ${F(3,5)}`},
- {q:`${MIX(1,1,3)} − ${F(2,3)} + 1`,n:5,d:3,step:`${F(4,3)} − ${F(2,3)} + 1`},
- {q:`${F(1,3)} + ${F(1,6)} + ${F(1,9)}`,n:11,d:18,step:`${F(6,18)} + ${F(3,18)} + ${F(2,18)}`},
- {q:`${F(7,8)} − ${F(5,6)}`,n:1,d:24,step:`${F(21,24)} − ${F(20,24)}`},
- {q:`${MIX(3,1,2)} + ${MIX(4,2,3)} + ${MIX(5,3,4)} + ${MIX(6,1,12)}`,n:20,d:1,step:'muunna ensin samannimisiksi'},
- {q:`${MIX(9,2,5)} − ${MIX(4,5,6)}`,n:137,d:30,step:'muunna ensin samannimisiksi'}
-];
-const challenge=[
- {q:`2,6 − ${MIX(1,2,3)}`,n:14,d:15},{q:`2,75 + ${F(1,6)}`,n:35,d:12},{q:`${F(1,8)} − 0,125`,n:0,d:1},
- {q:`${MIX(2,1,3)} − ${MIX(1,3,4)} − (${MIX(2,1,3)} − ${MIX(1,5,6)})`,n:1,d:12},
- {q:`Mistä luvusta pitää vähentää ${MIX(7,3,8)}, jotta erotus olisi ${MIX(2,1,3)}?`,n:233,d:24}
-];
-function setPage(p){page=p;let s=S[p];$('#title').textContent=s[0];$('#intro').textContent=s[1];$('#examples').innerHTML=p==='mental2'?`<div class="example">${F(1,2)} + ${F(1,4)} = ${F(2,4)} + ${F(1,4)} = ${F(3,4)}</div>`:'';render()}
-function ans(i){return F(`<input class="xs" id="n${i}">`,`<input class="xs" id="d${i}">`)}
-function render(){
- tasks=page==='mental1'?a:page==='mental2'?b:page==='steps'?step:challenge;
- $('#grid').innerHTML=tasks.map((t,i)=>{
-  if(page==='mental1'){let [x,y,o,z,w]=t;return `<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span>${F(x,y)} ${o} ${F(z,w)} = ${ans(i)}</div><div class="correct" id="c${i}"></div></div>`}
-  if(page==='mental2'||page==='challenge')return `<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q}</span><span>=</span>${ans(i)}</div><div class="correct" id="c${i}"></div></div>`;
-  return `<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q}</span><span>=</span>${ans(i)}</div><div class="intermediate">Välivaihe: <input class="wide" id="s${i}"></div><div class="correct" id="c${i}"></div></div>`;
- }).join('');$('#score').textContent='';
+:root{--bg:#f4f6f8;--card:#fff;--ink:#172033;--muted:#627184;--line:#d8e0e8;--accent:#2457a7;--bad:#b02a37}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:20px 5% 15px}h1{margin:0;font-size:clamp(1.7rem,4vw,2.5rem)}header p{margin:6px 0 0;color:var(--muted)}
+main{max-width:1050px;margin:auto;padding:22px 5% 36px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.tab{font:inherit;font-weight:750;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer}.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.04)}h2{margin:0 0 5px}.intro{color:var(--muted);margin:0 0 12px}
+.theory{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}.box{background:#f7f9fb;border:1px solid #e0e6ec;border-radius:11px;padding:12px;line-height:1.45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{border:1px solid var(--line);border-radius:12px;padding:12px}.item.good{background:#f6fcf8;border-color:#9dd4b7}.item.bad{background:#fff8f9;border-color:#e1a4aa}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.letter{font-weight:800;color:var(--muted)}input,select{font:inherit;padding:8px 10px;border:1px solid #bac6d3;border-radius:8px;background:#fff}input{width:150px;max-width:60vw}.wide{width:280px;max-width:82vw}
+.correct{font-size:.82rem;color:var(--bad);min-height:17px;margin-top:4px}.actions{display:flex;justify-content:center;gap:9px;margin-top:15px;flex-wrap:wrap}.action{font:inherit;font-weight:750;border:0;border-radius:9px;padding:10px 15px;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eef2f6;border:1px solid var(--line);color:var(--ink)}.score{text-align:center;font-weight:850;margin-top:10px}
+.finnish{display:inline-flex;align-items:flex-start;gap:3px}.factor{font-weight:850;font-size:.9rem;margin-top:-2px}.factor.right{margin-left:2px}
+@media(max-width:720px){.grid,.theory{grid-template-columns:1fr}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head><body>
+<header><h1>Murtolukujen yhteen- ja vähennyslasku</h1><p>7. luokka · yhteen- ja vähennyslaskut</p></header><main><div class="tabs"><button class="tab active" data-page="easy">Päässälaskut</button><button class="tab" data-page="medium">Keskitaso</button><button class="tab" data-page="hard">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function raw(s){return String(s).trim().replace(/−/g,'-').replace(/,/g,'.')}
+function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
+function parseFrac(s){
+ let z=raw(s);if(!z)return null;
+ if(/^[-+]?\d+$/.test(z))return {v:Number(z),ok:true,type:'int'};
+ let m=z.match(/^(-?\d+)\s+(\d+)\/(\d+)$/);if(m){let w=+m[1],n=+m[2],d=+m[3];if(d<=0||n<=0||n>=d||gcd(n,d)!==1)return null;return {v:w<0?w-n/d:w+n/d,ok:true,type:'mixed'}}
+ m=z.match(/^(-?\d+)\/(\d+)$/);if(m){let n=+m[1],d=+m[2];if(d<=0||gcd(Math.abs(n),d)!==1)return null;return {v:n/d,ok:true,type:'frac'}}
+ return null;
 }
-function normalizeHTML(s){return String(s).replace(/<[^>]+>/g,'').replace(/\s/g,'').replace(/−/g,'-')}
-function check(){let p=0;tasks.forEach((t,i)=>{let n,d,ok,msg;
- if(page==='mental1'){let [x,y,o,z,w]=t,den=y*w,num=o==='+'?x*w+z*y:x*w-z*y;[n,d]=simp(num,den)}else{n=t.n;d=t.d}
- ok=+$('#n'+i).value===n&&+$('#d'+i).value===d;if(page==='steps'){let st=$('#s'+i).value.trim();ok=ok&&st.length>0}
- msg=`Oikea vastaus: ${n}/${d}`;result(i,ok,msg);if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
-tabs(setPage);$('#check').onclick=check;$('#new').onclick=()=>setPage(page);setPage(page);
+function checkFrac(s,n,d){let p=parseFrac(s);return !!p&&Math.abs(p.v-n/d)<1e-9}
+const tex=(n,d)=>`\\(\\frac{${n}}{${d}}\\)`;
+const mix=(w,n,d)=>`${w} ${tex(n,d)}`;
+function typeset(){if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory'),$('#grid')]);}}
+
+let page='easy',tasks=[];
+const easy=[
+ {q:`${tex(1,3)} + ${tex(1,3)}`,n:2,d:3},
+ {q:`${tex(4,7)} + ${tex(3,7)}`,n:1,d:1},
+ {q:`${tex(5,2)} + ${tex(3,2)}`,n:4,d:1},
+ {q:`4 − ${tex(2,3)}`,n:10,d:3},
+ {q:`${tex(6,7)} − ${tex(3,7)}`,n:3,d:7},
+ {q:`${tex(11,5)} − ${tex(4,5)}`,n:7,d:5}
+];
+const medium=[
+ {q:`${tex(1,2)} + ${tex(1,4)}`,n:3,d:4},
+ {q:`3 + ${tex(1,2)} + ${tex(1,3)}`,n:23,d:6},
+ {q:`${tex(4,5)} − ${tex(1,3)}`,n:7,d:15},
+ {q:`${mix(1,1,3)} − ${tex(1,2)}`,n:5,d:6},
+ {q:`0,3 + ${tex(1,5)}`,n:1,d:2},
+ {q:`${tex(9,10)} − 0,25`,n:13,d:20}
+];
+const hard=[
+ {q:`${tex(2,5)} + ${tex(4,5)} − ${tex(3,5)}`,n:3,d:5},
+ {q:`${mix(1,1,3)} − ${tex(2,3)} + 1`,n:5,d:3},
+ {q:`${tex(1,3)} + ${tex(1,6)} + ${tex(1,9)}`,n:11,d:18},
+ {q:`${tex(7,8)} − ${tex(5,6)}`,n:1,d:24},
+ {q:`${mix(3,1,2)} + ${mix(4,2,3)} + ${mix(5,3,4)} + ${mix(6,1,12)}`,n:20,d:1},
+ {q:`${mix(9,2,5)} − ${mix(4,5,6)}`,n:137,d:30},
+ {q:`2,6 − ${mix(1,2,3)}`,n:14,d:15},
+ {q:`2,75 + ${tex(1,6)}`,n:35,d:12}
+];
+function setPage(p){page=p;render()}
+function render(){
+ tasks=page==='easy'?easy:page==='medium'?medium:hard;
+ $('#title').textContent=page==='easy'?'Päässälaskut':page==='medium'?'Erinimiset ja sekaluvut':'Haastavammat laskut';
+ $('#intro').textContent='Anna vastaus supistettuna murto- tai sekalukuna. Jos tulos on kokonaisluku, kirjoita kokonaisluku.';
+ $('#theory').innerHTML=`<div class="box"><b>Supista vastaus.</b> Esim. ${tex(6,4)} = ${tex(3,2)} = 1 ${tex(1,2)}. Vastaukseksi käy <b>3/2</b> tai <b>1 1/2</b>.</div><div class="box">Erinimisissä murtoluvuissa lavenna ensin samannimisiksi. Välivaiheita ei tarvitse kirjoittaa koneelle.</div>`;
+ $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" placeholder="esim. 3/4 tai 1 1/2"></div><div class="correct" id="c${i}"></div></div>`).join('');
+ $('#score').textContent='';typeset();
+}
+function check(){let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t.d===1?t.n:`${t.n}/${t.d}`);if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
+$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');setPage(b.dataset.page)});
+$('#check').onclick=check;$('#new').onclick=render;render();
 </script></body></html>

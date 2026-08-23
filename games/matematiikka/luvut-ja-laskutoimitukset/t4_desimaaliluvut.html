@@ -36,7 +36,7 @@ button.action{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-wei
 <main>
 <div class="tabs">
 <button class="tab active" data-page="add">Yhteen- ja vähennyslasku</button>
-<button class="tab" data-page="ten">10, 100 ja 1000</button>
+<button class="tab" data-page="ten">Kertominen ja jakaminen luvuilla 10, 100 ja 1000</button>
 <button class="tab" data-page="mul">Kertolasku</button>
 <button class="tab" data-page="div">Jakolasku</button>
 <button class="tab" data-page="line">Lukusuora</button>
@@ -51,7 +51,7 @@ button.action{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-wei
 <script>
 const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a, P=a=>a[R(0,a.length-1)];
 const F=n=>String(Math.round((n+Number.EPSILON)*1000000)/1000000).replace('.',',');
-const parse=s=>Number(String(s).trim().replace(/\s/g,'').replace(',','.'));
+const parse=s=>{const z=String(s).trim().replace(/\s/g,'').replace(',','.');return z===''?NaN:Number(z)};
 const eq=(s,n)=>Number.isFinite(parse(s))&&Math.abs(parse(s)-n)<1e-8;
 let page='add', tasks=[];
 
@@ -82,24 +82,18 @@ function addTasks(){
    [[6.75,'+',4.6],[12.3,'-',4.75],[8.35,'+',2.9]],
    [[14.25,'+',5.8],[15.2,'-',6.85],[10.1,'-',4.65]]
  ];
- const chosen=[
-   P(levels[0]),P(levels[0]),
-   P(levels[1]),P(levels[1]),
-   P(levels[2]),P(levels[2]),
-   P(levels[3]),P(levels[4])
- ];
+ const chosen=[...shuffle(levels[0]).slice(0,2),...shuffle(levels[1]).slice(0,2),...shuffle(levels[2]).slice(0,2),P(levels[3]),P(levels[4])];
  return chosen.map(x=>({text:`${F(x[0])} ${x[1]} ${F(x[2])} =`,ans:x[1]=='+'?x[0]+x[2]:x[0]-x[2]}));
 }
 function tenTasks(){
- const mult=[10,100,1000], out=[];
- for(let i=0;i<8;i++){
-   let op=i<4?'·':':', k=P(mult), n;
+ const mult=[10,100,1000], out=[],used=new Set();
+ while(out.length<8){
+   let op=out.length<4?'·':':', k=P(mult), n;
    if(op==='·') n=P([0.037,0.48,1.25,2.06,3.47,5.08,12.4,26.05,0.604]);
-   else {
-     let q=P([0.037,0.48,1.25,2.06,3.47,5.08,12.4,26.05]);
-     n=q*k;
-   }
-   out.push({text:`${F(n)} ${op} ${k} =`,ans:op==='·'?n*k:n/k});
+   else {let q=P([0.037,0.48,1.25,2.06,3.47,5.08,12.4,26.05]);n=q*k;}
+   let text=`${F(n)} ${op} ${k} =`;
+   if(used.has(text)) continue;
+   used.add(text);out.push({text,ans:op==='·'?n*k:n/k});
  }
  return shuffle(out);
 }
