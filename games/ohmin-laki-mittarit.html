@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ohmin laki – analogimittarit</title>
+<script>
+window.MathJax = {tex:{inlineMath:[['\\(','\\)'],['$','$']]}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f7;color:#17212b;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1120px;margin:auto;padding:28px 20px 50px}
+h1{margin:0 0 8px;font-size:clamp(2rem,5vw,3rem)}
+.lead{margin:0 0 22px;color:#5d6975;font-size:1.05rem}
+.info,.exercise{background:white;border:1px solid #d5dde4;border-radius:16px}
+.info{padding:16px 19px;margin-bottom:22px}
+.info h2{margin:0 0 8px}.info p{margin:6px 0}
+.exercise{padding:18px 20px;margin-bottom:20px}
+.exercise h2{margin:0 0 4px;font-size:1.3rem}
+.exlead{margin:0 0 12px;color:#66727e}
+.meters{display:grid;grid-template-columns:repeat(2,minmax(330px,1fr));gap:18px}
+.meterCard{background:#fafbfc;border:1px solid #d9e0e6;border-radius:14px;padding:10px}
+.meterTitle{text-align:center;font-weight:800;margin:2px 0 5px}
+svg{display:block;width:100%;height:auto}
+.answers{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin-top:14px}
+.answer{background:#fafbfc;border:1px solid #d9e0e6;border-radius:11px;padding:12px}
+.answer label{display:block;font-weight:750;margin-bottom:7px}
+.row{display:flex;align-items:center;gap:7px}
+input{width:105px;max-width:100%;padding:9px;border:1px solid #aab5bf;border-radius:8px;font-size:1rem}
+.unit{font-weight:750}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 0}
+button{border:0;border-radius:10px;padding:11px 16px;font-size:1rem;font-weight:750;cursor:pointer}
+.primary{background:#235e98;color:#fff}.secondary{background:#e7ecf1;color:#17212b}
+.feedback{margin-top:12px;padding:12px;border-radius:9px;font-weight:650;display:none}
+.ok{display:block;background:#e8f6ec;color:#1d6b36}
+.bad{display:block;background:#fff0f0;color:#9d2b2b}
+.summary{background:white;border:1px solid #d5dde4;border-radius:14px;padding:16px;margin-top:18px;display:none}
+@media(max-width:820px){.meters{grid-template-columns:1fr}.answers{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.answers{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Ohmin laki – mittariharjoitus</h1>
+<p class="lead">Lue jännite ja sähkövirta analogisista mittareista. Huomaa sekä viisarin kohta että käytössä oleva mittausalue.</p>
+
+<div class="info">
+<h2>Ohmin laki ja sähköteho</h2>
+<p>Resistanssi: \(\displaystyle R=\frac{U}{I}\)</p>
+<p>Sähköteho: \(\displaystyle P=UI\)</p>
+<p><strong>Anna sähkövirta aina ampeereina (A).</strong></p>
+</div>
+
+<div id="exercises"></div>
+
+<div class="actions">
+<button class="primary" id="checkAll">Tarkista kaikki</button>
+<button class="secondary" id="newSet">Uusi tehtäväsarja</button>
+</div>
+<div id="summary" class="summary"></div>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+const cx=250,cy=245,start=205,end=335;
+let tasks=[];
+
+function polar(r,deg){const a=deg*Math.PI/180;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]}
+function el(name,attrs,parent,text){
+ const e=document.createElementNS(NS,name);
+ Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));
+ if(text!==undefined)e.textContent=text;
+ if(parent)parent.appendChild(e);return e;
+}
+function line(g,a,b,w=1){el("line",{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:"#222","stroke-width":w},g)}
+function text(g,p,s,size=14,weight=500){el("text",{x:p[0],y:p[1]+5,"text-anchor":"middle","font-size":size,"font-weight":weight},g,s)}
+function rand(a){return a[Math.floor(Math.random()*a.length)]}
+function fmt(x){return Number(x.toFixed(4)).toString().replace(".",",")}
+function parseVal(s){return Number(String(s).trim().replace(",","."))}
+function near(a,b,t=.001){return Number.isFinite(a)&&Math.abs(a-b)<=t}
+
+function baseMeter(svg,letter){
+ el("rect",{x:12,y:10,width:476,height:340,rx:20,fill:"#f4f4ee",stroke:"#26313a","stroke-width":4},svg);
+ el("rect",{x:32,y:28,width:436,height:245,rx:13,fill:"#fffefa",stroke:"#879197","stroke-width":2},svg);
+ el("text",{x:250,y:205,"text-anchor":"middle","font-size":32,"font-style":"italic"},svg,letter);
+}
+
+function ticks(g){
+ const p1=polar(170,start),p2=polar(170,end);
+ el("path",{d:`M ${p1[0]} ${p1[1]} A 170 170 0 0 1 ${p2[0]} ${p2[1]}`,fill:"none",stroke:"#222","stroke-width":2},g);
+ // 30 pikkuväliä. Pidempi viiva joka viidennessä.
+ for(let i=0;i<=30;i++){
+   const f=i/30,d=start+(end-start)*f;
+   const major=i%5===0;
+   line(g,polar(major?146:158,d),polar(174,d),major?2.1:1);
+ }
+}
+function needle(svg,f){
+ const d=start+(end-start)*f,p=polar(150,d);
+ el("line",{x1:cx,y1:cy,x2:p[0],y2:p[1],stroke:"#171d21","stroke-width":2.5,"stroke-linecap":"round"},svg);
+ el("circle",{cx,cy,r:9,fill:"#c9c29d",stroke:"#333","stroke-width":2},svg);
+}
+function ports(svg,labels,selected){
+ const xs=[120,250,380],y=310;
+ labels.forEach((lab,i)=>{
+   el("text",{x:xs[i],y:282,"text-anchor":"middle","font-size":15,"font-weight":800},svg,lab);
+   el("circle",{cx:xs[i],cy:y,r:20,fill:"#d93625",stroke:"#7d1a12","stroke-width":3},svg);
+   el("circle",{cx:xs[i],cy:y,r:7,fill:"#64150f"},svg);
+   if(i===selected){
+     el("circle",{cx:xs[i],cy:y,r:12,fill:"#171b1e"},svg);
+     // short plug marker only: no long wire covering labels
+     el("line",{x1:xs[i],y1:y+10,x2:xs[i],y2:348,stroke:"#c52b20","stroke-width":7,"stroke-linecap":"round"},svg);
+   }
+ });
+}
+function drawVolt(svg,f,rangeIndex){
+ baseMeter(svg,"V"); const g=el("g",{},svg);ticks(g);
+ // Image-like layout: lower 0-5-10-15, above arc 0-1-2-3 and 0-10-20-30.
+ [0,1/3,2/3,1].forEach((fr,j)=>{
+   const d=start+(end-start)*fr;
+   text(g,polar(142,d),["0","5","10","15"][j],15,600);
+   text(g,polar(190,d),["0","1","2","3"][j],15,600);
+   text(g,polar(210,d),["0","10","20","30"][j],15,600);
+ });
+ needle(svg,f);ports(svg,["3 V","15 V","30 V"],rangeIndex);
+}
+function drawAmp(svg,f,rangeIndex){
+ baseMeter(svg,"A"); const g=el("g",{},svg);ticks(g);
+ // Two scales below the arc. Units appear at the final values.
+ [0,.2,.4,.6,.8,1].forEach((fr,j)=>{
+   const d=start+(end-start)*fr;
+   const mA=["0","10","20","30","40","50 mA"][j];
+   const A =["0","1","2","3","4","5 A"][j];
+   text(g,polar(143,d),mA,14,600);
+   text(g,polar(122,d),A,14,500);
+ });
+ needle(svg,f);ports(svg,["50 mA","500 mA","5 A"],rangeIndex);
+}
+
+const vRanges=[3,15,30];
+const aRanges=[.05,.5,5];
+// 30 minor divisions. Include both major and minor positions.
+const fractions=[5,6,8,10,12,13,15,17,18,20,22,24,25,27].map(x=>x/30);
+
+function makeTasks(){
+ tasks=[];
+ for(let n=0;n<6;n++){
+   let vi,ai,vf,af,U,I,R,P,guard=0;
+   do{
+     vi=Math.floor(Math.random()*3);ai=Math.floor(Math.random()*3);
+     vf=rand(fractions);af=rand(fractions);
+     U=vRanges[vi]*vf;I=aRanges[ai]*af;
+     R=U/I;P=U*I;guard++;
+   }while((R<.5||R>5000||P>100||guard<3&&Math.random()<.3)&&guard<1000);
+   tasks.push({vi,ai,vf,af,U,I,R,P});
+ }
+ render();
+}
+function render(){
+ const host=document.getElementById("exercises");host.innerHTML="";
+ tasks.forEach((t,i)=>{
+  const box=document.createElement("section");box.className="exercise";
+  box.innerHTML=`<h2>Tehtävä ${i+1}</h2>
+  <p class="exlead">Lue mittarit ja laske resistanssi sekä kytkennän teho.</p>
+  <div class="meters">
+    <div class="meterCard"><div class="meterTitle">Ampeerimittari</div><svg id="a${i}" viewBox="0 0 500 365"></svg></div>
+    <div class="meterCard"><div class="meterTitle">Volttimittari</div><svg id="v${i}" viewBox="0 0 500 365"></svg></div>
+  </div>
+  <div class="answers">
+   <div class="answer"><label>Sähkövirta I</label><div class="row"><input id="i${i}" inputmode="decimal"><span class="unit">A</span></div></div>
+   <div class="answer"><label>Jännite U</label><div class="row"><input id="u${i}" inputmode="decimal"><span class="unit">V</span></div></div>
+   <div class="answer"><label>Resistanssi R</label><div class="row"><input id="r${i}" inputmode="decimal"><span class="unit">Ω</span></div></div>
+   <div class="answer"><label>Teho P</label><div class="row"><input id="p${i}" inputmode="decimal"><span class="unit">W</span></div></div>
+  </div>
+  <div id="f${i}" class="feedback"></div>`;
+  host.appendChild(box);
+  drawAmp(document.getElementById(`a${i}`),t.af,t.ai);
+  drawVolt(document.getElementById(`v${i}`),t.vf,t.vi);
+ });
+}
+function check(){
+ let correct=0;
+ tasks.forEach((t,i)=>{
+  const iv=parseVal(document.getElementById(`i${i}`).value);
+  const uv=parseVal(document.getElementById(`u${i}`).value);
+  const rv=parseVal(document.getElementById(`r${i}`).value);
+  const pv=parseVal(document.getElementById(`p${i}`).value);
+  const iok=near(iv,t.I,.00011),uok=near(uv,t.U,.011),rok=near(rv,t.R,.11),pok=near(pv,t.P,.011);
+  const f=document.getElementById(`f${i}`);
+  if(iok&&uok&&rok&&pok){correct++;f.className="feedback ok";f.textContent="Oikein."}
+  else{
+    let m=[];
+    if(!iok)m.push("Tarkista ampeerimittarin asteikko, pikkuvälit ja valittu mittausalue.");
+    if(!uok)m.push("Tarkista volttimittarin asteikko, pikkuvälit ja valittu mittausalue.");
+    if(iok&&uok&&!rok)m.push("Mittarilukemat ovat oikein. Tarkista resistanssin lasku.");
+    if(iok&&uok&&!pok)m.push("Tarkista tehon lasku.");
+    f.className="feedback bad";f.textContent=m.join(" ");
+  }
+ });
+ const s=document.getElementById("summary");s.style.display="block";
+ s.innerHTML=`<strong>${correct} / 6 tehtävää kokonaan oikein.</strong>`;
+}
+document.getElementById("checkAll").onclick=check;
+document.getElementById("newSet").onclick=makeTasks;
+makeTasks();
+</script>
+</body>
+</html>

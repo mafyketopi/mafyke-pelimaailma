@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sähköiset voimanuolet</title>
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --ink:#17202a;
+    --muted:#66727e;
+    --line:#cfd6dd;
+    --grid:#cbd3da;
+    --gridStrong:#9faab4;
+    --ok:#1f7a3f;
+    --bad:#b12a2a;
+    --accent:#243b53;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 48px}
+  h1{margin:0 0 8px;font-size:clamp(1.8rem,4vw,2.6rem)}
+  .lead{margin:0 0 20px;color:var(--muted);font-size:1.05rem;line-height:1.55}
+  .rule{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:20px;line-height:1.55}
+  .rule strong{display:block;margin-bottom:4px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+  .card h2,.card h3{margin:0 0 8px}
+  .small{color:var(--muted);font-size:.95rem}
+  .exercise-title{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:10px}
+  .tag{font-weight:700;font-size:1.1rem}
+  svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+  .drawarea{border-radius:12px;overflow:hidden;border:1px solid #e2e7eb;background:white}
+  .status{min-height:24px;margin-top:10px;font-weight:600}
+  .status.ok{color:var(--ok)}
+  .status.bad{color:var(--bad)}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+  button{border:0;border-radius:10px;padding:11px 16px;font-size:1rem;font-weight:700;cursor:pointer}
+  .primary{background:var(--accent);color:white}
+  .secondary{background:#e7ebef;color:#22303c}
+  .hint{margin-top:8px;color:var(--muted);font-size:.92rem}
+  .counters{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 10px;font-weight:700}
+  .counter{background:#f1f4f6;border:1px solid #cbd3da;border-radius:9px;padding:6px 10px;min-width:150px}
+  .feedback{margin-top:18px;background:white;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:none}
+  .feedback.show{display:block}
+  @media (max-width:700px){
+    .wrap{padding:20px 10px 40px}
+    .card{padding:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sähköiset voimanuolet</h1>
+  <p class="lead">Vertaa jokaista tehtävää lähtötilanteeseen. Piirrä kumpaankin varaukseen kohdistuva voimanuoli ruudukon avulla.</p>
+
+  <div class="rule">
+    <strong>Muista</strong>
+    <h2 style="margin-top:0">Coulombin laki</h2>
+<h3>Varausten vaikutus sähköiseen voimaan</h3>
+<ul>
+<li>Kun varaus kaksinkertaistuu, myös sähköinen voima kaksinkertaistuu.</li>
+<li>Kun molemmat varaukset kaksinkertaistuvat, voima nelinkertaistuu.</li>
+<li>Erimerkkiset varaukset vetävät toisiaan puoleensa ja samanmerkkiset hylkivät toisiaan.</li>
+</ul>
+<h3>Etäisyyden vaikutus sähköiseen voimaan</h3>
+<ul>
+<li>Kun varausten välinen etäisyys kaksinkertaistuu, voima pienenee neljäsosaan.</li>
+<li>Kun etäisyys puolittuu, voima nelinkertaistuu.</li>
+</ul>
+  </div>
+
+  <section class="card">
+    <h2>Lähtötilanne</h2>
+    <div class="small">Varaukset ovat +Q ja −Q. Tätä varausten välistä etäisyyttä käytetään lähtöetäisyytenä. Voimanuolten pituus on 4 ruutua.</div>
+    <div class="drawarea" id="base"></div>
+  </section>
+
+  <div id="exercises"></div>
+
+  <div class="controls">
+    <button class="primary" id="checkBtn">Tarkista vastaukset</button>
+    <button class="secondary" id="resetBtn">Tyhjennä nuolet</button>
+  </div>
+  <div id="overall" class="feedback"></div>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const GRID = 34;
+const W = 1500;
+const H = 220;
+const CY = 110;
+
+const tasks = [
+  {id:'a', text:'Toinen varaus kaksinkertaistuu. Etäisyys pysyy samana.', q1:'+2Q', q2:'−Q', distance:18, force:8, mode:'attract'},
+  {id:'b', text:'Varausten välinen etäisyys kaksinkertaistuu. Varaukset pysyvät samoina.', q1:'+Q', q2:'−Q', distance:36, force:1, mode:'attract'},
+  {id:'c', text:'Toinen varaus kaksinkertaistuu ja etäisyys kaksinkertaistuu.', q1:'+2Q', q2:'−Q', distance:36, force:2, mode:'attract'},
+  {id:'d', text:'Varaukset ovat samanmerkkiset. Etäisyys ja varausten suuruudet ovat kuten lähtötilanteessa.', q1:'+Q', q2:'+Q', distance:18, force:4, mode:'repel'},
+  {id:'e', text:'Molemmat varaukset ovat negatiivisia. Etäisyys ja varausten suuruudet ovat kuten lähtötilanteessa.', q1:'−Q', q2:'−Q', distance:18, force:4, mode:'repel'},
+  {id:'f', text:'Toinen samanmerkkisistä varauksista kaksinkertaistuu. Etäisyys pysyy samana.', q1:'+2Q', q2:'+Q', distance:18, force:8, mode:'repel'},
+  {id:'g', text:'Haaste: toinen varaus on +3Q ja varausten välinen etäisyys on kaksinkertainen lähtötilanteeseen verrattuna.', q1:'+3Q', q2:'−Q', distance:36, force:3, mode:'attract'}
+];
+
+function displaySquares(force){ return force; }
+
+function el(name, attrs={}){
+  const n=document.createElementNS(NS,name);
+  for(const [k,v] of Object.entries(attrs)) n.setAttribute(k,v);
+  return n;
+}
+
+function addMarker(svg, id, color='#17202a'){
+  const defs=el('defs');
+  const marker=el('marker',{id,markerWidth:7,markerHeight:7,refX:6.2,refY:2.4,orient:'auto',markerUnits:'strokeWidth'});
+  const path=el('path',{d:'M0,0 L0,4.8 L6.7,2.4 z',fill:color});
+  marker.appendChild(path);defs.appendChild(marker);svg.appendChild(defs);
+}
+
+function grid(svg){
+  for(let x=0;x<=W;x+=GRID){
+    svg.appendChild(el('line',{x1:x,y1:0,x2:x,y2:H,stroke:(x%(GRID*2)===0?'#9faab4':'#cbd3da'),'stroke-width':1.25}));
+  }
+  for(let y=8;y<=H;y+=GRID){
+    svg.appendChild(el('line',{x1:0,y1:y,x2:W,y2:y,stroke:'#cbd3da','stroke-width':1.25}));
+  }
+}
+
+function charge(svg,x,label){
+  svg.appendChild(el('circle',{cx:x,cy:CY,r:24,fill:'white',stroke:'#17202a','stroke-width':3}));
+  const t=el('text',{x, y:CY+6,'text-anchor':'middle','font-size':18,'font-weight':700,fill:'#17202a'});t.textContent=label;svg.appendChild(t);
+}
+
+function lineArrow(svg,x1,y1,x2,y2,marker='arrow',color='#17202a',cls=''){
+  const l=el('line',{x1,y1,x2,y2,stroke:color,'stroke-width':3.5,'stroke-linecap':'round','marker-end':`url(#${marker})`,class:cls});
+  svg.appendChild(l);return l;
+}
+
+function positions(distance){
+  const center=W/2;
+  const dx=(distance*GRID)/2;
+  return [center-dx, center+dx];
+}
+
+function renderBase(){
+  const root=document.getElementById('base');
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});grid(svg);addMarker(svg,'baseArrow');
+  const [x1,x2]=positions(18);charge(svg,x1,'+Q');charge(svg,x2,'−Q');
+  // Erimerkkiset varaukset vetävät toisiaan puoleensa: nuolet osoittavat kohti toista varausta.
+  lineArrow(svg,x1,CY,x1+4*GRID,CY,'baseArrow');
+  lineArrow(svg,x2,CY,x2-4*GRID,CY,'baseArrow');
+  root.appendChild(svg);
+}
+
+const state={};
+
+function renderTask(task){
+  const card=document.createElement('section');card.className='card';
+  card.innerHTML=`<div class="exercise-title"><span class="tag">${task.id})</span><span>${task.text}</span></div><div class="small">Piirrä molemmat voimanuolet. Aloita nuoli varauspallon keskeltä ja vedä ruudukon suuntaisesti.</div><div class="counters"><div class="counter" id="count-${task.id}-0">Vasen nuoli: 0 ruutua</div><div class="counter" id="count-${task.id}-1">Oikea nuoli: 0 ruutua</div></div>`;
+  const area=document.createElement('div');area.className='drawarea';
+  const status=document.createElement('div');status.className='status';status.id=`status-${task.id}`;
+  const hint=document.createElement('div');hint.className='hint';hint.textContent='Nuolet napsahtavat ruudukkoon.';
+  card.append(area,status,hint);document.getElementById('exercises').appendChild(card);
+
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`});grid(svg);addMarker(svg,`arrow-${task.id}`);addMarker(svg,`ok-${task.id}`,'#1f7a3f');addMarker(svg,`bad-${task.id}`,'#b12a2a');
+  const [x1,x2]=positions(task.distance);charge(svg,x1,task.q1);charge(svg,x2,task.q2);
+  area.appendChild(svg);
+  state[task.id]={svg, task, x1,x2, arrows:[null,null], drag:null};
+
+  const startPts=[x1, x2];
+  startPts.forEach((x,idx)=>{
+    const hotspot=el('circle',{cx:x,cy:CY,r:42,fill:'transparent',cursor:'crosshair'});svg.appendChild(hotspot);
+    hotspot.addEventListener('pointerdown',ev=>startDraw(ev,task.id,idx));
+  });
+  svg.addEventListener('pointermove',ev=>moveDraw(ev,task.id));
+  svg.addEventListener('pointerup',ev=>endDraw(ev,task.id));
+  svg.addEventListener('pointercancel',ev=>endDraw(ev,task.id));
+}
+
+function svgPoint(svg,evt){
+  const pt=svg.createSVGPoint();pt.x=evt.clientX;pt.y=evt.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function snapX(x){return Math.round(x/GRID)*GRID;}
+function updateCounter(id,idx,squares){
+  const e=document.getElementById(`count-${id}-${idx}`);
+  if(e) e.textContent=`${idx===0?'Vasen':'Oikea'} nuoli: ${squares} ruutua`;
+}
+
+function startDraw(evt,id,idx){
+  evt.preventDefault();
+  const s=state[id];
+  if(s.arrows[idx]) s.arrows[idx].remove();
+  const sx=idx===0?s.x1:s.x2;
+  const startX=sx;
+  const l=lineArrow(s.svg,startX,CY,startX,CY,`arrow-${id}`,'#17202a',`student-arrow a${idx}`);
+  s.arrows[idx]=l;s.drag={idx,startX};updateCounter(id,idx,0);
+  evt.target.setPointerCapture?.(evt.pointerId);
+}
+function moveDraw(evt,id){
+  const s=state[id];if(!s.drag)return;
+  const p=svgPoint(s.svg,evt);let ex=snapX(p.x);
+  ex=Math.max(18,Math.min(W-18,ex));
+  s.arrows[s.drag.idx].setAttribute('x2',ex);s.arrows[s.drag.idx].setAttribute('y2',CY);
+  updateCounter(id,s.drag.idx,Math.round(Math.abs(ex-s.drag.startX)/GRID));
+}
+function endDraw(evt,id){
+  const s=state[id];if(!s.drag)return;
+  const l=s.arrows[s.drag.idx];
+  if(Math.abs(+l.getAttribute('x2')-s.drag.startX)<GRID*.5){updateCounter(id,s.drag.idx,0);l.remove();s.arrows[s.drag.idx]=null;}
+  s.drag=null;
+  document.getElementById(`status-${id}`).textContent='';
+}
+
+function arrowData(s,idx){
+  const l=s.arrows[idx];if(!l)return null;
+  const start=+l.getAttribute('x1'), end=+l.getAttribute('x2');
+  return {dir:Math.sign(end-start), squares:Math.round(Math.abs(end-start)/GRID)};
+}
+function expected(task,idx){
+  const squares=displaySquares(task.force);
+  const dir = task.mode==='attract' ? (idx===0?1:-1) : (idx===0?-1:1);
+  return {dir,squares};
+}
+
+function checkAll(){
+  let correctCount=0;
+  tasks.forEach(task=>{
+    const s=state[task.id];const st=document.getElementById(`status-${task.id}`);
+    let ok=true, missing=false, directionBad=false, lengthBad=false;
+    const a0=arrowData(s,0), a1=arrowData(s,1);
+    const unequalForces = a0 && a1 && a0.squares !== a1.squares;
+    [0,1].forEach(idx=>{
+      const a=arrowData(s,idx), e=expected(task,idx);
+      if(!a){ok=false;missing=true;return;}
+      if(a.dir!==e.dir){ok=false;directionBad=true;}
+      if(a.squares!==e.squares){ok=false;lengthBad=true;}
+      const l=s.arrows[idx];
+      l.setAttribute('stroke', (a.dir===e.dir && a.squares===e.squares)?'#1f7a3f':'#b12a2a');
+      l.setAttribute('marker-end',`url(#${(a.dir===e.dir && a.squares===e.squares)?'ok':'bad'}-${task.id})`);
+    });
+    st.className='status '+(ok?'ok':'bad');
+    if(ok){st.textContent='Oikein.';correctCount++;}
+    else if(missing){st.textContent='Piirrä molemmat nuolet ennen tarkistusta.';}
+    else if(unequalForces){st.textContent='Nuolten pitää olla yhtä pitkät. Newtonin III lain mukaan varaukset kohdistavat toisiinsa yhtä suuret, vastakkaissuuntaiset voimat.';}
+    else if(directionBad && lengthBad){st.textContent='Tarkista sekä nuolten suunta että pituus.';}
+    else if(directionBad){st.textContent='Tarkista nuolten suunta.';}
+    else {st.textContent='Tarkista nuolten pituus.';}
+  });
+  const overall=document.getElementById('overall');overall.classList.add('show');
+  overall.innerHTML = correctCount===tasks.length
+    ? '<strong>Kaikki oikein.</strong> Hienosti päätelty voimien suunnat ja pituudet.'
+    : `<strong>${correctCount} / ${tasks.length} oikein.</strong> Korjaa punaisiksi merkityt nuolet ja tarkista uudelleen.`;
+}
+
+function resetAll(){
+  tasks.forEach(task=>{
+    const s=state[task.id];s.arrows.forEach(a=>a&&a.remove());s.arrows=[null,null];
+    const st=document.getElementById(`status-${task.id}`);st.textContent='';st.className='status';updateCounter(task.id,0,0);updateCounter(task.id,1,0);
+  });
+  const overall=document.getElementById('overall');overall.classList.remove('show');overall.textContent='';
+}
+
+renderBase();tasks.forEach(renderTask);
+document.getElementById('checkBtn').addEventListener('click',checkAll);
+document.getElementById('resetBtn').addEventListener('click',resetAll);
+</script>
+</body>
+</html>
