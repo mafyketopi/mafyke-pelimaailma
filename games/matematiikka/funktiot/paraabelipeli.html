@@ -30,7 +30,7 @@ header{
 }
 header h1{margin:0 0 6px;font-size:clamp(2rem,5vw,3rem)}
 header p{margin:0;color:var(--muted)}
-main{max-width:1100px;margin:auto;padding:28px 5% 50px}
+main{max-width:1160px;margin:auto;padding:16px 3% 30px}
 .tabs{
   display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px
 }
@@ -55,8 +55,8 @@ main{max-width:1100px;margin:auto;padding:28px 5% 50px}
   box-shadow:0 8px 24px rgba(31,45,61,.06);
 }
 .hidden{display:none!important}
-.row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
-.col{flex:1 1 380px}
+.row{display:grid;grid-template-columns:minmax(260px,330px) minmax(470px,1fr);gap:18px;align-items:start}
+.col{min-width:0}
 h2,h3{margin-top:0}
 .math{
   font-size:1.35rem;
@@ -93,7 +93,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .feedback.bad{color:var(--bad)}
 table{
   border-collapse:collapse;
-  width:100%;
+  width:auto;
   margin:12px 0 18px;
 }
 th,td{
@@ -112,7 +112,7 @@ td input{width:74px}
 }
 canvas{
   display:block;
-  width:min(100%,640px);
+  width:min(100%,620px);
   height:auto;
   margin:auto;
   background:white;
@@ -125,11 +125,11 @@ canvas{
 }
 .example-grid{
   display:grid;
-  grid-template-columns:1fr;
+  grid-template-columns:1fr 1fr;
   gap:18px;
 }
 @media (max-width:850px){
-  .example-grid{grid-template-columns:1fr}
+  .example-grid,.row{grid-template-columns:1fr}
 }
 .pill{
   display:inline-block;padding:4px 9px;border-radius:999px;background:var(--soft);
@@ -149,22 +149,8 @@ window.MathJax = {
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-
-<style id="matikkapaketti-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
-canvas{max-width:100%!important;height:auto!important}
-img,svg,table{max-width:100%}
-.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
-.package-home:hover{opacity:1}
-@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
-@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
-</style>
 </head>
 <body>
-<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Paraabelipeli</h1>
   <p>Laske pisteitä, piirrä paraabeleja ja tutki kuvaajien leikkauspisteitä.</p>
@@ -185,8 +171,8 @@ img,svg,table{max-width:100%}
       <div class="example-grid">
         <div>
           <table>
-            <tr><th>\(x\)</th><td>-3</td><td>-2</td><td>-1</td><td>0</td><td>1</td><td>2</td><td>3</td></tr>
-            <tr><th>\(y\)</th><td>9</td><td>4</td><td>1</td><td>0</td><td>1</td><td>4</td><td>9</td></tr>
+            <tr><th>\(x\)</th><th>\(y\)</th></tr>
+            <tr><td>-3</td><td>9</td></tr><tr><td>-2</td><td>4</td></tr><tr><td>-1</td><td>1</td></tr><tr><td>0</td><td>0</td></tr><tr><td>1</td><td>1</td></tr><tr><td>2</td><td>4</td></tr><tr><td>3</td><td>9</td></tr>
           </table>
           <p class="note">Huomaa pisteparit: \((-1,1)\) ja \((1,1)\), \((-2,4)\) ja \((2,4)\), \((-3,9)\) ja \((3,9)\).</p>
           <button class="primary" id="animateExample">Näytä pisteet ja paraabeli</button>
@@ -206,7 +192,7 @@ img,svg,table{max-width:100%}
           <div id="countStep">
             <p><strong>Monenko pisteen koordinaatit aiot laskea?</strong></p>
             <p class="small">Valitse 5–9 pistettä.</p>
-            <input type="number" id="pointCount" min="5" max="9" value="7">
+            <input type="number" id="pointCount" min="1" max="12">
             <button class="primary" id="checkCount">Jatka</button>
             <div class="feedback" id="countFeedback"></div>
           </div>
@@ -231,12 +217,12 @@ img,svg,table{max-width:100%}
             <p class="small">Klikkaa mahdollisimman lähelle oikeaa kohtaa. Piste napsahtaa ruudukkoon.</p>
             <div class="feedback" id="plotFeedback"></div>
             <button class="primary hidden" id="drawParabola">Piirrä paraabeli pisteiden kautta</button>
-            <button class="primary" id="nextBasic">Seuraava harjoitus</button>
           </div>
+          <button class="primary" id="nextBasic">Seuraava harjoitus</button>
         </div>
 
         <div class="col">
-          <div class="canvas-wrap"><canvas id="basicCanvas" width="620" height="500"></canvas></div>
+          <div class="canvas-wrap"><canvas id="basicCanvas" width="620" height="620"></canvas></div>
         </div>
       </div>
     </div>
@@ -287,12 +273,12 @@ img,svg,table{max-width:100%}
           <div id="intersectionInputs"></div>
           <button class="primary" id="checkIntersections">Tarkista vastaus</button>
           <div class="feedback" id="intersectionFeedback"></div>
-          <button class="primary" id="nextChallenge">Seuraava haaste</button>
+          <button class="primary hidden" id="nextChallenge">Seuraava haaste</button>
         </div>
       </div>
 
       <div class="col">
-        <div class="canvas-wrap"><canvas id="challengeCanvas" width="620" height="500"></canvas></div>
+        <div class="canvas-wrap"><canvas id="challengeCanvas" width="620" height="620"></canvas></div>
       </div>
     </div>
 
@@ -342,57 +328,58 @@ function setupCanvas(canvas, range){
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const W=canvas.width,H=canvas.height;
-  const pad=54;
-  const sx=(W-2*pad)/(range.xmax-range.xmin);
-  const sy=(H-2*pad)/(range.ymax-range.ymin);
-  const toPx=(x,y)=>[pad+(x-range.xmin)*sx,H-pad-(y-range.ymin)*sy];
+  const pad=42;
+  const scale=Math.min((W-2*pad)/(range.xmax-range.xmin),(H-2*pad)/(range.ymax-range.ymin));
+  const plotW=(range.xmax-range.xmin)*scale,plotH=(range.ymax-range.ymin)*scale;
+  const left=(W-plotW)/2,top=(H-plotH)/2;
+  const toPx=(x,y)=>[left+(x-range.xmin)*scale,top+(range.ymax-y)*scale];
   const fromPx=(px,py)=>[
-    range.xmin+(px-pad)/sx,
-    range.ymin+(H-pad-py)/sy
+    range.xmin+(px-left)/scale,
+    range.ymax-(py-top)/scale
   ];
 
-  ctx.lineWidth=1.35;
-  ctx.font='bold 14px system-ui';
+  ctx.lineWidth=1;
+  ctx.font='13px system-ui';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
 
   for(let x=Math.ceil(range.xmin);x<=Math.floor(range.xmax);x++){
     const [px]=toPx(x,0);
-    ctx.strokeStyle='#c1cad7';
-    ctx.beginPath();ctx.moveTo(px,pad);ctx.lineTo(px,H-pad);ctx.stroke();
+    ctx.strokeStyle='#e7ebf0';
+    ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,top+plotH);ctx.stroke();
     if(x!==0){
       const [,py0]=toPx(0,0);
       ctx.fillStyle='#607086';
-      ctx.fillText(x,px,Math.min(H-pad+17,H-12));
+      ctx.fillText(x,px,Math.min(top+plotH-6,py0+17));
     }
   }
   for(let y=Math.ceil(range.ymin);y<=Math.floor(range.ymax);y++){
     const [,py]=toPx(0,y);
-    ctx.strokeStyle='#c1cad7';
-    ctx.beginPath();ctx.moveTo(pad,py);ctx.lineTo(W-pad,py);ctx.stroke();
+    ctx.strokeStyle='#e7ebf0';
+    ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(left+plotW,py);ctx.stroke();
     if(y!==0){
       const [px0]=toPx(0,0);
       ctx.fillStyle='#607086';
       ctx.textAlign='right';
-      ctx.fillText(y,Math.max(pad-8,px0-7),py);
+      ctx.fillText(y,Math.max(left+18,px0-7),py);
       ctx.textAlign='center';
     }
   }
 
-  ctx.strokeStyle='#0f172a';
-  ctx.lineWidth=3.4;
+  ctx.strokeStyle='#263548';
+  ctx.lineWidth=2;
   if(range.ymin<=0 && range.ymax>=0){
     const [,py0]=toPx(0,0);
-    ctx.beginPath();ctx.moveTo(pad,py0);ctx.lineTo(W-pad,py0);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(left,py0);ctx.lineTo(left+plotW,py0);ctx.stroke();
   }
   if(range.xmin<=0 && range.xmax>=0){
     const [px0]=toPx(0,0);
-    ctx.beginPath();ctx.moveTo(px0,pad);ctx.lineTo(px0,H-pad);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(px0,top);ctx.lineTo(px0,top+plotH);ctx.stroke();
   }
-  ctx.fillStyle='#0f172a';ctx.font='bold 18px system-ui';ctx.textAlign='center';
-  if(range.ymin<=0&&range.ymax>=0){const [,py0]=toPx(0,0);ctx.fillText('x',W-pad+18,py0);}
-  if(range.xmin<=0&&range.xmax>=0){const [px0]=toPx(0,0);ctx.fillText('y',px0,pad-17);}
-  return {ctx,toPx,fromPx,pad,W,H,range};
+  ctx.fillStyle='#172033';
+  if(range.ymin<=0&&range.ymax>=0){const [,py0]=toPx(0,0);ctx.beginPath();ctx.moveTo(left+plotW,py0);ctx.lineTo(left+plotW-14,py0-7);ctx.lineTo(left+plotW-14,py0+7);ctx.fill();ctx.font='italic 19px Georgia,serif';ctx.fillText('x',left+plotW-10,py0+24)}
+  if(range.xmin<=0&&range.xmax>=0){const [px0]=toPx(0,0);ctx.beginPath();ctx.moveTo(px0,top);ctx.lineTo(px0-7,top+14);ctx.lineTo(px0+7,top+14);ctx.fill();ctx.font='italic 19px Georgia,serif';ctx.textAlign='left';ctx.fillText('y',px0+10,top+18);ctx.textAlign='center'}
+  return {ctx,toPx,fromPx,pad:left,W,H,range,plotRight:left+plotW};
 }
 
 function drawPoint(env,x,y,r=6){
@@ -412,7 +399,7 @@ function drawParabolaCurve(env,a,c){
   let started=false;
   ctx.strokeStyle='#315efb';
   ctx.lineWidth=3;
-  for(let px=env.pad;px<=env.W-env.pad;px+=1){
+  for(let px=env.pad;px<=env.plotRight;px+=1){
     const [x]=env.fromPx(px,0);
     const y=a*x*x+c;
     if(y<env.range.ymin-1 || y>env.range.ymax+1){started=false;continue}
@@ -479,7 +466,7 @@ q('#animateExample').onclick=()=>{
 };
 
 /* BASIC */
-let basicIndex=0,basicCount=0,basicXs=[],basicYs=[],basicPlotted=[];
+let basicIndex=0,basicCount=0,basicXs=[],basicYs=[],basicPlotted=[],basicAttempted=false;
 let basicEnv=null,basicCurveDrawn=false;
 
 q('#startBasic').onclick=()=>{
@@ -502,12 +489,14 @@ function loadBasic(){
   setFeedback(q('#yFeedback'),'');
   setFeedback(q('#plotFeedback'),'');
   q('#drawParabola').classList.add('hidden');
-  q('#nextBasic').classList.remove('hidden');
+  q('#nextBasic').textContent='Seuraava harjoitus';
+  basicAttempted=false;
   basicXs=[];basicYs=[];basicPlotted=[];basicCurveDrawn=false;
   basicEnv=setupCanvas(q('#basicCanvas'),t);
   typeset();
 }
 q('#checkCount').onclick=()=>{
+  basicAttempted=true;
   const n=Number(q('#pointCount').value);
   if(!Number.isInteger(n)||n<5||n>9){
     setFeedback(q('#countFeedback'),'Valitse pisteiden määräksi kokonaisluku 5–9.','bad');return;
@@ -530,6 +519,7 @@ function buildXInputs(sel,n){
   }
 }
 q('#checkX').onclick=()=>{
+  basicAttempted=true;
   const vals=qa('#xInputs input').map(i=>Number(i.value));
   if(vals.some(v=>!Number.isFinite(v))){
     setFeedback(q('#xFeedback'),'Täytä kaikki x-arvot.','bad');return;
@@ -548,11 +538,12 @@ q('#checkX').onclick=()=>{
 }
 function buildYTable(sel,xs,cls){
   const d=q(sel);
-  let h='<table><tr><th>\\(x\\)</th>'+xs.map(x=>`<td>${formatNum(x)}</td>`).join('')+'</tr>';
-  h+='<tr><th>\\(y\\)</th>'+xs.map(()=>`<td><input type="number" step="any" class="${cls}"></td>`).join('')+'</tr></table>';
+  let h='<table><tr><th>\\(x\\)</th><th>\\(y\\)</th></tr>';
+  h+=xs.map(x=>`<tr><td>${formatNum(x)}</td><td><input type="number" step="any" class="${cls}"></td></tr>`).join('')+'</table>';
   d.innerHTML=h;
 }
 q('#checkY').onclick=()=>{
+  basicAttempted=true;
   const t=basicTasks[basicIndex];
   const vals=qa('.basicY').map(i=>Number(i.value));
   const correct=basicXs.map(x=>evalPara(t,x));
@@ -594,10 +585,11 @@ q('#drawParabola').onclick=()=>{
   drawParabolaCurve(basicEnv,t.a,t.c);
   basicCurveDrawn=true;
   q('#drawParabola').classList.add('hidden');
-  q('#nextBasic').classList.remove('hidden');
   setFeedback(q('#plotFeedback'),'Valmis! Pisteet muodostavat paraabelin.','ok');
 };
 q('#nextBasic').onclick=()=>{
+  if(!basicAttempted){setFeedback(q('#countFeedback'),'Tarkista tehtävää ennen jatkamista.','bad');return}
+  if(!basicCurveDrawn){const t=basicTasks[basicIndex];basicEnv=setupCanvas(q('#basicCanvas'),t);[-3,-2,-1,0,1,2,3].forEach(x=>{const y=evalPara(t,x);if(y>=t.ymin&&y<=t.ymax)drawPoint(basicEnv,x,y)});drawParabolaCurve(basicEnv,t.a,t.c)}
   basicIndex++;
   if(basicIndex>=basicTasks.length){
     q('#basicGame').classList.add('hidden');
@@ -622,7 +614,7 @@ function renderChallenge(){
   q('#challengePlotPara').classList.add('hidden');
   q('#challengeLineStep').classList.add('hidden');
   q('#intersectionStep').classList.add('hidden');
-  q('#nextChallenge').classList.remove('hidden');
+  q('#nextChallenge').classList.add('hidden');
   setFeedback(q('#challengeXFeedback'),'');
   setFeedback(q('#challengeYFeedback'),'');
   setFeedback(q('#challengePlotFeedback'),'');

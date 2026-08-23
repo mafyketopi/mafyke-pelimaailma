@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Suoran yhtälön määritys</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 <style>
 :root{
   --bg:#f5f7fb; --card:#fff; --ink:#172033; --muted:#637083;
@@ -48,22 +50,8 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 .bigChoice:hover{border-color:#9fb5e9}
 .note{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:#455267}
 </style>
-
-<style id="matikkapaketti-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
-canvas{max-width:100%!important;height:auto!important}
-img,svg,table{max-width:100%}
-.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
-.package-home:hover{opacity:1}
-@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:820px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
-@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
-</style>
 </head>
 <body>
-<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Suoran yhtälön määritys</h1>
   <p>Harjoittele vakiotermiä, kulmakerrointa ja suoran yhtälöä.</p>
@@ -82,13 +70,13 @@ img,svg,table{max-width:100%}
         <div class="score" id="basicScore"></div>
         <p class="task">Määritä kuvaajasta vakiotermi, kulmakerroin ja lopuksi suoran yhtälö.</p>
 
-        <div class="field">
+        <div class="field" id="bField">
           <label>Vakiotermi <span class="eq">b</span></label>
           <input id="bInput" inputmode="decimal" placeholder="esim. -2">
           <button class="check" onclick="checkBasic('b')">Tarkista</button>
         </div>
 
-        <div class="field">
+        <div class="field" id="kField">
           <label>Kulmakerroin <span class="eq">k</span></label>
           <input id="kInput" inputmode="text" placeholder="esim. 2/3">
           <button class="check" onclick="checkBasic('k')">Tarkista</button>
@@ -112,7 +100,11 @@ img,svg,table{max-width:100%}
   </section>
 
   <section id="parallel" class="card hidden">
-    <div class="layout">
+    <div id="parallelIntro" class="layout">
+      <div><h2>Yhdensuuntaiset suorat</h2><p class="task">Yhdensuuntaiset suorat nousevat tai laskevat yhtä jyrkästi. Siksi niillä on sama kulmakerroin.</p><div class="note">Esimerkin suorilla \(y=x+1\) ja \(y=x-2\) on molemmilla kulmakerroin \(k=1\). Vakiotermit ovat erilaiset, joten suorat eivät ole sama suora.</div><button class="next" onclick="startParallel()">Aloita harjoitukset</button></div>
+      <div><div class="canvasWrap"><canvas id="parallelIntroCanvas" width="520" height="520"></canvas></div><div class="hint">Samanlaiset apukolmiot näyttävät samat kulmakertoimet.</div></div>
+    </div>
+    <div id="parallelWork" class="layout hidden">
       <div>
         <div class="score" id="parallelScore"></div>
         <p class="task" id="parallelTask"></p>
@@ -141,10 +133,9 @@ img,svg,table{max-width:100%}
     <div class="challengeBox">
       <div class="score" id="challengeScore"></div>
       <p class="task" id="challengeTask"></p>
-      <div class="choiceRow">
-        <button class="bigChoice" onclick="answerChallenge(true)">Kyllä, kulkee</button>
-        <button class="bigChoice" onclick="answerChallenge(false)">Ei kulje</button>
-      </div>
+      <div class="field"><label>Ratkaistu muoto</label><input id="challengeEq" placeholder="esim. y = 2x - 3"><span></span></div>
+      <div class="field"><label>Kulmakerroin \(k\)</label><input id="challengeK" placeholder="esim. 2/3"><span></span></div>
+      <div class="field"><label>Vakiotermi \(b\)</label><input id="challengeB" placeholder="esim. -3"><button class="check" onclick="checkChallenge()">Tarkista</button></div>
       <div id="challengeFeedback" class="feedback"></div>
       <button class="next" onclick="nextChallenge()">Seuraava tehtävä</button>
     </div>
@@ -153,25 +144,28 @@ img,svg,table{max-width:100%}
 
 <script>
 const basicTasks = [
-  {k:1,b:2},{k:-1,b:3},{k:2,b:-1},{k:0.5,b:-2},{k:-1.5,b:1},{k:2/3,b:-2}
+  {k:1,b:2},{k:-1,b:3},{k:0,b:-2},{vertical:2},{k:0.5,b:-2},{k:-1.5,b:1},{k:2/3,b:-2}
 ];
 const parallelTasks = [
   {px:0,py:2,k:-2, given:"y = -2x"},
   {px:0,py:-1,k:3, given:"y = 3x + 4"},
   {px:2,py:1,k:2, given:"y = 2x - 5"},
   {px:-2,py:3,k:-1, given:"y = -x + 7"},
-  {px:3,py:1,k:0.5, given:"y = 1/2x - 4"},
-  {px:-3,py:2,k:-2/3, given:"y = -2/3x + 5"}
+  {px:3,py:1,k:0.5, given:"y = \\frac12x - 4"},
+  {px:-3,py:2,k:-2/3, given:"y = -\\frac23x + 5"}
 ];
 const challengeTasks = [
-  {a:2,b:-1,c:3,x:1,y:5},   // 2-5+3=0 yes
-  {a:3,b:2,c:-4,x:0,y:2}    // 0+4-4 yes; mutate one display answer?
+  {a:2,b:1,c:-6},
+  {a:3,b:-1,c:4},
+  {a:1,b:2,c:-8},
+  {a:-2,b:3,c:6}
 ];
 
 let bi=0, pi=0, ci=0;
 let basicState={b:false,k:false,eq:false};
 let bs=0, ps=0, cs=0;
 let drawPoints=[];
+let basicAttempted=false,parallelAttempted=false,challengeAttempted=false;
 
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -217,6 +211,9 @@ function evalLinearEqInput(s){
   }
   return {k,b};
 }
+function evalAnyLineInput(s){
+  s=normalizeEq(s);let m=s.match(/^x=([-+]?\d+(?:\.\d+)?)$/);if(m)return {vertical:Number(m[1])};return evalLinearEqInput(s);
+}
 
 function fmt(n){
   if(approx(n,Math.round(n))) return String(Math.round(n));
@@ -241,20 +238,21 @@ function setupCanvas(canvas){
   const min=-5,max=5, scale=W/(max-min);
   function X(x){return (x-min)*scale}
   function Y(y){return H-(y-min)*scale}
-  ctx.lineWidth=1.35;
-  ctx.strokeStyle='#c1cad7';
+  ctx.lineWidth=1;
+  ctx.strokeStyle='#e4e8ef';
   for(let i=min;i<=max;i++){
     ctx.beginPath();ctx.moveTo(X(i),0);ctx.lineTo(X(i),H);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,Y(i));ctx.lineTo(W,Y(i));ctx.stroke();
   }
-  ctx.strokeStyle='#0f172a';ctx.lineWidth=3.3;
+  ctx.strokeStyle='#697586';ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(W,Y(0));ctx.stroke();
   ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),H);ctx.stroke();
-  ctx.fillStyle='#334155';ctx.font='bold 16px system-ui';
+  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(W,Y(0));ctx.lineTo(W-14,Y(0)-7);ctx.lineTo(W-14,Y(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0)-7,14);ctx.lineTo(X(0)+7,14);ctx.fill();
+  ctx.fillStyle='#475569';ctx.font='14px system-ui';
   for(let i=min;i<=max;i++){
     if(i!==0){ctx.fillText(i,X(i)+3,Y(0)-5);ctx.fillText(i,X(0)+5,Y(i)-4)}
   }
-  ctx.fillText('x',W-15,Y(0)-8);ctx.fillText('y',X(0)+8,15);
+  ctx.font='italic 19px Georgia,serif';ctx.fillStyle='#172033';ctx.fillText('x',W-18,Y(0)+22);ctx.fillText('y',X(0)+10,20);
   return {ctx,X,Y,min,max,scale};
 }
 function drawLine(base,k,b,thick=3){
@@ -262,14 +260,18 @@ function drawLine(base,k,b,thick=3){
   ctx.save();ctx.strokeStyle='#2f6fed';ctx.lineWidth=thick;
   ctx.beginPath();ctx.moveTo(X(min),Y(k*min+b));ctx.lineTo(X(max),Y(k*max+b));ctx.stroke();ctx.restore();
 }
+function drawVertical(base,x,thick=3){const {ctx,X}=base;ctx.save();ctx.strokeStyle='#2f6fed';ctx.lineWidth=thick;ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),520);ctx.stroke();ctx.restore()}
 function renderBasic(){
   const t=basicTasks[bi], base=setupCanvas(document.getElementById('basicCanvas'));
-  drawLine(base,t.k,t.b);
+  t.vertical===undefined?drawLine(base,t.k,t.b):drawVertical(base,t.vertical);
+  document.getElementById('bField').classList.toggle('hidden',t.vertical!==undefined);
+  document.getElementById('kField').classList.toggle('hidden',t.vertical!==undefined);
+  document.querySelector('#basic .task').textContent=t.vertical===undefined?'Määritä kuvaajasta vakiotermi, kulmakerroin ja lopuksi suoran yhtälö.':'Kyseessä on pystysuora suora. Kirjoita sen yhtälö muodossa x = a. Kulmakerrointa ja vakiotermiä ei kysytä.';
   const {ctx,X,Y}=base;
-  if(basicState.b){
+  if(basicState.b&&t.vertical===undefined){
     ctx.save();ctx.strokeStyle='#1f9d61';ctx.lineWidth=7;ctx.beginPath();ctx.arc(X(0),Y(t.b),12,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
-  if(basicState.k){
+  if(basicState.k&&t.vertical===undefined){
     // choose run 2 if denominator-ish, else 1
     let run=1;
     if(approx(Math.abs(t.k),2/3)) run=3;
@@ -287,6 +289,7 @@ function renderBasic(){
   document.getElementById('basicScore').textContent=`Tehtävä ${bi+1}/${basicTasks.length} • pisteet ${bs}`;
 }
 function checkBasic(kind){
+  basicAttempted=true;
   const t=basicTasks[bi], fb=document.getElementById('basicFeedback');
   let ok=false;
   if(kind==='b'){
@@ -298,15 +301,17 @@ function checkBasic(kind){
     if(ok && !basicState.k){basicState.k=true;bs++;renderBasic()}
   }
   if(kind==='eq'){
-    const e=evalLinearEqInput(document.getElementById('eqInput').value);
-    ok=e && approx(e.k,t.k)&&approx(e.b,t.b);
+    const e=evalAnyLineInput(document.getElementById('eqInput').value);
+    ok=t.vertical!==undefined?(e&&approx(e.vertical,t.vertical)):(e&&approx(e.k,t.k)&&approx(e.b,t.b));
     if(ok && !basicState.eq){basicState.eq=true;bs++;renderBasic()}
   }
   fb.className='feedback '+(ok?'ok':'bad');
   fb.textContent=ok?'Oikein!':'Ei aivan. Tarkista kuvaaja ja yritä uudelleen.';
 }
 function nextBasic(){
+  if(!basicAttempted){document.getElementById('basicFeedback').className='feedback bad';document.getElementById('basicFeedback').textContent='Tarkista ainakin yksi vastaus ennen jatkamista.';return}
   bi=(bi+1)%basicTasks.length; basicState={b:false,k:false,eq:false};
+  basicAttempted=false;
   ['bInput','kInput','eqInput'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('basicFeedback').textContent=''; renderBasic();
 }
@@ -314,10 +319,13 @@ function nextBasic(){
 function renderParallel(){
   const t=parallelTasks[pi];
   document.getElementById('parallelTask').innerHTML=
-    `Määritä sen suoran yhtälö, joka kulkee pisteen <span class="eq">(${t.px}, ${t.py})</span> kautta ja on yhdensuuntainen suoran <span class="eq">${t.given}</span> kanssa.`;
+    `Määritä sen suoran yhtälö, joka kulkee pisteen \\(${t.px}, ${t.py}\\) kautta ja on yhdensuuntainen suoran \\(${t.given}\\) kanssa.`;
   document.getElementById('parallelScore').textContent=`Tehtävä ${pi+1}/${parallelTasks.length} • pisteet ${ps}`;
   renderDraw();
+  if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.getElementById('parallelTask')]);
 }
+function startParallel(){document.getElementById('parallelIntro').classList.add('hidden');document.getElementById('parallelWork').classList.remove('hidden');renderParallel()}
+function drawParallelIntro(){const base=setupCanvas(document.getElementById('parallelIntroCanvas'));drawLine(base,1,1,4);const c=base.ctx;drawLine(base,1,-2,4);[[0,1],[0,-2]].forEach(([x,y])=>{c.strokeStyle='#f2a900';c.lineWidth=4;c.beginPath();c.moveTo(base.X(x),base.Y(y));c.lineTo(base.X(x+2),base.Y(y));c.lineTo(base.X(x+2),base.Y(y+2));c.stroke()})}
 function renderDraw(showAnswer=false){
   const t=parallelTasks[pi], base=setupCanvas(document.getElementById('drawCanvas'));
   const {ctx,X,Y}=base;
@@ -365,6 +373,7 @@ dc.addEventListener('click',e=>{
 });
 function resetDrawing(){drawPoints=[];document.getElementById('drawStatus').textContent='Valitse ensimmäinen piste.';renderDraw()}
 function checkParallel(){
+  parallelAttempted=true;
   const t=parallelTasks[pi], b=t.py-t.k*t.px, e=evalLinearEqInput(document.getElementById('parallelEq').value);
   const ok=e&&approx(e.k,t.k)&&approx(e.b,b);
   const fb=document.getElementById('parallelFeedback');
@@ -376,7 +385,9 @@ function checkParallel(){
   }else fb.textContent='Ei aivan. Yhdensuuntaisen suoran kulmakerroin on sama kuin annetulla suoralla.';
 }
 function nextParallel(){
+  if(!parallelAttempted){document.getElementById('parallelFeedback').className='feedback bad';document.getElementById('parallelFeedback').textContent='Tarkista vastaus ennen jatkamista.';return}
   pi=(pi+1)%parallelTasks.length; drawPoints=[];
+  parallelAttempted=false;
   document.getElementById('parallelEq').value='';
   const fb=document.getElementById('parallelFeedback');fb.textContent='';delete fb.dataset.done;
   document.getElementById('drawStatus').textContent='Valitse ensimmäinen piste.';renderParallel();
@@ -386,28 +397,30 @@ function renderChallenge(){
   const t=challengeTasks[ci];
   document.getElementById('challengeScore').textContent=`Tehtävä ${ci+1}/${challengeTasks.length} • pisteet ${cs}`;
   document.getElementById('challengeTask').innerHTML=
-    `Kulkeeko suora <span class="eq">${t.a}x ${t.b>=0?'+':'−'} ${Math.abs(t.b)}y ${t.c>=0?'+':'−'} ${Math.abs(t.c)} = 0</span> pisteen <span class="eq">(${t.x}, ${t.y})</span> kautta?`;
+    `Esitä yhtälö \\(${t.a}x ${t.b>=0?'+':'-'} ${Math.abs(t.b)}y ${t.c>=0?'+':'-'} ${Math.abs(t.c)}=0\\) ratkaistussa muodossa \\(y=kx+b\\). Ilmoita myös kulmakerroin ja vakiotermi.`;
+  if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.getElementById('challengeTask')]);
 }
-function answerChallenge(ans){
-  const t=challengeTasks[ci], value=t.a*t.x+t.b*t.y+t.c, correct=approx(value,0), ok=ans===correct;
+function checkChallenge(){
+  challengeAttempted=true;
+  const t=challengeTasks[ci],k=-t.a/t.b,b=-t.c/t.b,e=evalLinearEqInput(document.getElementById('challengeEq').value);
+  const ok=e&&approx(e.k,k)&&approx(e.b,b)&&approx(parseNum(document.getElementById('challengeK').value),k)&&approx(parseNum(document.getElementById('challengeB').value),b);
   const fb=document.getElementById('challengeFeedback');
   fb.className='feedback '+(ok?'ok':'bad');
   if(ok){
     if(!fb.dataset.done){cs++;fb.dataset.done='1'}
-    fb.innerHTML=`Oikein! Sijoittamalla pisteen koordinaatit saadaan ${t.a}·${t.x} ${t.b>=0?'+':'−'} ${Math.abs(t.b)}·${t.y} ${t.c>=0?'+':'−'} ${Math.abs(t.c)} = ${fmt(value)}${correct?', joten piste toteuttaa yhtälön.':', joten piste ei toteuta yhtälöä.'}`;
+    fb.innerHTML=`Oikein! Ratkaistu muoto on <b>${eqText(k,b)}</b>, kulmakerroin <b>${fmt(k)}</b> ja vakiotermi <b>${fmt(b)}</b>.`;
     renderChallenge();
-  } else {
-    fb.textContent='Ei aivan. Sijoita pisteen x- ja y-koordinaatit suoran yhtälöön ja tarkista, tuleeko vasemmaksi puoleksi 0.';
-  }
+  } else fb.innerHTML=`Tarkista lasku. Oikea ratkaistu muoto on <b>${eqText(k,b)}</b>, joten voit jatkaa seuraavaan tehtävään.`;
 }
 function nextChallenge(){
+  if(!challengeAttempted){document.getElementById('challengeFeedback').className='feedback bad';document.getElementById('challengeFeedback').textContent='Tarkista vastaus ennen jatkamista.';return}
   ci=(ci+1)%challengeTasks.length;
-  // make second challenge a "no" task on alternate cycle
-  if(ci===1) challengeTasks[1]={a:3,b:2,c:-4,x:1,y:2}; // 3+4-4=3
+  challengeAttempted=false;
+  ['challengeEq','challengeK','challengeB'].forEach(id=>document.getElementById(id).value='');
   const fb=document.getElementById('challengeFeedback');fb.textContent='';delete fb.dataset.done;renderChallenge();
 }
 
-renderBasic(); renderParallel(); renderChallenge();
+renderBasic(); renderParallel(); renderChallenge(); drawParallelIntro();
 </script>
 </body>
 </html>

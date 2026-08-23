@@ -15,7 +15,7 @@ main{max-width:1180px;margin:auto;padding:18px 3% 30px}
 .workspace{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(310px,.78fr);gap:16px;align-items:start}
 .card{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px rgba(25,40,65,.05)}
 .graphcard{padding:10px}.taskcard{padding:18px}
-canvas{display:block;width:100%;height:auto;max-height:68vh}
+canvas{display:block;width:min(100%,640px);height:auto;aspect-ratio:1;margin:auto}
 .topline{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .badge{background:#eef2f7;border-radius:999px;padding:6px 10px;font-size:.9rem;font-weight:750}
 h2{font-size:1.3rem;margin:8px 0 8px}.lead{color:var(--muted);line-height:1.45;margin:6px 0 13px}
@@ -27,35 +27,14 @@ button{font:inherit}.btn{border:0;border-radius:10px;padding:10px 13px;font-weig
 .option{border:2px solid #d5dde7;background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}
 .option.sel{border-color:#6da0f8;background:#eef5ff}
 .math{font-family:Cambria,Georgia,serif;font-size:1.08rem}
-.numberline{margin:16px 2px 6px;position:relative;padding:30px 0 8px}
-.axis{height:4px;background:#5e6a79;position:relative;margin:0 14px}
-.axis:before,.axis:after{content:"";position:absolute;top:-5px;width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent}
-.axis:before{left:-10px;border-right:11px solid #5e6a79}.axis:after{right:-10px;border-left:11px solid #5e6a79}
-.intervals{display:grid;gap:4px;margin-top:-14px;position:relative;z-index:2}
+.choices{display:grid;gap:8px;margin:12px 0}
 .segment{min-height:38px;border:2px solid transparent;border-radius:8px;background:rgba(226,232,240,.82);cursor:pointer;font-weight:750}
 .segment.sel{background:#cfe1ff;border-color:#4e8df5}
-.marks{position:absolute;left:0;right:0;top:17px;height:24px;pointer-events:none}
-.mark{position:absolute;transform:translateX(-50%);text-align:center;font-weight:800}
-.dot{width:13px;height:13px;border:3px solid #5e6a79;background:#fff;border-radius:50%;margin:auto}.dot.closed{background:#5e6a79}
 .answer{background:#f7f9fc;border:1px solid #e0e6ed;padding:10px;border-radius:10px;margin-top:10px}
 @media(max-width:820px){header{height:auto;padding:14px 4%}.workspace{grid-template-columns:1fr}.tabs{grid-template-columns:1fr 1fr}canvas{max-height:none}}
 </style>
-
-<style id="matikkapaketti-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
-canvas{max-width:100%!important;height:auto!important}
-img,svg,table{max-width:100%}
-.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
-.package-home:hover{opacity:1}
-@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:820px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
-@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
-</style>
 </head>
 <body>
-<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header><div><h1>Funktion kuvaajan tutkiminen</h1></div><div class="score" id="score">0 / 15 oikein</div></header>
 <main>
 <div class="tabs">
@@ -65,7 +44,7 @@ img,svg,table{max-width:100%}
  <button class="tab" data-sec="3">4. Kasvava / vähenevä</button>
 </div>
 <div class="workspace">
- <section class="card graphcard"><canvas id="g" width="720" height="540"></canvas></section>
+ <section class="card graphcard"><canvas id="g" width="680" height="680"></canvas></section>
  <section class="card taskcard">
    <div class="topline"><span class="badge" id="counter"></span><span class="badge" id="typeBadge"></span></div>
    <h2 id="question"></h2><p class="lead" id="help"></p>
@@ -102,30 +81,33 @@ const sections=[
   {kind:"mono",fn:x=>(x*x*x)/3-x*x-3*x+2,label:"kasvava",cuts:[-1,3],correct:[0,2],closed:true,answer:"x ≤ −1 tai x ≥ 3"}
  ]}
 ];
-let sec=0,idx=0,selected=new Set(),solved=new Set(),highlight=false;
-const cvs=document.getElementById("g"),ctx=cvs.getContext("2d"),xmin=-5,xmax=5,ymin=-8,ymax=10;
+let sec=0,idx=0,selected=new Set(),solved=new Set(),highlight=false,attempted=false;
+const cvs=document.getElementById("g"),ctx=cvs.getContext("2d"),xmin=-6,xmax=6,ymin=-6,ymax=6;
 const X=x=>(x-xmin)/(xmax-xmin)*cvs.width, Y=y=>cvs.height-(y-ymin)/(ymax-ymin)*cvs.height;
 function task(){return sections[sec].tasks[idx]}
 function key(){return sec+"-"+idx}
-function curve(a,b,color="#172033",w=4){
+function curve(a,b,color="#172033",w=4,signMode=false){
  let t=task(),started=false;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();
- for(let x=a;x<=b;x+=.018){let y=t.fn(x);if(y<ymin-.5||y>ymax+.5){started=false;continue}
+ for(let x=a;x<=b;x+=.018){let y=t.fn(x);if(signMode)ctx.strokeStyle=y>=0?'#d33b3b':'#2563eb';if(y<ymin-.5||y>ymax+.5){started=false;continue}
  if(!started){ctx.moveTo(X(x),Y(y));started=true}else ctx.lineTo(X(x),Y(y))}
  ctx.stroke()
 }
 function ranges(cuts){let a=[xmin,...cuts,xmax],r=[];for(let i=0;i<a.length-1;i++)r.push([a[i],a[i+1]]);return r}
 function draw(){
  let t=task();ctx.clearRect(0,0,cvs.width,cvs.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,cvs.width,cvs.height);
- ctx.strokeStyle="#c1cad7";ctx.lineWidth=1.35;
- for(let x=-5;x<=5;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()}
- for(let y=-8;y<=10;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(cvs.width,Y(y));ctx.stroke()}
+ ctx.strokeStyle="#dce3ed";ctx.lineWidth=1;
+ for(let x=xmin;x<=xmax;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()}
+ for(let y=ymin;y<=ymax;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(cvs.width,Y(y));ctx.stroke()}
  if(t.domain){ctx.fillStyle="rgba(37,99,235,.07)";ctx.fillRect(X(t.domain[0]),0,X(t.domain[1])-X(t.domain[0]),cvs.height);
   ctx.strokeStyle="#8cb3f7";ctx.lineWidth=2;t.domain.forEach(x=>{ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()})}
- ctx.strokeStyle="#0f172a";ctx.lineWidth=3.3;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
- ctx.fillStyle="#334155";ctx.font="bold 16px system-ui";for(let x=-5;x<=5;x++)if(x)ctx.fillText(x,X(x)-5,Y(0)+18);
- for(let y=-8;y<=10;y+=2)if(y)ctx.fillText(y,X(0)+8,Y(y)+5); ctx.font="bold 20px system-ui";ctx.fillStyle="#0f172a";ctx.fillText("x",cvs.width-22,Y(0)-10);ctx.fillText("y",X(0)+12,22);
+ ctx.strokeStyle="#697586";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
+ ctx.fillStyle="#172033";ctx.beginPath();ctx.moveTo(X(xmax),Y(0));ctx.lineTo(X(xmax)-14,Y(0)-7);ctx.lineTo(X(xmax)-14,Y(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(X(0),Y(ymax));ctx.lineTo(X(0)-7,Y(ymax)+14);ctx.lineTo(X(0)+7,Y(ymax)+14);ctx.fill();
+ ctx.fillStyle="#596579";ctx.font="15px system-ui";ctx.textAlign='center';for(let x=xmin;x<=xmax;x++)if(x)ctx.fillText(x,X(x),Y(0)+18);
+ ctx.textAlign='left';for(let y=ymin;y<=ymax;y++)if(y)ctx.fillText(y,X(0)+7,Y(y)+5);ctx.font='italic 20px serif';ctx.fillStyle='#172033';ctx.fillText('x',X(xmax)-12,Y(0)+24);ctx.fillText('y',X(0)+12,Y(ymax)+20);
  if((t.kind==="sign"||t.kind==="mono")&&selected.size){let rr=ranges(t.cuts);selected.forEach(i=>curve(rr[i][0],rr[i][1],"rgba(37,99,235,.30)",11))}
- curve(xmin,xmax);
+ if(t.kind==='sign'){
+   let start=xmin,prev=t.fn(start)>=0;for(let x=xmin+.02;x<=xmax;x+=.02){let now=t.fn(x)>=0;if(now!==prev){curve(start,x,prev?'#d33b3b':'#2563eb',5);start=x;prev=now}}curve(start,xmax,prev?'#d33b3b':'#2563eb',5);
+ }else curve(xmin,xmax);
  if(highlight){
    let pts=[];
    if(t.kind==="zeros") pts=t.roots.map(x=>[x,0]);
@@ -134,7 +116,7 @@ function draw(){
  }
 }
 function render(){
- selected.clear();highlight=false;feedback.textContent="";feedback.className="feedback";answer.classList.add("hidden");
+ selected.clear();highlight=false;attempted=false;feedback.textContent="";feedback.className="feedback";answer.classList.add("hidden");
  let t=task();counter.textContent=`Tehtävä ${idx+1} / ${sections[sec].tasks.length}`;typeBadge.textContent=t.label;
  if(t.kind==="zeros")renderZeros(t); if(t.kind==="extrema")renderExtrema(t); if(t.kind==="sign")renderIntervals(t); if(t.kind==="mono")renderIntervals(t);
  prev.disabled=idx===0;next.textContent=idx===sections[sec].tasks.length-1?(sec===3?"Valmis":"Seuraava osio →"):"Seuraava →";
@@ -158,10 +140,9 @@ function renderExtrema(t){
 function renderIntervals(t){
  let sign=t.kind==="sign";
  question.textContent=sign?`Millä muuttujan arvoilla funktio on ${t.label}?`:`Millä muuttujan arvoilla funktio on ${t.label}?`;
- help.textContent=sign?"Valitse lukusuoralta oikea alue tai oikeat alueet. Valittu kuvaajan osa korostuu samalla.":"Valitse lukusuoralta oikea alue tai oikeat alueet. Kääntymiskohta kuuluu mukaan.";
- let rr=ranges(t.cuts),cols=rr.map(()=>1).join("fr "),labels=rr.map((r,i)=>intervalLabel(r,t.cuts,t.closed)).join("");
- let marks=t.cuts.map((c,i)=>`<div class="mark" style="left:${(c-xmin)/(xmax-xmin)*100}%"><div class="dot ${t.closed?'closed':''}"></div>${c}</div>`).join("");
- controls.innerHTML=`<div class="numberline"><div class="marks">${marks}</div><div class="axis"></div><div class="intervals" style="grid-template-columns:${cols}">${labels}</div></div>
+ help.textContent=sign?"Kuvaajan positiivinen osa on punainen ja negatiivinen osa sininen. Valitse kaikki oikeat vaihtoehdot.":"Valitse kaikki oikeat vaihtoehdot. Kääntymiskohta kuuluu mukaan.";
+ let rr=ranges(t.cuts),labels=rr.map((r,i)=>intervalLabel(r,t.cuts,t.closed)).join("");
+ controls.innerHTML=`<div class="choices">${labels}</div>
  <button class="btn primary" id="check">Tarkista</button>`;
  document.querySelectorAll(".segment").forEach(b=>b.onclick=()=>{let i=+b.dataset.i;if(selected.has(i))selected.delete(i);else selected.add(i);b.classList.toggle("sel");draw()});
  check.onclick=checkIntervals
@@ -173,8 +154,8 @@ function intervalLabel(r,cuts,closed){
  else txt=closed?`${a} ≤ x ≤ ${b}`:`${a} < x < ${b}`;
  return `<button class="segment" data-i="${ranges(cuts).findIndex(q=>q[0]===r[0]&&q[1]===r[1])}">${txt}</button>`
 }
-function ok(msg){feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 15 oikein`;draw()}
-function no(msg){feedback.textContent=msg;feedback.className="feedback bad"}
+function ok(msg){attempted=true;feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 15 oikein`;draw()}
+function no(msg){attempted=true;feedback.textContent=msg+' Voit yrittää uudelleen tai jatkaa ja nähdä ratkaisun.';feedback.className="feedback bad"}
 function checkZeros(){
  let t=task(),vals=[...document.querySelectorAll(".z")].map(x=>Number(x.value)).filter(x=>x.value!==""),noneSel=none.classList.contains("sel");
  let good=t.roots.length===0?noneSel:(!noneSel&&vals.length===t.roots.length&&t.roots.every(x=>vals.includes(x)));
@@ -189,7 +170,7 @@ function checkIntervals(){
  if(good){ok("Oikein! Valittu kuvaajan osa on korostettu.");answer.innerHTML=`Vastaus: <b class="math">${t.answer}</b>`;answer.classList.remove("hidden")}else no("Ei vielä. Vertaa valitsemaasi aluetta kuvaajaan.")
 }
 prev.onclick=()=>{if(idx>0){idx--;render()}};
-next.onclick=()=>{if(idx<sections[sec].tasks.length-1){idx++;render()}else if(sec<3){sec++;idx=0;render()}};
+next.onclick=()=>{if(!solved.has(key())&&!attempted){no('Tarkista tehtävä ensin.');return}if(!solved.has(key())){let t=task();selected=new Set(t.correct||[]);highlight=true;answer.innerHTML=t.answer?`Vastaus: <b class="math">${t.answer}</b>`:'Ratkaisu on merkitty kuvaajaan.';answer.classList.remove('hidden');draw()}if(idx<sections[sec].tasks.length-1){idx++;render()}else if(sec<3){sec++;idx=0;render()}};
 document.querySelectorAll(".tab").forEach((b,i)=>b.onclick=()=>{sec=i;idx=0;render()});
 render();
 </script>

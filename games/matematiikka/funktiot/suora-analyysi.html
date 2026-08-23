@@ -180,22 +180,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
   border:1px solid #cfe1ff;
 }
 </style>
-
-<style id="matikkapaketti-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
-canvas{max-width:100%!important;height:auto!important}
-img,svg,table{max-width:100%}
-.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
-.package-home:hover{opacity:1}
-@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:780px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
-@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
-</style>
 </head>
 <body>
-<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Suora-analyysi</h1>
   <p>Tutki kuvaajaa ja päättele suoran ominaisuudet.</p>
@@ -263,36 +249,19 @@ img,svg,table{max-width:100%}
 
         <div class="field">
           <label>4. Missä pisteessä suora leikkaa x-akselin?</label>
-          <div class="xy">
-            <div>
-              <div class="small-label">x</div>
-              <input id="xInterceptX" inputmode="decimal" autocomplete="off" placeholder="x">
-            </div>
-            <div>
-              <div class="small-label">y</div>
-              <input id="xInterceptY" inputmode="decimal" autocomplete="off" placeholder="y">
-            </div>
-          </div>
-          <div class="hint">Jos suora ei leikkaa x-akselia, kirjoita x-kenttään <b>ei</b>.</div>
+          <input id="xIntercept" inputmode="decimal" autocomplete="off" placeholder="esim. (-1, 0)">
+          <div class="hint">Kirjoita piste muodossa <b>(x, y)</b>. Jos suora ei leikkaa x-akselia, kirjoita <b>ei</b>.</div>
         </div>
 
         <div class="field">
           <label>5. Missä pisteessä suora leikkaa y-akselin?</label>
-          <div class="xy">
-            <div>
-              <div class="small-label">x</div>
-              <input id="yInterceptX" inputmode="decimal" autocomplete="off" placeholder="x">
-            </div>
-            <div>
-              <div class="small-label">y</div>
-              <input id="yInterceptY" inputmode="decimal" autocomplete="off" placeholder="y">
-            </div>
-          </div>
+          <input id="yIntercept" inputmode="decimal" autocomplete="off" placeholder="esim. (0, 2)">
+          <div class="hint">Välilyönnit ovat vapaaehtoisia.</div>
         </div>
 
         <div class="buttons">
           <button class="primary" id="checkBtn">Tarkista</button>
-          <button class="secondary" id="nextBtn">Seuraava</button>
+          <button class="secondary" id="nextBtn" disabled>Seuraava</button>
         </div>
 
         <div class="feedback" id="feedback"></div>
@@ -377,8 +346,8 @@ function drawBase(canvas,t){
   ctx.fillStyle="#fff";
   ctx.fillRect(0,0,W,H);
 
-  ctx.lineWidth=1.35;
-  ctx.strokeStyle="#c1cad7";
+  ctx.lineWidth=1;
+  ctx.strokeStyle="#e5e9ef";
   for(let i=-range;i<=range;i++){
     ctx.beginPath();
     ctx.moveTo(X(i),Y(-range));
@@ -391,8 +360,8 @@ function drawBase(canvas,t){
     ctx.stroke();
   }
 
-  ctx.strokeStyle="#0f172a";
-  ctx.lineWidth=3.2;
+  ctx.strokeStyle="#263449";
+  ctx.lineWidth=2.2;
   ctx.beginPath();
   ctx.moveTo(X(-range),Y(0)); ctx.lineTo(X(range),Y(0));
   ctx.moveTo(X(0),Y(-range)); ctx.lineTo(X(0),Y(range));
@@ -407,8 +376,8 @@ function drawBase(canvas,t){
   arrow(X(range),Y(0),0);
   arrow(X(0),Y(range),-Math.PI/2);
 
-  ctx.font="bold 17px system-ui";
-  ctx.fillStyle="#334155";
+  ctx.font="18px system-ui";
+  ctx.fillStyle="#4e5c70";
   ctx.textAlign="center";
   ctx.textBaseline="top";
   for(let i=-range;i<=range;i++){
@@ -513,14 +482,14 @@ function redrawTask(){
 }
 
 function clearInputs(){
-  ["direction","slope","constant","xInterceptX","xInterceptY","yInterceptX","yInterceptY"]
+  ["direction","slope","constant","xIntercept","yIntercept"]
     .forEach(id => $(id).value="");
   $("feedback").textContent="";
   $("feedback").className="feedback";
   $("solution").style.display="none";
   $("solution").innerHTML="";
   $("checkBtn").disabled=false;
-  $("nextBtn").disabled=false;
+  $("nextBtn").disabled=true;
   checked=false;
   slopeRevealed=false;
   constantRevealed=false;
@@ -533,8 +502,12 @@ function loadTask(){
   redrawTask();
 }
 
-function pointOK(xStr,yStr,point){
-  const x=parseNumber(xStr), y=parseNumber(yStr);
+function parsePoint(text){
+  const m=String(text).trim().replace(/−/g,'-').match(/^\(\s*([^,;]+)\s*[,;]\s*([^\)]+)\s*\)$/);
+  return m?[parseNumber(m[1]),parseNumber(m[2])]:null;
+}
+function pointOK(text,point){
+  const p=parsePoint(text);if(!p)return false;const [x,y]=p;
   return Number.isFinite(x)&&Number.isFinite(y)&&nearly(x,point[0])&&nearly(y,point[1]);
 }
 
@@ -589,18 +562,18 @@ function check(){
   const xi=xIntercept(t);
   let xOK=false;
   if(xi===null){
-    const v=$("xInterceptX").value.trim().toLowerCase();
+    const v=$("xIntercept").value.trim().toLowerCase();
     xOK=["ei","eiole","ei ole","-"].includes(v);
   } else if(xi==="all"){
     xOK=false;
   } else {
-    xOK=pointOK($("xInterceptX").value,$("xInterceptY").value,xi);
+    xOK=pointOK($("xIntercept").value,xi);
   }
   if(xOK) pts++;
   results.push(["x-akselin leikkauspisteen",xOK]);
 
   const yi=[0,t.b];
-  const yOK=pointOK($("yInterceptX").value,$("yInterceptY").value,yi);
+  const yOK=pointOK($("yIntercept").value,yi);
   if(yOK) pts++;
   results.push(["y-akselin leikkauspisteen",yOK]);
 

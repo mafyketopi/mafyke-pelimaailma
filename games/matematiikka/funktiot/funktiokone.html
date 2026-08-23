@@ -29,9 +29,9 @@
     }
 
     .wrap{
-      width:min(900px,92vw);
+      width:min(1040px,96vw);
       margin:0 auto;
-      padding:34px 0 52px;
+      padding:14px 0 24px;
     }
 
     .card{
@@ -39,7 +39,7 @@
       border:1px solid var(--line);
       border-radius:20px;
       box-shadow:var(--shadow);
-      padding:clamp(22px,4vw,38px);
+      padding:clamp(16px,2.5vw,26px);
     }
 
     h1{
@@ -56,33 +56,17 @@
     }
 
     .task-title{
-      margin-top:30px;
+      margin-top:14px;
       font-size:1.2rem;
       font-weight:750;
     }
 
-    .machine{
-      margin:24px auto 10px;
-      width:min(520px,100%);
-      display:grid;
-      grid-template-columns:1fr 90px 1fr;
-      row-gap:14px;
-      align-items:center;
-    }
-
-    .value, .arrow, .answer-cell{
-      min-height:46px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:1.3rem;
-    }
-
-    .arrow{
-      color:#66758a;
-      font-size:1.7rem;
-      user-select:none;
-    }
+    .workspace{display:grid;grid-template-columns:minmax(260px,340px) minmax(340px,1fr);gap:22px;align-items:center;margin-top:10px}
+    .machine{width:100%;border-collapse:collapse;background:#fff}
+    .machine th,.machine td{border:1px solid var(--line);padding:6px 9px;text-align:center;height:43px;font-size:1.08rem}
+    .machine th{background:#eef3fb;font-size:1.15rem}
+    .graph-wrap{display:flex;justify-content:center}
+    canvas{display:block;width:min(100%,460px);height:auto;aspect-ratio:1;border:1px solid var(--line);border-radius:12px;background:#fff}
 
     .answer{
       width:92px;
@@ -113,9 +97,9 @@
     }
 
     .rule-block{
-      margin:30px auto 0;
-      width:min(520px,100%);
-      padding-top:24px;
+      margin:12px 0 0;
+      width:100%;
+      padding-top:10px;
       border-top:1px solid var(--line);
     }
 
@@ -159,7 +143,7 @@
       gap:12px;
       justify-content:center;
       flex-wrap:wrap;
-      margin-top:28px;
+      margin-top:14px;
     }
 
     button{
@@ -183,7 +167,7 @@
 
     .feedback{
       min-height:30px;
-      margin-top:20px;
+      margin-top:10px;
       text-align:center;
       font-weight:700;
       line-height:1.45;
@@ -195,7 +179,7 @@
     .score{
       text-align:center;
       color:var(--muted);
-      margin-top:18px;
+      margin-top:8px;
       font-size:.98rem;
     }
 
@@ -206,14 +190,7 @@
       margin-top:8px;
     }
 
-    @media (max-width:560px){
-      .machine{
-        grid-template-columns:1fr 60px 1fr;
-      }
-      .arrow{font-size:1.45rem}
-      .value,.answer-cell{font-size:1.15rem}
-      .answer{width:82px}
-    }
+    @media (max-width:760px){.workspace{grid-template-columns:1fr}.graph-wrap{order:2}.wrap{padding-top:8px}.lead{font-size:1rem}.answer{width:82px}}
   </style>
 
   <script>
@@ -223,23 +200,9 @@
     };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-
-<style id="matikkapaketti-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
-canvas{max-width:100%!important;height:auto!important}
-img,svg,table{max-width:100%}
-.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
-.package-home:hover{opacity:1}
-@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
-@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
-</style>
 </head>
 
 <body>
-<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
   <main class="wrap">
     <section class="card">
       <h1>Funktiokone</h1>
@@ -247,9 +210,11 @@ img,svg,table{max-width:100%}
         Tutki annettuja lähtöarvoja ja funktion arvoja. Päättele, miten lähtöarvosta saadaan funktion arvo.
       </p>
 
-      <div class="task-title">1. Täydennä puuttuvat funktion arvot.</div>
-
-      <div id="machine" class="machine" aria-label="Funktiokone"></div>
+      <div class="task-title">1. Täydennä puuttuvat funktion arvot. Oikeat arvoparit ilmestyvät koordinaatistoon.</div>
+      <div class="workspace">
+        <table id="machine" class="machine" aria-label="Arvotaulukko"></table>
+        <div class="graph-wrap"><canvas id="graph" width="560" height="560" aria-label="Koordinaatisto"></canvas></div>
+      </div>
 
       <div class="rule-block">
         <div class="task-title" style="margin-top:0">
@@ -280,12 +245,12 @@ img,svg,table{max-width:100%}
 
 <script>
 const tasks = [
-  { a: 2,    b: 0,  xs: [-2,0,1,3,4,5] },       // y = 2x
-  { a: 1,    b: 3,  xs: [-3,0,2,4,5,8] },       // y = x + 3
-  { a: 3,    b: 0,  xs: [-2,0,1,3,4,6] },       // y = 3x
-  { a: 2,    b: -2, xs: [-2,0,1,2,4,7] },       // y = 2x - 2
-  { a: -2,   b: 3,  xs: [-2,0,1,3,4,5] },       // y = -2x + 3
-  { a: 1/3,  b: -1, xs: [-6,-3,0,3,6,12] }      // y = 1/3 x - 1
+  { a: 2,    b: 0,  xs: [-2,0,1,3,5] },       // y = 2x
+  { a: 1,    b: 3,  xs: [-3,0,2,5,8] },       // y = x + 3
+  { a: 3,    b: 0,  xs: [-2,0,1,3,6] },       // y = 3x
+  { a: 2,    b: -2, xs: [-2,0,2,4,7] },       // y = 2x - 2
+  { a: -2,   b: 3,  xs: [-2,0,1,3,5] },       // y = -2x + 3
+  { a: 1/3,  b: -1, xs: [-6,-3,0,6,12] }      // y = 1/3 x - 1
 ];
 
 let taskIndex = 0;
@@ -299,6 +264,10 @@ const feedback = document.getElementById('feedback');
 const score = document.getElementById('score');
 const checkBtn = document.getElementById('checkBtn');
 const nextBtn = document.getElementById('nextBtn');
+const canvas = document.getElementById('graph');
+const ctx = canvas.getContext('2d');
+let attempts = 0;
+let visiblePoints = new Set([0,1]);
 
 function niceNumber(n){
   if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
@@ -327,6 +296,9 @@ function ruleLatex(a,b){
 function chooseTask(){
   currentTask = tasks[taskIndex];
   solved = false;
+  attempts = 0;
+  visiblePoints = new Set([0,1]);
+  nextBtn.textContent = taskIndex===tasks.length-1 ? 'Aloita alusta' : 'Seuraava tehtävä';
   renderTask();
 }
 
@@ -338,20 +310,17 @@ function renderTask(){
   ruleInput.className = 'rule-input';
 
   const ys = currentTask.xs.map(x => currentTask.a*x + currentTask.b);
+  const head=document.createElement('tr');
+  head.innerHTML='<th>\\(x\\)</th><th>\\(y\\)</th>';
+  machine.appendChild(head);
 
   currentTask.xs.forEach((x,i) => {
-    const left = document.createElement('div');
-    left.className = 'value';
+    const row=document.createElement('tr');
+    const left = document.createElement('td');
     left.innerHTML = `\\(${latexNumber(x)}\\)`;
+    const right = document.createElement('td');
 
-    const arrow = document.createElement('div');
-    arrow.className = 'arrow';
-    arrow.innerHTML = '\\(\\longrightarrow\\)';
-
-    const right = document.createElement('div');
-    right.className = 'answer-cell';
-
-    if (i < 3) {
+    if (i < 2) {
       right.innerHTML = `\\(${latexNumber(ys[i])}\\)`;
     } else {
       const input = document.createElement('input');
@@ -366,12 +335,36 @@ function renderTask(){
       right.appendChild(input);
     }
 
-    machine.append(left,arrow,right);
+    row.append(left,right);
+    machine.appendChild(row);
   });
 
   if (window.MathJax && MathJax.typesetPromise) {
     MathJax.typesetPromise([machine]);
   }
+  drawGraph();
+}
+
+function drawGraph(){
+  const W=canvas.width,H=canvas.height,pad=46;
+  const ys=currentTask.xs.map(x=>currentTask.a*x+currentTask.b);
+  const lim=Math.max(6,...currentTask.xs.map(Math.abs),...ys.map(Math.abs));
+  const R=Math.ceil(lim/2)*2;
+  const X=x=>pad+(x+R)*(W-2*pad)/(2*R),Y=y=>H-pad-(y+R)*(H-2*pad)/(2*R);
+  ctx.clearRect(0,0,W,H);ctx.font='15px system-ui';ctx.textAlign='center';ctx.textBaseline='top';
+  for(let v=-R;v<=R;v++){
+    ctx.strokeStyle=v===0?'#53627a':'#dce3ed';ctx.lineWidth=v===0?2:1;
+    ctx.beginPath();ctx.moveTo(X(v),Y(-R));ctx.lineTo(X(v),Y(R));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(X(-R),Y(v));ctx.lineTo(X(R),Y(v));ctx.stroke();
+    if(v!==0 && (R<=8 || v%2===0)){
+      ctx.fillStyle='#445067';ctx.fillText(String(v),X(v),Y(0)+6);
+      ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(String(v),X(0)-7,Y(v));ctx.textAlign='center';ctx.textBaseline='top';
+    }
+  }
+  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(X(R),Y(0));ctx.lineTo(X(R)-13,Y(0)-7);ctx.lineTo(X(R)-13,Y(0)+7);ctx.fill();
+  ctx.beginPath();ctx.moveTo(X(0),Y(R));ctx.lineTo(X(0)-7,Y(R)+13);ctx.lineTo(X(0)+7,Y(R)+13);ctx.fill();
+  ctx.font='italic 20px serif';ctx.fillText('x',X(R)-8,Y(0)+12);ctx.textAlign='left';ctx.fillText('y',X(0)+10,Y(R)+4);
+  currentTask.xs.forEach((x,i)=>{if(!visiblePoints.has(i))return;const y=currentTask.a*x+currentTask.b;ctx.fillStyle='#d32f2f';ctx.beginPath();ctx.arc(X(x),Y(y),7,0,Math.PI*2);ctx.fill();});
 }
 
 function parseNumber(text){
@@ -432,6 +425,7 @@ function ruleIsCorrect(text){
 
 function checkAnswers(){
   if (solved) return;
+  attempts++;
 
   const inputs = [...document.querySelectorAll('.answer')];
   let valuesCorrect = true;
@@ -449,6 +443,7 @@ function checkAnswers(){
       input.classList.add('wrong');
     } else if (Number.isFinite(got) && Math.abs(got-expected) < 1e-8) {
       input.classList.add('correct');
+      visiblePoints.add(input.closest('tr').rowIndex-1);
     } else {
       valuesCorrect = false;
       input.classList.add('wrong');
@@ -491,15 +486,21 @@ function checkAnswers(){
     } else {
       feedback.textContent = 'Funktion arvot ovat oikein. Tarkista vielä funktion sääntö.';
     }
+    nextBtn.textContent = 'Näytä ratkaisu ja jatka';
   }
+  drawGraph();
 }
 
 checkBtn.addEventListener('click', checkAnswers);
 nextBtn.addEventListener('click', () => {
   if (!solved) {
-    feedback.className = 'feedback bad';
-    feedback.textContent = 'Ratkaise nykyinen tehtävä ensin.';
-    return;
+    if(attempts===0){feedback.className='feedback bad';feedback.textContent='Tarkista tehtävä ensin.';return;}
+    const ys=currentTask.xs.map(x=>currentTask.a*x+currentTask.b);
+    document.querySelectorAll('.answer').forEach((input,i)=>{input.value=niceNumber(ys[i+2]);input.className='answer correct'});
+    ruleInput.value=ruleLatex(currentTask.a,currentTask.b).replace(/\\frac\{(\d+)\}\{(\d+)\}/g,'$1/$2');
+    ruleInput.className='rule-input correct';visiblePoints=new Set(currentTask.xs.map((_,i)=>i));drawGraph();solved=true;
+    feedback.className='feedback ok';feedback.innerHTML=`Ratkaisu: \\(y=${ruleLatex(currentTask.a,currentTask.b)}\\). Kaikki oikeat arvoparit on merkitty kuvaajaan.`;
+    nextBtn.textContent=taskIndex===tasks.length-1?'Aloita alusta':'Jatka seuraavaan';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feedback]);return;
   }
 
   if (taskIndex < tasks.length - 1) {

@@ -206,22 +206,8 @@
       margin-bottom:8px;
     }
   </style>
-
-<style id="matikkapaketti-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-*,*::before,*::after{box-sizing:border-box}
-main,.app,.container,.wrap,.shell,.card,.panel,.workspace,.layout,.game-grid,.taskgrid,.example-grid{min-width:0;max-width:100%}
-canvas{max-width:100%!important;height:auto!important}
-img,svg,table{max-width:100%}
-.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}
-.package-home:hover{opacity:1}
-@media (min-width:900px){canvas{max-height:58vh!important;object-fit:contain}.workspace,.layout,.game-grid,.taskgrid,.example-grid{align-items:start}}
-@media (max-width:1050px){.workspace,.layout,.game-grid,.taskgrid,.example-grid{grid-template-columns:1fr!important}.field{grid-template-columns:1fr!important}}
-@media (max-width:700px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
-</style>
 </head>
 <body>
-<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
   <main class="wrap">
     <h1>Funktion arvo ja muuttujan arvo</h1>
     <div class="lead">Valitse harjoitus. Ratkaisu etenee vaiheittain, ja peli tarkistaa ensin muodostamasi lausekkeen tai yhtälön.</div>
@@ -279,7 +265,7 @@ img,svg,table{max-width:100%}
         </div>
 
         <div class="row">
-          <button id="nextBtn" class="action secondary">Seuraava tehtävä</button>
+          <button id="nextBtn" class="action secondary hidden">Seuraava tehtävä</button>
         </div>
       </div>
 
@@ -399,12 +385,12 @@ function modelHTML() {
   }
   return `
     <h2>Haasteen malli</h2>
-    <div>Toisen asteen funktiolla muuttujan arvoja voi olla kaksi. Anna molemmat, jos ratkaisuja on kaksi.</div>
+    <div>Toisen asteen funktiolla muuttujan arvoja voi olla kaksi.</div>
     <div>Jos \\(f(x)=x^2\\) ja funktion arvo on \\(9\\), muodostetaan</div>
     <div>\\[
       x^2=9
     \\]</div>
-    <div>ja saadaan kaksi ratkaisua (vastaukset esimerkiksi 2 tai −2, ei sanalla “ja”)</div>
+    <div>ja saadaan kaksi ratkaisua</div>
     <div>\\[
       x=-3 \\quad \\text{tai} \\quad x=3.
     \\]</div>
@@ -423,7 +409,7 @@ function loadQuestion() {
   hideFeedback(answerFeedback2);
   answerSection.classList.add('hidden');
   secondAnswerSection.classList.add('hidden');
-  nextBtn.classList.remove('hidden');
+  nextBtn.classList.add('hidden');
 
   modelBox.innerHTML = modelHTML();
   const q = current();
