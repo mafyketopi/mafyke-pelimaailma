@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sähköopin perusteet – 24 monivalintaa</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f6f8;color:#17212b;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1080px;margin:auto;padding:20px 18px 36px}
+header{display:flex;justify-content:space-between;gap:16px;margin-bottom:15px;align-items:flex-start}
+h1{margin:0 0 5px;font-size:clamp(1.7rem,4vw,2.5rem)}
+.lead{color:#5f6b76;margin:0;font-size:.98rem}
+.scorebox{background:#fff;border:1px solid #d7dee5;border-radius:11px;padding:8px 13px;text-align:center;min-width:110px;font-size:.9rem}
+.scorebox b{display:block;font-size:1.35rem}
+.page{display:none}.page.active{display:block}
+.qcard{background:#fff;border:1px solid #d8e0e7;border-radius:13px;padding:13px 15px;margin-bottom:10px}
+.qnum{font-size:.8rem;color:#6c7883;font-weight:700;margin-bottom:3px}
+.question{font-size:.98rem;font-weight:720;line-height:1.32;margin-bottom:8px}
+.visual{margin:7px 0 9px;border:1px solid #e0e5ea;border-radius:10px;padding:7px;background:#fbfcfd}
+.visual svg{width:100%;height:auto;display:block;max-height:190px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px}
+.option{display:flex;gap:8px;align-items:flex-start;border:1px solid #d7dee5;border-radius:8px;padding:7px 9px;background:#fafbfc;cursor:pointer;font-size:.9rem;line-height:1.25}
+.option:hover{background:#f4f7fb}.option input{margin-top:2px}
+.option.correct{border-color:#58a66a;background:#eef8f0}.option.wrong{border-color:#cf6464;background:#fff1f1}
+.explain{display:none;margin-top:8px;padding:8px;border-radius:8px;background:#f3f6f8;color:#40505f;font-size:.88rem;line-height:1.35}.explain.show{display:block}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:9px 14px;font-weight:740;font-size:.95rem;cursor:pointer}
+.primary{background:#235e98;color:#fff}.secondary{background:#e7ecf1;color:#17212b}.progress{font-weight:700;color:#53606c;align-self:center;font-size:.92rem}
+.summary{display:none;background:#fff;border:1px solid #d8e0e7;border-radius:13px;padding:16px;margin-top:15px}.summary.show{display:block}
+.small{font-size:.88rem;color:#66727e}
+@media(max-width:760px){header{display:block}.scorebox{margin-top:10px;width:120px}.options{grid-template-columns:1fr}.qcard{padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div><h1>Sähköopin perusteet</h1><p class="lead">Hankaussähkö, sähkövirta ja jännite sekä kytkentäkaavioiden perusteet</p></div>
+<div class="scorebox"><span>Pisteet</span><b id="score">0 / 24</b></div>
+</header>
+<div id="pages"></div>
+<div class="nav">
+<button class="secondary" id="prev">← Edellinen</button>
+<div class="progress" id="progress"></div>
+<button class="primary" id="next">Seuraava →</button>
+</div>
+<div id="summary" class="summary"></div>
+</div>
+
+<script>
+const questions = [
+{
+q:"Muovitankoa hangataan villakankaalla. Elektroneja siirtyy villasta tankoon. Mitä tangolle tapahtuu?",
+opts:["Tanko varautuu positiivisesti.","Tanko varautuu negatiivisesti.","Tanko pysyy neutraalina.","Tankoon siirtyy protoneja."],a:1,
+exp:"Tankoon tulee ylimääräisiä elektroneja, joten se varautuu negatiivisesti.",visual:"rub"
+},
+{
+q:"Kaksi negatiivisesti varautunutta palloa tuodaan lähelle toisiaan. Mitä tapahtuu?",
+opts:["Ne vetävät toisiaan puoleensa.","Ne hylkivät toisiaan.","Ne muuttuvat neutraaleiksi.","Vain toinen pallo liikkuu."],a:1,visual:"same"
+},
+{
+q:"Kaksi erimerkkisesti varautunutta palloa tuodaan lähelle toisiaan. Mitä tapahtuu?",
+opts:["Ne hylkivät toisiaan.","Ne vetävät toisiaan puoleensa.","Ne eivät vaikuta toisiinsa.","Molemmat menettävät varauksensa heti."],a:1,visual:"opposite"
+},
+{
+q:"Positiivisesti varautunut kappale on tavallisesti saanut varauksensa siksi, että...",
+opts:["siihen on tullut protoneja.","siitä on poistunut elektroneja.","siihen on tullut neutroneja.","sen elektronit ovat muuttuneet protoneiksi."],a:1
+},
+{
+q:"Varautunut sauva vetää puoleensa neutraalia paperinpalaa. Paperin varaukset siirtyvät hieman eri puolille kappaletta. Tätä kutsutaan...",
+opts:["polarisaatioksi.","oikosuluksi.","sähkövirraksi.","maadoitukseksi."],a:0,visual:"polar"
+},
+{
+q:"Mitä polarisaatiossa tapahtuu?",
+opts:["Kappale menettää kaikki elektroninsa.","Kappaleen positiiviset ja negatiiviset varaukset jakautuvat hieman eri tavoin.","Kappale muuttuu aina negatiiviseksi.","Protonit siirtyvät kappaleesta toiseen."],a:1
+},
+{
+q:"Mikä salama on?",
+opts:["Suuri sähköpurkaus.","Pitkäkestoinen sähkövirta metallilangassa.","Valon heijastuminen pilvestä.","Ainoastaan ilman lämpenemistä."],a:0,visual:"lightning"
+},
+{
+q:"Miksi ukkospilven ja maan välille voi syntyä salama?",
+opts:["Niiden välille syntyy suuri jännite.","Pilvi muuttuu magneetiksi.","Ilmassa ei ole lainkaan varauksia.","Maa lakkaa johtamasta sähköä."],a:0
+},
+{
+q:"Sähkövirran tunnus on...",
+opts:["U","I","P","R"],a:1
+},
+{
+q:"Sähkövirran I yksikkö on...",
+opts:["voltti (V)","ampeeri (A)","watti (W)","ohmi (Ω)"],a:1
+},
+{
+q:"Mikä kuvaa sähkövirtaa I parhaiten?",
+opts:["Sähkövarausten kulku virtapiirissä.","Pariston koko.","Johdon pituus.","Lampun kirkkaus sellaisenaan."],a:0
+},
+{
+q:"Jännitteen tunnus on...",
+opts:["I","U","A","V"],a:1
+},
+{
+q:"Jännitteen U yksikkö on...",
+opts:["ampeeri (A)","voltti (V)","watti (W)","ohmi (Ω)"],a:1
+},
+{
+q:"Mikä kuvaa jännitettä U parhaiten?",
+opts:["Jännite saa sähkövarauksia liikkeelle virtapiirissä.","Jännite kertoo suoraan sähkövirran yksikön.","Jännite tarkoittaa samaa kuin sähkövirta.","Jännite kertoo johtimen pituuden."],a:0
+},
+{
+q:"Virtapiirissä on avoin kytkin. Mitä lampulle tapahtuu?",
+opts:["Lamppu palaa normaalisti.","Lamppu ei pala, koska virtapiiri on avoin.","Lamppu palaa kirkkaammin.","Lamppu saa kaksinkertaisen jännitteen."],a:1,visual:"open"
+},
+{
+q:"Mikä piirrosmerkki tarkoittaa lamppua?",
+opts:["A","B","C","D"],a:2,visual:"symbols1"
+},
+{
+q:"Mikä piirrosmerkki tarkoittaa virtamittaria?",
+opts:["A","B","C","D"],a:0,visual:"symbols2"
+},
+{
+q:"Mikä piirrosmerkki tarkoittaa jännitemittaria?",
+opts:["A","B","C","D"],a:1,visual:"symbols2"
+},
+{
+q:"Mikä piirrosmerkki tarkoittaa paristoa?",
+opts:["A","B","C","D"],a:3,visual:"symbols1"
+},
+{
+q:"Miten virtamittari kytketään, kun mitataan lampun läpi kulkevaa sähkövirtaa?",
+opts:["Sarjaan lampun kanssa.","Rinnan lampun kanssa.","Suoraan pariston napojen välille.","Vain yhdellä johdolla."],a:0,visual:"currentmeter"
+},
+{
+q:"Miten jännitemittari kytketään, kun mitataan lampun jännitettä?",
+opts:["Sarjaan lampun kanssa.","Rinnan lampun kanssa.","Virtamittarin tilalle.","Aina suoraan pariston napojen väliin."],a:1,visual:"voltmeter"
+},
+{
+q:"Alla olevassa kuvassa kaksi lamppua ovat samalla reitillä peräkkäin. Millainen kytkentä on kyseessä?",
+opts:["Rinnankytkentä.","Sarjakytkentä.","Avoin virtapiiri.","Oikosulku."],a:1,visual:"series"
+},
+{
+q:"Alla olevassa kuvassa lampuille on omat haaransa. Millainen kytkentä on kyseessä?",
+opts:["Sarjakytkentä.","Rinnankytkentä.","Avoin virtapiiri.","Mittauskytkentä."],a:1,visual:"parallel"
+},
+{
+q:"Kumpi väite on oikein?",
+opts:["Virtamittari kytketään sarjaan ja jännitemittari rinnan.","Virtamittari kytketään rinnan ja jännitemittari sarjaan.","Molemmat mittarit kytketään aina sarjaan.","Molemmat mittarit kytketään aina rinnan."],a:0,visual:"meters"
+}
+];
+
+function svgWrap(inner,label=""){
+ return `<svg viewBox="0 0 620 180" aria-label="${label}">${inner}</svg>`;
+}
+function battery(x=290,y=130){
+ return `<line x1="${x-42}" y1="${y}" x2="${x-10}" y2="${y}" stroke="#222" stroke-width="4"/>
+ <line x1="${x-10}" y1="${y-24}" x2="${x-10}" y2="${y+24}" stroke="#222" stroke-width="4"/>
+ <line x1="${x+10}" y1="${y-16}" x2="${x+10}" y2="${y+16}" stroke="#222" stroke-width="4"/>
+ <line x1="${x+10}" y1="${y}" x2="${x+42}" y2="${y}" stroke="#222" stroke-width="4"/>
+ <text x="${x-17}" y="${y-31}" font-size="16" font-weight="700">+</text>
+ <text x="${x+6}" y="${y-31}" font-size="16" font-weight="700">−</text>`;
+}
+function lamp(x,y,r=24){
+ return `<line x1="${x-r-28}" y1="${y}" x2="${x-r}" y2="${y}" stroke="#222" stroke-width="4"/>
+ <circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="${x-r*.65}" y1="${y-r*.65}" x2="${x+r*.65}" y2="${y+r*.65}" stroke="#222" stroke-width="4"/>
+ <line x1="${x+r*.65}" y1="${y-r*.65}" x2="${x-r*.65}" y2="${y+r*.65}" stroke="#222" stroke-width="4"/>
+ <line x1="${x+r}" y1="${y}" x2="${x+r+28}" y2="${y}" stroke="#222" stroke-width="4"/>`;
+}
+function meter(x,y,letter){
+ return `<line x1="${x-52}" y1="${y}" x2="${x-24}" y2="${y}" stroke="#222" stroke-width="4"/>
+ <circle cx="${x}" cy="${y}" r="24" fill="#fff" stroke="#222" stroke-width="4"/>
+ <text x="${x}" y="${y+8}" text-anchor="middle" font-size="24" font-weight="700">${letter}</text>
+ <line x1="${x+24}" y1="${y}" x2="${x+52}" y2="${y}" stroke="#222" stroke-width="4"/>`;
+}
+function visualSVG(type){
+ if(type==="rub") return svgWrap(`
+ <defs>
+   <marker id="electronArrow" viewBox="0 0 10 10" refX="9" refY="5"
+           markerWidth="7" markerHeight="7" orient="auto">
+     <path d="M 0 0 L 10 5 L 0 10 z" fill="#235e98"/>
+   </marker>
+ </defs>
+ <rect x="90" y="60" width="170" height="38" rx="18"
+       fill="#e9edf1" stroke="#222" stroke-width="3"/>
+ <rect x="360" y="55" width="130" height="48" rx="10"
+       fill="#fff" stroke="#222" stroke-width="3"/>
+ <text x="175" y="84" text-anchor="middle" font-size="20">muovitanko</text>
+ <text x="425" y="84" text-anchor="middle" font-size="20">villa</text>
+
+ <!-- Nuoli koskettaa villan ja tangon reunoja. Elektronit siirtyvät villasta tangolle. -->
+ <line x1="360" y1="125" x2="260" y2="125"
+       stroke="#235e98" stroke-width="4"
+       marker-end="url(#electronArrow)"/>
+ <text x="310" y="154" text-anchor="middle" font-size="18">elektroneja</text>
+ `,"Elektroneja siirtyy villasta muovitangolle");
+ if(type==="same") return svgWrap(`<defs><marker id="arrOut" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#235e98"/></marker></defs><circle cx="215" cy="90" r="38" fill="#fff" stroke="#222" stroke-width="4"/><circle cx="405" cy="90" r="38" fill="#fff" stroke="#222" stroke-width="4"/><text x="215" y="101" text-anchor="middle" font-size="34">−</text><text x="405" y="101" text-anchor="middle" font-size="34">−</text><line x1="215" y1="90" x2="105" y2="90" stroke="#235e98" stroke-width="4" marker-end="url(#arrOut)"/><line x1="405" y1="90" x2="515" y2="90" stroke="#235e98" stroke-width="4" marker-end="url(#arrOut)"/>`);
+ if(type==="opposite") return svgWrap(`<defs><marker id="arrIn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#235e98"/></marker></defs><circle cx="215" cy="90" r="38" fill="#fff" stroke="#222" stroke-width="4"/><circle cx="405" cy="90" r="38" fill="#fff" stroke="#222" stroke-width="4"/><text x="215" y="101" text-anchor="middle" font-size="34">+</text><text x="405" y="101" text-anchor="middle" font-size="34">−</text><line x1="215" y1="90" x2="300" y2="90" stroke="#235e98" stroke-width="4" marker-end="url(#arrIn)"/><line x1="405" y1="90" x2="320" y2="90" stroke="#235e98" stroke-width="4" marker-end="url(#arrIn)"/>`);
+ if(type==="polar") return svgWrap(`<rect x="80" y="55" width="90" height="50" rx="20" fill="#eee" stroke="#222" stroke-width="3"/><text x="125" y="88" text-anchor="middle" font-size="28">− − −</text><ellipse cx="390" cy="85" rx="110" ry="55" fill="#fff" stroke="#222" stroke-width="3"/><text x="325" y="92" text-anchor="middle" font-size="27">+ + +</text><text x="455" y="92" text-anchor="middle" font-size="27">− − −</text>`);
+ if(type==="lightning") return svgWrap(`<path d="M315 20 L270 80 H310 L275 155 L365 70 H325 L350 20 Z" fill="#f0c735" stroke="#222" stroke-width="3"/><path d="M90 45 C130 20 165 25 190 48 C230 18 275 22 300 52 C345 18 390 25 410 52 C450 30 500 38 520 70" fill="none" stroke="#7c8791" stroke-width="8" stroke-linecap="round"/>`);
+ if(type==="open") return svgWrap(`
+ <path d="M65 70 H145 M220 70 H355 M415 70 H550 V145 H342 M258 145 H65 V70" fill="none" stroke="#222" stroke-width="4"/>
+ <circle cx="150" cy="70" r="5" fill="#222"/><circle cx="215" cy="70" r="5" fill="#222"/>
+ <line x1="150" y1="70" x2="202" y2="38" stroke="#222" stroke-width="4"/>
+ <circle cx="385" cy="70" r="28" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="367" y1="52" x2="403" y2="88" stroke="#222" stroke-width="4"/><line x1="403" y1="52" x2="367" y2="88" stroke="#222" stroke-width="4"/>
+ ${battery(300,145)}`);
+ if(type==="symbols1") return svgWrap(`
+ <g transform="translate(55 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">A</text><line x1="0" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>
+ <g transform="translate(190 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">B</text><line x1="0" y1="60" x2="31" y2="60" stroke="#222" stroke-width="4"/><circle cx="55" cy="60" r="24" fill="#fff" stroke="#222" stroke-width="4"/><text x="55" y="68" text-anchor="middle" font-size="23">V</text><line x1="79" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>
+ <g transform="translate(330 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">C</text><line x1="0" y1="60" x2="31" y2="60" stroke="#222" stroke-width="4"/><circle cx="55" cy="60" r="24" fill="#fff" stroke="#222" stroke-width="4"/><line x1="39" y1="44" x2="71" y2="76" stroke="#222" stroke-width="4"/><line x1="71" y1="44" x2="39" y2="76" stroke="#222" stroke-width="4"/><line x1="79" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>
+ <g transform="translate(470 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">D</text><line x1="0" y1="60" x2="38" y2="60" stroke="#222" stroke-width="4"/><line x1="38" y1="32" x2="38" y2="88" stroke="#222" stroke-width="4"/><line x1="58" y1="40" x2="58" y2="80" stroke="#222" stroke-width="4"/><line x1="58" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>`);
+ if(type==="symbols2") return svgWrap(`
+ <g transform="translate(55 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">A</text><line x1="0" y1="60" x2="31" y2="60" stroke="#222" stroke-width="4"/><circle cx="55" cy="60" r="24" fill="#fff" stroke="#222" stroke-width="4"/><text x="55" y="68" text-anchor="middle" font-size="23">A</text><line x1="79" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>
+ <g transform="translate(190 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">B</text><line x1="0" y1="60" x2="31" y2="60" stroke="#222" stroke-width="4"/><circle cx="55" cy="60" r="24" fill="#fff" stroke="#222" stroke-width="4"/><text x="55" y="68" text-anchor="middle" font-size="23">V</text><line x1="79" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>
+ <g transform="translate(330 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">C</text><line x1="0" y1="60" x2="31" y2="60" stroke="#222" stroke-width="4"/><circle cx="55" cy="60" r="24" fill="#fff" stroke="#222" stroke-width="4"/><line x1="39" y1="44" x2="71" y2="76" stroke="#222" stroke-width="4"/><line x1="71" y1="44" x2="39" y2="76" stroke="#222" stroke-width="4"/><line x1="79" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>
+ <g transform="translate(470 35)"><text x="55" y="8" text-anchor="middle" font-size="18" font-weight="700">D</text><line x1="0" y1="60" x2="30" y2="60" stroke="#222" stroke-width="4"/><circle cx="34" cy="60" r="5" fill="#222"/><circle cx="76" cy="60" r="5" fill="#222"/><line x1="34" y1="60" x2="68" y2="38" stroke="#222" stroke-width="4"/><line x1="80" y1="60" x2="110" y2="60" stroke="#222" stroke-width="4"/></g>`);
+ if(type==="currentmeter") return svgWrap(`
+ <path d="M65 75 H135 M225 75 H345 M415 75 H550 V145 H342 M258 145 H65 V75" fill="none" stroke="#222" stroke-width="4"/>
+ <circle cx="180" cy="75" r="28" fill="#fff" stroke="#222" stroke-width="4"/><text x="180" y="84" text-anchor="middle" font-size="25" font-weight="700">A</text>
+ <circle cx="380" cy="75" r="28" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="362" y1="57" x2="398" y2="93" stroke="#222" stroke-width="4"/><line x1="398" y1="57" x2="362" y2="93" stroke="#222" stroke-width="4"/>
+ ${battery(300,145)}`);
+ if(type==="voltmeter") return svgWrap(`
+ <path d="M70 90 H250 M370 90 H550 V150 H342 M258 150 H70 V90" fill="none" stroke="#222" stroke-width="4"/>
+ <line x1="250" y1="90" x2="276" y2="90" stroke="#222" stroke-width="4"/>
+ <circle cx="310" cy="90" r="28" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="292" y1="72" x2="328" y2="108" stroke="#222" stroke-width="4"/><line x1="328" y1="72" x2="292" y2="108" stroke="#222" stroke-width="4"/>
+ <line x1="338" y1="90" x2="370" y2="90" stroke="#222" stroke-width="4"/>
+ <path d="M250 90 V35 H270 M350 35 H370 V90" fill="none" stroke="#222" stroke-width="3"/>
+ <line x1="270" y1="35" x2="282" y2="35" stroke="#222" stroke-width="3"/>
+ <circle cx="310" cy="35" r="28" fill="#fff" stroke="#222" stroke-width="3"/>
+ <text x="310" y="43" text-anchor="middle" font-size="24" font-weight="700">V</text>
+ <line x1="338" y1="35" x2="350" y2="35" stroke="#222" stroke-width="3"/>
+ ${battery(300,150)}`);
+ if(type==="series") return svgWrap(`
+ <path d="M70 70 H132 M228 70 H342 M438 70 H550 V145 H342 M258 145 H70 V70" fill="none" stroke="#222" stroke-width="4"/>
+ <circle cx="180" cy="70" r="26" fill="#fff" stroke="#222" stroke-width="4"/><line x1="163" y1="53" x2="197" y2="87" stroke="#222" stroke-width="4"/><line x1="197" y1="53" x2="163" y2="87" stroke="#222" stroke-width="4"/>
+ <circle cx="390" cy="70" r="26" fill="#fff" stroke="#222" stroke-width="4"/><line x1="373" y1="53" x2="407" y2="87" stroke="#222" stroke-width="4"/><line x1="407" y1="53" x2="373" y2="87" stroke="#222" stroke-width="4"/>
+ ${battery(300,145)}`);
+ if(type==="parallel") return svgWrap(`
+ <path d="M80 35 H540 V155 H342 M258 155 H80 V35" fill="none" stroke="#222" stroke-width="4"/>
+ <path d="M170 35 V75 H260 M360 75 H450 V35" fill="none" stroke="#222" stroke-width="4"/>
+ <path d="M170 35 V125 H260 M360 125 H450 V35" fill="none" stroke="#222" stroke-width="4"/>
+ <circle cx="310" cy="75" r="26" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="293" y1="58" x2="327" y2="92" stroke="#222" stroke-width="4"/><line x1="327" y1="58" x2="293" y2="92" stroke="#222" stroke-width="4"/>
+ <circle cx="310" cy="125" r="26" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="293" y1="108" x2="327" y2="142" stroke="#222" stroke-width="4"/><line x1="327" y1="108" x2="293" y2="142" stroke="#222" stroke-width="4"/>
+ ${battery(300,155)}`);
+ if(type==="meters") return svgWrap(`
+ <path d="M55 95 H120 M220 95 H250 M370 95 H555 V160 H342 M258 160 H55 V95" fill="none" stroke="#222" stroke-width="4"/>
+ <line x1="120" y1="95" x2="136" y2="95" stroke="#222" stroke-width="4"/>
+ <circle cx="170" cy="95" r="28" fill="#fff" stroke="#222" stroke-width="4"/><text x="170" y="104" text-anchor="middle" font-size="25" font-weight="700">A</text>
+ <line x1="198" y1="95" x2="220" y2="95" stroke="#222" stroke-width="4"/>
+ <line x1="250" y1="95" x2="276" y2="95" stroke="#222" stroke-width="4"/>
+ <circle cx="310" cy="95" r="28" fill="#fff" stroke="#222" stroke-width="4"/>
+ <line x1="292" y1="77" x2="328" y2="113" stroke="#222" stroke-width="4"/><line x1="328" y1="77" x2="292" y2="113" stroke="#222" stroke-width="4"/>
+ <line x1="338" y1="95" x2="370" y2="95" stroke="#222" stroke-width="4"/>
+ <path d="M250 95 V38 H270 M350 38 H370 V95" fill="none" stroke="#222" stroke-width="3"/>
+ <line x1="270" y1="38" x2="282" y2="38" stroke="#222" stroke-width="3"/>
+ <circle cx="310" cy="38" r="28" fill="#fff" stroke="#222" stroke-width="3"/><text x="310" y="46" text-anchor="middle" font-size="24" font-weight="700">V</text>
+ <line x1="338" y1="38" x2="350" y2="38" stroke="#222" stroke-width="3"/>
+ ${battery(300,160)}`);
+ return "";
+}
+
+let page=0, answers=Array(questions.length).fill(null);
+const host=document.getElementById("pages");
+for(let p=0;p<3;p++){
+ const div=document.createElement("div"); div.className="page"+(p===0?" active":"");
+ questions.slice(p*8,p*8+8).forEach((q,j)=>{
+  const i=p*8+j, card=document.createElement("div");card.className="qcard";
+  card.innerHTML=`<div class="qnum">Kysymys ${i+1}</div><div class="question">${q.q}</div>
+  ${q.visual?`<div class="visual">${visualSVG(q.visual)}</div>`:""}
+  <div class="options">${q.opts.map((o,k)=>`<label class="option"><input type="radio" name="q${i}" value="${k}"><span>${String.fromCharCode(65+k)}) ${o}</span></label>`).join("")}</div>
+  <div class="explain" id="e${i}"></div>`;
+  div.appendChild(card);
+ });
+ host.appendChild(div);
+}
+function update(){
+ document.querySelectorAll(".page").forEach((x,i)=>x.classList.toggle("active",i===page));
+ document.getElementById("progress").textContent=`Sivu ${page+1} / 3`;
+ document.getElementById("prev").disabled=page===0;
+ document.getElementById("next").textContent=page===2?"Tarkista kaikki":"Seuraava →";
+}
+document.addEventListener("change",e=>{
+ if(e.target.matches('input[type="radio"]')) answers[Number(e.target.name.slice(1))]=Number(e.target.value);
+});
+document.getElementById("prev").onclick=()=>{if(page>0){page--;update();scrollTo(0,0)}};
+document.getElementById("next").onclick=()=>{if(page<2){page++;update();scrollTo(0,0)}else grade()};
+function grade(){
+ let score=0;
+ questions.forEach((q,i)=>{
+  const rs=[...document.querySelectorAll(`input[name="q${i}"]`)];
+  rs.forEach((r,k)=>{const l=r.closest(".option");if(k===q.a)l.classList.add("correct");if(r.checked&&k!==q.a)l.classList.add("wrong")});
+  if(answers[i]===q.a)score++;
+  const e=document.getElementById(`e${i}`);
+  e.textContent=(q.exp?q.exp+" ":"")+`Oikea vastaus: ${String.fromCharCode(65+q.a)}.`;
+  e.classList.add("show");
+ });
+ document.getElementById("score").textContent=`${score} / 24`;
+ const s=document.getElementById("summary");s.classList.add("show");
+ s.innerHTML=`<h2 style="margin-top:0">Tulos: ${score} / 24</h2><p class="small">Oikeat vaihtoehdot näkyvät vihreinä ja omat väärät valinnat punaisina.</p>`;
+ scrollTo(0,document.body.scrollHeight);
+}
+update();
+</script>
+</body>
+</html>
