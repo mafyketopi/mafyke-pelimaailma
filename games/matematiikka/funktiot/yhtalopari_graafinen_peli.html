@@ -87,34 +87,33 @@ const tasks = [
   },
   {
     eq1:'y = 2x - 2', f1:x=>2*x-2, xs1:[0,1,3], type1:'line',
-    eq2:'y = 4', f2:x=>4, xs2:[-2,0,2], type2:'line',
-    kind:'point', solutions:[[3,4]], range:6
+    eq2:'y = x + 1', f2:x=>x+1, xs2:[0,1,3], type2:'line',
+    kind:'point', solutions:[[3,4]], range:7
   },
   {
-    eq1:'y = -x - 1', f1:x=>-x-1, xs1:[-3,-1,1], type1:'line',
-    eq2:'y = x + 3', f2:x=>x+3, xs2:[-3,-2,0], type2:'line',
-    kind:'point', solutions:[[-2,1]], range:6
+    eq1:'y = -x + 3', f1:x=>-x+3, xs1:[-2,0,2], type1:'line',
+    eq2:'y = 1', f2:x=>1, xs2:[-2,0,2], type2:'line',
+    kind:'point', solutions:[[2,1]], range:6,self1:true,self2:true
+  },
+  {
+    eq1:'y = 3x - 2', f1:x=>3*x-2, xs1:[-1,0,2], type1:'line',
+    eq2:'y = -x + 6', f2:x=>-x+6, xs2:[0,2,4], type2:'line',
+    kind:'point', solutions:[[2,4]], range:8,self1:true,self2:true
   },
   {
     eq1:'y = \\frac12x + 1', f1:x=>0.5*x+1, xs1:[-2,0,2], type1:'line',
-    eq2:'y = -x + 4', f2:x=>-x+4, xs2:[0,2,4], type2:'line',
-    kind:'point', solutions:[[2,2]], range:6
+    eq2:'y = -\\frac12x + 3', f2:x=>-0.5*x+3, xs2:[-2,0,2], type2:'line',
+    kind:'point', solutions:[[2,2]], range:6,self1:true,self2:true
   },
   {
-    eq1:'2x + y = 6', display1:'2x + y = 6', f1:x=>6-2*x, xs1:[0,2,3], type1:'line',
+    eq1:'x + y = 4', f1:x=>-x+4, xs1:[0,2,4], type1:'line',
     eq2:'y = x', f2:x=>x, xs2:[-2,0,2], type2:'line',
-    kind:'point', solutions:[[2,2]], range:6,
-    transform:true,self1:true
+    kind:'point', solutions:[[2,2]], range:6,self1:true,self2:true,transform:true,transformAnswer:'-x+4',transformDisplay:'x+y=4'
   },
   {
-    eq1:'y = 2x + 1', f1:x=>2*x+1, xs1:[-2,0,2], type1:'line',
-    eq2:'y = 2x - 3', f2:x=>2*x-3, xs2:[-2,0,2], type2:'line',
-    kind:'choice', correctChoice:'none', range:7,self1:true,self2:true
-  },
-  {
-    eq1:'y = -2x + 4', f1:x=>-2*x+4, xs1:[0,1,2], type1:'line',
-    eq2:'2x + y = 4', f2:x=>4-2*x, xs2:[0,1,2], type2:'line',
-    kind:'choice', correctChoice:'infinite', range:6,self1:true,self2:true
+    eq1:'2x + 2y - 8 = 0', f1:x=>-x+4, xs1:[0,2,4], type1:'line',
+    eq2:'y = 2x - 2', f2:x=>2*x-2, xs2:[0,1,3], type2:'line',
+    kind:'point', solutions:[[2,2]], range:7,self1:true,self2:true,transform:true,transformAnswer:'-x+4',transformDisplay:'2x+2y-8=0'
   },
   {
     eq1:'y = x + 2', f1:x=>x+2, xs1:[-2,0,2], type1:'line',
@@ -135,13 +134,13 @@ const ctx=canvas.getContext('2d');
 function fmt(n){ return Number.isInteger(n)? String(n) : String(n).replace('.',','); }
 function parseFi(v){ return Number(String(v).trim().replace(',','.')); }
 
-function resetState(){ state={t1:false,t2:false,done:false,attempted:false}; }
+function resetState(){ state={t1:false,t2:false,done:false,attempted:false,live1:[],live2:[]}; }
 
 function renderTask(){
   const t=tasks[taskIndex];
   progress.textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`;
   score.textContent=`Pisteet: ${totalScore}`;
-  let transform = t.transform ? `<div class="hintline"><b>Muuta ensin kuvaajan muotoon:</b><div class="inline-form" style="margin-top:7px">2x + y = 6 &nbsp;→&nbsp; y = <input class="answer wide" id="transformInput" placeholder="esim. -2x+6"><button id="checkTransform">Tarkista</button></div><div class="feedback" id="transformFb"></div></div>` : '';
+  let transform = t.transform ? `<div class="hintline"><b>Muuta ensin kuvaajan muotoon:</b><div class="inline-form" style="margin-top:7px">\\(${t.transformDisplay}\\) &nbsp;→&nbsp; \\(y=\\) <input class="answer wide" id="transformInput" placeholder="ratkaistu muoto"><button id="checkTransform">Tarkista</button></div><div class="feedback" id="transformFb"></div></div>` : '';
   taskCard.innerHTML=`
     <div class="eqpair">
       <div class="eqrow"><span class="brace">{</span><div><div>\\(${t.eq1}\\)</div><div>\\(${t.eq2}\\)</div></div></div>
@@ -159,13 +158,14 @@ function renderTask(){
   `;
   wireTable(1,t);
   wireTable(2,t);
+  taskCard.querySelectorAll('.cell').forEach(input=>input.addEventListener('input',()=>{updateLiveTable(1,t);updateLiveTable(2,t)}));
   if(t.transform){
     document.getElementById('checkTransform').onclick=()=>{
-      const raw=document.getElementById('transformInput').value.replace(/\s/g,'').replace('−','-');
-      const ok=['-2x+6','6-2x'].includes(raw.toLowerCase());
+      state.attempted=true;const raw=document.getElementById('transformInput').value.replace(/\s/g,'').replace('−','-').replace(/^y=/,'');
+      const ok=raw.toLowerCase()===t.transformAnswer;
       const fb=document.getElementById('transformFb');
       if(ok){ fb.textContent='Oikein! Nyt voit täyttää taulukot.'; fb.className='feedback good'; document.getElementById('tablesWrap').style=''; }
-      else { fb.textContent='Ei vielä. Ratkaise y yksin vasemmalle puolelle.'; fb.className='feedback bad'; }
+      else { fb.innerHTML=`Ratkaistu muoto on <b>y = ${t.transformAnswer}</b>. Taulukot on nyt avattu.`; fb.className='feedback bad'; document.getElementById('tablesWrap').style=''; }
     };
   }
   document.getElementById('prevBtn').onclick=()=>{if(taskIndex>0){taskIndex--;resetState();renderTask();}};
@@ -188,7 +188,7 @@ function tableHtml(n,eq,xs,self){
 function wireTable(n,t){
   document.getElementById(`checkT${n}`).onclick=()=>{
     state.attempted=true;let xs=t[`xs${n}`], f=t[`f${n}`];
-    if(t[`self${n}`]){xs=xs.map((_,i)=>parseFi(document.getElementById(`x${n}c${i}`).value));if(xs.some(x=>!Number.isInteger(x))||new Set(xs).size<xs.length){const fb=document.getElementById(`fbT${n}`);fb.textContent='Valitse eri kokonaisluvut x-arvoiksi.';fb.className='feedback bad';return}t[`xs${n}`]=xs;}
+    if(t[`self${n}`]){xs=xs.map((_,i)=>parseFi(document.getElementById(`x${n}c${i}`).value));if(xs.some(x=>!Number.isInteger(x))||new Set(xs).size<xs.length){const fb=document.getElementById(`fbT${n}`);fb.textContent='Valitse eri kokonaisluvut x-arvoiksi.';fb.className='feedback bad';return}if(xs.some(x=>Math.abs(x)>t.range||Math.abs(f(x))>t.range)){const fb=document.getElementById(`fbT${n}`);fb.textContent='Valitse x-arvot niin, että myös y-arvot mahtuvat koordinaatistoon.';fb.className='feedback bad';return}t[`xs${n}`]=xs;}
     let ok=true;
     xs.forEach((x,i)=>{
       const inp=document.getElementById(`t${n}c${i}`);
@@ -209,6 +209,10 @@ function wireTable(n,t){
       fb.textContent='Tarkista punaisella merkityt arvot.'; fb.className='feedback bad';
     }
   };
+}
+function updateLiveTable(n,t){
+  let xs=t[`xs${n}`];if(t[`self${n}`])xs=xs.map((_,i)=>parseFi(document.getElementById(`x${n}c${i}`)?.value));
+  const f=t[`f${n}`],live=[];xs.forEach((x,i)=>{const y=parseFi(document.getElementById(`t${n}c${i}`)?.value);if(Number.isInteger(x)&&Number.isFinite(y)&&Math.abs(y-f(x))<1e-9&&Math.abs(x)<=t.range&&Math.abs(y)<=t.range)live.push([x,y])});state[`live${n}`]=live;drawGraph();
 }
 
 function showSolution(t){
@@ -275,6 +279,7 @@ function drawGraph(mark=false){
   }
   ctx.fillStyle='#394455';ctx.font='15px system-ui';ctx.fillText('x',W-12,yToPx(0)+5);ctx.fillText('y',xToPx(0)+12,6);
   ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(W,yToPx(0));ctx.lineTo(W-14,yToPx(0)-7);ctx.lineTo(W-14,yToPx(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(xToPx(0),0);ctx.lineTo(xToPx(0)-7,14);ctx.lineTo(xToPx(0)+7,14);ctx.fill();ctx.font='italic 19px Georgia,serif';ctx.fillText('x',W-15,yToPx(0)+22);ctx.fillText('y',xToPx(0)+12,18);
+  [[state.live1,'#2457c5'],[state.live2,'#d04848']].forEach(([pts,color])=>{ctx.fillStyle=color;pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(xToPx(x),yToPx(y),6,0,Math.PI*2);ctx.fill()})});
   if(state.t1) drawFunction(t.f1,t.type1,'#2457c5',t.xs1,R,xToPx,yToPx);
   if(state.t2) drawFunction(t.f2,t.type2,'#d04848',t.xs2,R,xToPx,yToPx);
   if(mark&&state.done&&t.solutions){

@@ -319,7 +319,7 @@ function nextBasic(){
 function renderParallel(){
   const t=parallelTasks[pi];
   document.getElementById('parallelTask').innerHTML=
-    `Määritä sen suoran yhtälö, joka kulkee pisteen \\(${t.px}, ${t.py}\\) kautta ja on yhdensuuntainen suoran \\(${t.given}\\) kanssa.`;
+    `Määritä sen suoran yhtälö, joka kulkee pisteen \\((${t.px}, ${t.py})\\) kautta ja on yhdensuuntainen suoran \\(${t.given}\\) kanssa.`;
   document.getElementById('parallelScore').textContent=`Tehtävä ${pi+1}/${parallelTasks.length} • pisteet ${ps}`;
   renderDraw();
   if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.getElementById('parallelTask')]);

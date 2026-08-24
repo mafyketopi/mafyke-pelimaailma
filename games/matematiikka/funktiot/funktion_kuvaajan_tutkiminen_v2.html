@@ -35,7 +35,7 @@ button{font:inherit}.btn{border:0;border-radius:10px;padding:10px 13px;font-weig
 </style>
 </head>
 <body>
-<header><div><h1>Funktion kuvaajan tutkiminen</h1></div><div class="score" id="score">0 / 15 oikein</div></header>
+<header><div><h1>Funktion kuvaajan tutkiminen</h1></div><div class="score" id="score">0 / 16 oikein</div></header>
 <main>
 <div class="tabs">
  <button class="tab active" data-sec="0">1. Nollakohdat</button>
@@ -70,31 +70,32 @@ const sections=[
   {kind:"extrema",fn:x=>(x*x*x)/3-x,label:"3. asteen kuvaaja, suljettu väli",domain:[-3,3],min:-6,max:6,points:[[-3,-6],[3,6]]}
  ]},
  {name:"Positiivisuus",tasks:[
-  {kind:"sign",fn:x=>x*x-4,label:"positiivinen",cuts:[-2,2],correct:[0,2],open:true,answer:"x < −2 tai x > 2"},
-  {kind:"sign",fn:x=>-x*x+x+2,label:"negatiivinen",cuts:[-1,2],correct:[0,2],open:true,answer:"x < −1 tai x > 2"},
-  {kind:"sign",fn:x=>(x+2)*x*(x-2)/2,label:"positiivinen",cuts:[-2,0,2],correct:[1,3],open:true,answer:"−2 < x < 0 tai x > 2"},
-  {kind:"sign",fn:x=>(x+2)*x*(x-2)/2,label:"negatiivinen",cuts:[-2,0,2],correct:[0,2],open:true,answer:"x < −2 tai 0 < x < 2"}
+  {kind:"sign",fn:x=>x*x-4,label:"positiivinen",answer:"x < −2 tai x > 2",correctOption:0,options:["x < −2 tai x > 2","−2 < x < 2","x < 2","x > −2","x ≠ 2","kaikilla x:n arvoilla"]},
+  {kind:"sign",fn:x=>-x*x+x+2,label:"negatiivinen",answer:"x < −1 tai x > 2",correctOption:1,options:["−1 < x < 2","x < −1 tai x > 2","x < 2","x > −1","x ≠ −1","ei millään x:n arvolla"]},
+  {kind:"sign",fn:x=>(x+2)*x*(x-2)/2,label:"positiivinen",range:8,answer:"−2 < x < 0 tai x > 2",correctOption:2,options:["x < −2 tai 0 < x < 2","x < 0 tai x > 2","−2 < x < 0 tai x > 2","−2 < x < 2","x > −2","x ≠ 0"]},
+  {kind:"sign",fn:x=>(x+2)*x*(x-2)/2,label:"negatiivinen",range:8,answer:"x < −2 tai 0 < x < 2",correctOption:3,options:["−2 < x < 0 tai x > 2","x < 0 tai x > 2","−2 < x < 2","x < −2 tai 0 < x < 2","x < 2","x ≠ 2"]}
  ]},
  {name:"Monotonisuus",tasks:[
-  {kind:"mono",fn:x=>x*x-4,label:"vähenevä",cuts:[0],correct:[0],closed:true,answer:"x ≤ 0"},
-  {kind:"mono",fn:x=>-x*x+4,label:"kasvava",cuts:[0],correct:[0],closed:true,answer:"x ≤ 0"},
-  {kind:"mono",fn:x=>(x*x*x)/3-x*x-3*x+2,label:"kasvava",cuts:[-1,3],correct:[0,2],closed:true,answer:"x ≤ −1 tai x ≥ 3"}
+  {kind:"mono",fn:x=>x*x-4,label:"vähenevä",answer:"x ≤ 0",correctOption:0,options:["x ≤ 0","x ≥ 0","x < −4","−4 ≤ x ≤ 4","x ≠ 0","kaikilla x:n arvoilla"]},
+  {kind:"mono",fn:x=>-x*x+4,label:"kasvava",answer:"x ≤ 0",correctOption:2,options:["x ≥ 0","−2 ≤ x ≤ 2","x ≤ 0","x < −2","x ≠ 0","ei millään x:n arvolla"]},
+  {kind:"mono",fn:x=>(x*x*x)/3-x*x-3*x+2,label:"kasvava, 3. asteen kuvaaja",range:8,answer:"x ≤ −1 tai x ≥ 3",correctOption:1,options:["−1 ≤ x ≤ 3","x ≤ −1 tai x ≥ 3","x ≤ 3","x ≥ −1","x < −1 tai x > 3","kaikilla x:n arvoilla"]},
+  {kind:"mono",fn:x=>(x*x*x)/6-2*x,label:"vähenevä, 3. asteen kuvaaja",range:8,answer:"−2 ≤ x ≤ 2",correctOption:4,options:["x ≤ −2 tai x ≥ 2","x ≤ 2","x ≥ −2","−2 < x < 2","−2 ≤ x ≤ 2","kaikilla x:n arvoilla"]}
  ]}
 ];
 let sec=0,idx=0,selected=new Set(),solved=new Set(),highlight=false,attempted=false;
-const cvs=document.getElementById("g"),ctx=cvs.getContext("2d"),xmin=-6,xmax=6,ymin=-6,ymax=6;
-const X=x=>(x-xmin)/(xmax-xmin)*cvs.width, Y=y=>cvs.height-(y-ymin)/(ymax-ymin)*cvs.height;
+const cvs=document.getElementById("g"),ctx=cvs.getContext("2d");
+const bound=()=>task().range||6,X=x=>cvs.width/2+x*cvs.width/(2*bound()),Y=y=>cvs.height/2-y*cvs.height/(2*bound());
 function task(){return sections[sec].tasks[idx]}
 function key(){return sec+"-"+idx}
 function curve(a,b,color="#172033",w=4,signMode=false){
- let t=task(),started=false;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();
- for(let x=a;x<=b;x+=.018){let y=t.fn(x);if(signMode)ctx.strokeStyle=y>=0?'#d33b3b':'#2563eb';if(y<ymin-.5||y>ymax+.5){started=false;continue}
+ let t=task(),R=bound(),started=false;ctx.strokeStyle=color;ctx.lineWidth=w;ctx.beginPath();
+ for(let x=a;x<=b;x+=.018){let y=t.fn(x);if(signMode)ctx.strokeStyle=y>=0?'#d33b3b':'#2563eb';if(y< -R-.5||y>R+.5){started=false;continue}
  if(!started){ctx.moveTo(X(x),Y(y));started=true}else ctx.lineTo(X(x),Y(y))}
  ctx.stroke()
 }
-function ranges(cuts){let a=[xmin,...cuts,xmax],r=[];for(let i=0;i<a.length-1;i++)r.push([a[i],a[i+1]]);return r}
+function ranges(cuts){let R=bound(),a=[-R,...cuts,R],r=[];for(let i=0;i<a.length-1;i++)r.push([a[i],a[i+1]]);return r}
 function draw(){
- let t=task();ctx.clearRect(0,0,cvs.width,cvs.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,cvs.width,cvs.height);
+ let t=task(),R=bound(),xmin=-R,xmax=R,ymin=-R,ymax=R;ctx.clearRect(0,0,cvs.width,cvs.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,cvs.width,cvs.height);
  ctx.strokeStyle="#dce3ed";ctx.lineWidth=1;
  for(let x=xmin;x<=xmax;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()}
  for(let y=ymin;y<=ymax;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(cvs.width,Y(y));ctx.stroke()}
@@ -104,7 +105,6 @@ function draw(){
  ctx.fillStyle="#172033";ctx.beginPath();ctx.moveTo(X(xmax),Y(0));ctx.lineTo(X(xmax)-14,Y(0)-7);ctx.lineTo(X(xmax)-14,Y(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(X(0),Y(ymax));ctx.lineTo(X(0)-7,Y(ymax)+14);ctx.lineTo(X(0)+7,Y(ymax)+14);ctx.fill();
  ctx.fillStyle="#596579";ctx.font="15px system-ui";ctx.textAlign='center';for(let x=xmin;x<=xmax;x++)if(x)ctx.fillText(x,X(x),Y(0)+18);
  ctx.textAlign='left';for(let y=ymin;y<=ymax;y++)if(y)ctx.fillText(y,X(0)+7,Y(y)+5);ctx.font='italic 20px serif';ctx.fillStyle='#172033';ctx.fillText('x',X(xmax)-12,Y(0)+24);ctx.fillText('y',X(0)+12,Y(ymax)+20);
- if((t.kind==="sign"||t.kind==="mono")&&selected.size){let rr=ranges(t.cuts);selected.forEach(i=>curve(rr[i][0],rr[i][1],"rgba(37,99,235,.30)",11))}
  if(t.kind==='sign'){
    let start=xmin,prev=t.fn(start)>=0;for(let x=xmin+.02;x<=xmax;x+=.02){let now=t.fn(x)>=0;if(now!==prev){curve(start,x,prev?'#d33b3b':'#2563eb',5);start=x;prev=now}}curve(start,xmax,prev?'#d33b3b':'#2563eb',5);
  }else curve(xmin,xmax);
@@ -140,21 +140,14 @@ function renderExtrema(t){
 function renderIntervals(t){
  let sign=t.kind==="sign";
  question.textContent=sign?`Millä muuttujan arvoilla funktio on ${t.label}?`:`Millä muuttujan arvoilla funktio on ${t.label}?`;
- help.textContent=sign?"Kuvaajan positiivinen osa on punainen ja negatiivinen osa sininen. Valitse kaikki oikeat vaihtoehdot.":"Valitse kaikki oikeat vaihtoehdot. Kääntymiskohta kuuluu mukaan.";
- let rr=ranges(t.cuts),labels=rr.map((r,i)=>intervalLabel(r,t.cuts,t.closed)).join("");
+ help.textContent=sign?"Kuvaajan positiivinen osa on punainen ja negatiivinen osa sininen. Valitse yksi oikea kokonaisvastaus.":"Valitse yksi oikea kokonaisvastaus. Kääntymiskohta kuuluu mukaan.";
+ let labels=t.options.map((txt,i)=>`<button class="segment" data-i="${i}">${txt}</button>`).join('');
  controls.innerHTML=`<div class="choices">${labels}</div>
  <button class="btn primary" id="check">Tarkista</button>`;
- document.querySelectorAll(".segment").forEach(b=>b.onclick=()=>{let i=+b.dataset.i;if(selected.has(i))selected.delete(i);else selected.add(i);b.classList.toggle("sel");draw()});
+ document.querySelectorAll(".segment").forEach(b=>b.onclick=()=>{selected.clear();document.querySelectorAll('.segment').forEach(x=>x.classList.remove('sel'));selected.add(+b.dataset.i);b.classList.add('sel')});
  check.onclick=checkIntervals
 }
-function intervalLabel(r,cuts,closed){
- let a=r[0],b=r[1],txt="";
- if(a===xmin)txt=closed?`x ≤ ${b}`:`x < ${b}`;
- else if(b===xmax)txt=closed?`x ≥ ${a}`:`x > ${a}`;
- else txt=closed?`${a} ≤ x ≤ ${b}`:`${a} < x < ${b}`;
- return `<button class="segment" data-i="${ranges(cuts).findIndex(q=>q[0]===r[0]&&q[1]===r[1])}">${txt}</button>`
-}
-function ok(msg){attempted=true;feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 15 oikein`;draw()}
+function ok(msg){attempted=true;feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 16 oikein`;draw()}
 function no(msg){attempted=true;feedback.textContent=msg+' Voit yrittää uudelleen tai jatkaa ja nähdä ratkaisun.';feedback.className="feedback bad"}
 function checkZeros(){
  let t=task(),vals=[...document.querySelectorAll(".z")].map(x=>Number(x.value)).filter(x=>x.value!==""),noneSel=none.classList.contains("sel");
@@ -166,11 +159,11 @@ function checkExtrema(){
  if(mingood&&maxgood){ok("Oikein! Ääriarvokohdat on korostettu kuvaajaan.");answer.innerHTML=`Pienin arvo: <b>${t.min===null?"ei ole":t.min}</b><br>Suurin arvo: <b>${t.max===null?"ei ole":t.max}</b>`;answer.classList.remove("hidden")}else no("Ei vielä. Tarkista kuvaajan alin ja ylin kohta"+(t.domain?" annetulla välillä.":"."))
 }
 function checkIntervals(){
- let t=task(),good=selected.size===t.correct.length&&t.correct.every(i=>selected.has(i));
+ let t=task(),good=selected.size===1&&selected.has(t.correctOption);
  if(good){ok("Oikein! Valittu kuvaajan osa on korostettu.");answer.innerHTML=`Vastaus: <b class="math">${t.answer}</b>`;answer.classList.remove("hidden")}else no("Ei vielä. Vertaa valitsemaasi aluetta kuvaajaan.")
 }
 prev.onclick=()=>{if(idx>0){idx--;render()}};
-next.onclick=()=>{if(!solved.has(key())&&!attempted){no('Tarkista tehtävä ensin.');return}if(!solved.has(key())){let t=task();selected=new Set(t.correct||[]);highlight=true;answer.innerHTML=t.answer?`Vastaus: <b class="math">${t.answer}</b>`:'Ratkaisu on merkitty kuvaajaan.';answer.classList.remove('hidden');draw()}if(idx<sections[sec].tasks.length-1){idx++;render()}else if(sec<3){sec++;idx=0;render()}};
+next.onclick=()=>{if(!solved.has(key())&&!attempted){no('Tarkista tehtävä ensin.');return}if(!solved.has(key())){let t=task();selected=new Set(t.correctOption===undefined?[]:[t.correctOption]);highlight=true;answer.innerHTML=t.answer?`Vastaus: <b class="math">${t.answer}</b>`:'Ratkaisu on merkitty kuvaajaan.';answer.classList.remove('hidden');draw()}if(idx<sections[sec].tasks.length-1){idx++;render()}else if(sec<3){sec++;idx=0;render()}};
 document.querySelectorAll(".tab").forEach((b,i)=>b.onclick=()=>{sec=i;idx=0;render()});
 render();
 </script>

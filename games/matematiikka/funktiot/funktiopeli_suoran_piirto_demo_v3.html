@@ -122,14 +122,21 @@ let tableXs=[];
 let tableValidated=false;
 let tableLineVisible=false;
 let taskIndex=-1;
+let taskIndices={table:-1,click:-1};
 
 // a = kulmakerroin osoittaja/nimittäjä. Näin murtoluvut pysyvät tarkkoina.
-const tasks=[
-  {an:2, ad:1, b:1}, {an:-1, ad:1, b:3}, {an:1, ad:2, b:-2},
-  {an:-2, ad:1, b:4}, {an:3, ad:1, b:-1}, {an:-1, ad:2, b:2},
-  {an:1, ad:1, b:-4}, {an:2, ad:1, b:-3}, {an:-3, ad:1, b:0},
-  {an:1, ad:2, b:1}, {an:2, ad:3, b:-1}, {an:-2, ad:3, b:3}
+const tableTasks=[
+  {an:1,ad:1,b:2,presetXs:[-2,0,2]}, {an:-1,ad:1,b:3,presetXs:[-1,1,3]},
+  {an:2,ad:1,b:-1}, {an:-2,ad:1,b:4}, {an:3,ad:1,b:-2}, {an:1,ad:2,b:1},
+  {an:-1,ad:2,b:2}, {an:2,ad:3,b:-1}, {an:-2,ad:3,b:3}, {an:1,ad:1,b:-4},
+  {an:2,ad:1,b:-3}, {an:-3,ad:1,b:1}
 ];
+const clickTasks=[
+  {an:-1,ad:1,b:1}, {an:2,ad:1,b:-2}, {an:-2,ad:1,b:3}, {an:1,ad:1,b:-3},
+  {an:-3,ad:1,b:2}, {an:1,ad:2,b:-2}, {an:-1,ad:2,b:1}, {an:2,ad:3,b:0},
+  {an:-2,ad:3,b:2}, {an:3,ad:1,b:-1}, {an:1,ad:1,b:4}, {an:2,ad:1,b:1}
+];
+function activeTasks(){return mode==='table'?tableTasks:clickTasks}
 
 function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a||1; }
 function reducedFrac(n,d){ const g=gcd(n,d); return [n/g,d/g]; }
@@ -239,12 +246,22 @@ function buildTable(){
   valueTable.innerHTML='';
   for(let i=0;i<3;i++){
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><input class="coord xInput" inputmode="decimal" aria-label="x-arvo ${i+1}"></td><td><input class="coord yInput" inputmode="decimal" aria-label="y-arvo ${i+1}"></td>`;
+    const preset=current.presetXs?.[i];
+    tr.innerHTML=`<td><input class="coord xInput" inputmode="decimal" aria-label="x-arvo ${i+1}" ${preset!==undefined?`value="${preset}" readonly`:''}></td><td><input class="coord yInput" inputmode="decimal" aria-label="y-arvo ${i+1}"></td>`;
     valueTable.appendChild(tr);
   }
+  valueTable.querySelectorAll('input').forEach(input=>input.addEventListener('input',updateLiveTablePoints));
   tableValidated=false;
   tableLineVisible=false;
   drawTableBtn.disabled=true;
+}
+
+function updateLiveTablePoints(){
+  const xs=[...document.querySelectorAll('.xInput')].map(i=>parseNumber(i.value));
+  const ys=[...document.querySelectorAll('.yInput')].map(i=>parseNumber(i.value));
+  points=[];
+  xs.forEach((x,i)=>{if(Number.isInteger(x)&&x>=MIN&&x<=MAX&&Number.isFinite(ys[i])&&Math.abs(ys[i]-yValue(current,x))<=0.011)points.push({x,y:ys[i]})});
+  tableLineVisible=false;redraw();
 }
 
 function parseNumber(s){
@@ -329,14 +346,12 @@ function setMode(newMode){
   hintEl.textContent=isTable
     ? 'Vinkki: murtolukukulmakertoimella voit valita x-arvot niin, että y-arvojen laskeminen on helppoa.'
     : 'Klikkaus napsahtaa lähimpään kokonaislukupisteeseen. Koordinaatiston numerot on jätetty tarkoituksella hieman haaleiksi.';
-  if(isTable){ buildTable(); statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.'; }
-  else statusEl.textContent='Valitse ensimmäinen piste.';
-  redraw();
+  current=null;newTask(true);
 }
 
-function newTask(){
-  if(current && !answered){statusEl.textContent='Tarkista nykyinen tehtävä ensin.';return;}
-  taskIndex=(taskIndex+1)%tasks.length;current=tasks[taskIndex];taskCounterEl.textContent=`Tehtävä ${taskIndex+1}/${tasks.length}`;
+function newTask(force=false){
+  if(current && !answered&&!force){statusEl.textContent='Tarkista nykyinen tehtävä ensin.';return;}
+  const list=activeTasks();taskIndices[mode]=(taskIndices[mode]+1)%list.length;taskIndex=taskIndices[mode];current=list[taskIndex];taskCounterEl.textContent=`Tehtävä ${taskIndex+1}/${list.length}`;
   renderEquation(); points=[]; answered=false; tableValidated=false; tableLineVisible=false; showPointsBtn.disabled=false; drawTableBtn.disabled=true;
   if(mode==='table'){ buildTable(); statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.'; }
   else statusEl.textContent='Valitse ensimmäinen piste.';

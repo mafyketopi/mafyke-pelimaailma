@@ -77,6 +77,14 @@ input[type="number"],input[type="text"]{
   border-radius:10px;
   font-size:1rem;
 }
+select{
+  padding:10px 11px;
+  border:1px solid #bcc7d3;
+  border-radius:10px;
+  background:white;
+  color:var(--ink);
+  font-size:1rem;
+}
 input.wide{width:170px}
 button.primary,button.secondary{
   padding:10px 15px;border-radius:10px;cursor:pointer;font-weight:700;
@@ -125,7 +133,7 @@ canvas{
 }
 .example-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:minmax(300px,360px) minmax(500px,1fr);
   gap:18px;
 }
 @media (max-width:850px){
@@ -178,7 +186,7 @@ window.MathJax = {
           <button class="primary" id="animateExample">Näytä pisteet ja paraabeli</button>
           <button class="secondary" id="startBasic">Aloita harjoitukset</button>
         </div>
-        <div class="canvas-wrap"><canvas id="exampleCanvas" width="620" height="460"></canvas></div>
+        <div class="canvas-wrap"><canvas id="exampleCanvas" width="620" height="620"></canvas></div>
       </div>
     </div>
 
@@ -191,9 +199,9 @@ window.MathJax = {
 
           <div id="countStep">
             <p><strong>Monenko pisteen koordinaatit aiot laskea?</strong></p>
-            <p class="small">Valitse 5–9 pistettä.</p>
-            <input type="number" id="pointCount" min="1" max="12">
-            <button class="primary" id="checkCount">Jatka</button>
+            <p class="small">Valitse 5, 7 tai 9 pistettä.</p>
+            <select id="pointCount"><option value="">Valitse</option><option value="5">5 pistettä</option><option value="7">7 pistettä</option><option value="9">9 pistettä</option></select>
+            <button class="primary" id="checkCount">Luo taulukko</button>
             <div class="feedback" id="countFeedback"></div>
           </div>
 
@@ -206,17 +214,16 @@ window.MathJax = {
           </div>
 
           <div id="tableStep" class="hidden">
-            <p><strong>Laske nyt pisteiden \(y\)-arvot.</strong></p>
+            <p><strong>Täytä taulukkoon symmetriset \(x\)-arvot ja niitä vastaavat \(y\)-arvot.</strong></p>
             <div id="valueTable"></div>
-            <button class="primary" id="checkY">Tarkista arvot</button>
+            <button class="primary" id="checkY">Tarkista taulukko</button>
             <div class="feedback" id="yFeedback"></div>
           </div>
 
           <div id="plotStep" class="hidden">
-            <p><strong>Sijoita laskemasi pisteet koordinaatistoon.</strong></p>
-            <p class="small">Klikkaa mahdollisimman lähelle oikeaa kohtaa. Piste napsahtaa ruudukkoon.</p>
+            <p><strong>Taulukon pisteet ovat koordinaatistossa.</strong></p>
             <div class="feedback" id="plotFeedback"></div>
-            <button class="primary hidden" id="drawParabola">Piirrä paraabeli pisteiden kautta</button>
+            <button class="primary" id="drawParabola">Piirrä paraabeli pisteiden kautta</button>
           </div>
           <button class="primary" id="nextBasic">Seuraava harjoitus</button>
         </div>
@@ -454,9 +461,9 @@ function showTab(which){
 }
 
 /* EXAMPLE */
-let exEnv=setupCanvas(q('#exampleCanvas'),{xmin:-4,xmax:4,ymin:-2,ymax:10});
+let exEnv=setupCanvas(q('#exampleCanvas'),{xmin:-5,xmax:5,ymin:-1,ymax:9});
 q('#animateExample').onclick=()=>{
-  exEnv=setupCanvas(q('#exampleCanvas'),{xmin:-4,xmax:4,ymin:-2,ymax:10});
+  exEnv=setupCanvas(q('#exampleCanvas'),{xmin:-5,xmax:5,ymin:-1,ymax:9});
   const pts=[[0,0],[-1,1],[1,1],[-2,4],[2,4],[-3,9],[3,9]];
   let i=0;
   const t=setInterval(()=>{
@@ -498,16 +505,11 @@ function loadBasic(){
 q('#checkCount').onclick=()=>{
   basicAttempted=true;
   const n=Number(q('#pointCount').value);
-  if(!Number.isInteger(n)||n<5||n>9){
-    setFeedback(q('#countFeedback'),'Valitse pisteiden määräksi kokonaisluku 5–9.','bad');return;
-  }
-  if(n%2===0){
-    setFeedback(q('#countFeedback'),'Koska mukana pitää olla x = 0 ja pisteparit molemmin puolin, valitse pariton määrä: 5, 7 tai 9.','bad');return;
-  }
+  if(![5,7,9].includes(n)){setFeedback(q('#countFeedback'),'Valitse 5, 7 tai 9 pistettä.','bad');return}
   basicCount=n;
-  setFeedback(q('#countFeedback'),'Hyvä. Valitse seuraavaksi symmetriset x-arvot.','ok');
-  buildXInputs('#xInputs',n);
-  q('#xStep').classList.remove('hidden');
+  setFeedback(q('#countFeedback'),'Taulukko on valmis täytettäväksi.','ok');
+  buildXYTable('#valueTable',n);
+  q('#tableStep').classList.remove('hidden');
   typeset();
 }
 function buildXInputs(sel,n){
@@ -536,6 +538,16 @@ q('#checkX').onclick=()=>{
   q('#tableStep').classList.remove('hidden');
   typeset();
 }
+function buildXYTable(sel,n){
+  const d=q(sel);let h='<table><tr><th>\\(x\\)</th><th>\\(y\\)</th></tr>';
+  for(let i=0;i<n;i++)h+=`<tr><td><input type="number" step="any" class="basicX" aria-label="x-arvo ${i+1}"></td><td><input type="number" step="any" class="basicY" aria-label="y-arvo ${i+1}"></td></tr>`;
+  d.innerHTML=h+'</table>';d.querySelectorAll('input').forEach(input=>input.addEventListener('input',updateBasicLivePoints));
+}
+function updateBasicLivePoints(){
+  const t=basicTasks[basicIndex];basicEnv=setupCanvas(q('#basicCanvas'),t);
+  const xs=qa('.basicX').map(i=>Number(i.value)),ys=qa('.basicY').map(i=>Number(i.value));
+  xs.forEach((x,i)=>{const y=ys[i];if(Number.isFinite(x)&&Number.isFinite(y)&&Math.abs(y-evalPara(t,x))<1e-6&&x>=t.xmin&&x<=t.xmax&&y>=t.ymin&&y<=t.ymax)drawPoint(basicEnv,x,y)});
+}
 function buildYTable(sel,xs,cls){
   const d=q(sel);
   let h='<table><tr><th>\\(x\\)</th><th>\\(y\\)</th></tr>';
@@ -545,41 +557,18 @@ function buildYTable(sel,xs,cls){
 q('#checkY').onclick=()=>{
   basicAttempted=true;
   const t=basicTasks[basicIndex];
-  const vals=qa('.basicY').map(i=>Number(i.value));
-  const correct=basicXs.map(x=>evalPara(t,x));
-  const ok=vals.length===correct.length && vals.every((v,i)=>Number.isFinite(v)&&Math.abs(v-correct[i])<1e-6);
-  if(!ok){setFeedback(q('#yFeedback'),'Jokin arvoista ei vielä täsmää. Tarkista laskut.','bad');return}
-  basicYs=correct;
-  setFeedback(q('#yFeedback'),'Kaikki arvot oikein! Sijoita pisteet koordinaatistoon.','ok');
+  const xs=qa('.basicX').map(i=>Number(i.value)),vals=qa('.basicY').map(i=>Number(i.value));
+  if(xs.some(v=>!Number.isFinite(v))||vals.some(v=>!Number.isFinite(v))){setFeedback(q('#yFeedback'),'Täytä taulukon kaikki ruudut.','bad');return}
+  if(!uniqueNums(xs)||!isSymmetric(xs)){setFeedback(q('#yFeedback'),'x-arvojen pitää olla erilaisia ja symmetrisiä: mukana on 0 ja jokaiselle a:lle myös −a.','bad');return}
+  const correct=xs.map(x=>evalPara(t,x));
+  if(vals.some((v,i)=>Math.abs(v-correct[i])>=1e-6)){setFeedback(q('#yFeedback'),'Jokin y-arvoista ei vielä täsmää. Tarkista laskut.','bad');return}
+  if(xs.some((x,i)=>x<t.xmin||x>t.xmax||correct[i]<t.ymin||correct[i]>t.ymax)){setFeedback(q('#yFeedback'),'Valitse hieman pienemmät x-arvot, jotta kaikki pisteet mahtuvat koordinaatistoon.','bad');return}
+  basicXs=xs;basicYs=correct;basicEnv=setupCanvas(q('#basicCanvas'),t);basicXs.forEach((x,i)=>drawPoint(basicEnv,x,basicYs[i]));
+  setFeedback(q('#yFeedback'),'Taulukko on oikein! Piirrä paraabeli pisteiden kautta.','ok');
   q('#plotStep').classList.remove('hidden');
-  basicPlotted=[];
+  q('#drawParabola').classList.remove('hidden');
 };
 
-q('#basicCanvas').addEventListener('click',e=>{
-  if(q('#plotStep').classList.contains('hidden')||basicCurveDrawn) return;
-  const rect=q('#basicCanvas').getBoundingClientRect();
-  const px=(e.clientX-rect.left)*q('#basicCanvas').width/rect.width;
-  const py=(e.clientY-rect.top)*q('#basicCanvas').height/rect.height;
-  const [x,y]=basicEnv.fromPx(px,py);
-  const rx=Math.round(x), ry=Math.round(y);
-  const targets=basicXs.map((x,i)=>[x,basicYs[i]]);
-  let best=null,dist=Infinity,idx=-1;
-  targets.forEach((p,i)=>{
-    if(basicPlotted.includes(i)) return;
-    const d=Math.hypot(x-p[0],y-p[1]);
-    if(d<dist){dist=d;best=p;idx=i}
-  });
-  if(best && dist<0.55){
-    basicPlotted.push(idx);drawPoint(basicEnv,best[0],best[1]);
-    setFeedback(q('#plotFeedback'),`Oikein: (${formatNum(best[0])}, ${formatNum(best[1])}).`,'ok');
-    if(basicPlotted.length===targets.length){
-      setFeedback(q('#plotFeedback'),'Kaikki pisteet oikein! Piirrä nyt paraabeli niiden kautta.','ok');
-      q('#drawParabola').classList.remove('hidden');
-    }
-  } else {
-    setFeedback(q('#plotFeedback'),'Ei aivan. Klikkaa lähemmäs jotakin laskemaasi pistettä.','bad');
-  }
-});
 q('#drawParabola').onclick=()=>{
   const t=basicTasks[basicIndex];
   drawParabolaCurve(basicEnv,t.a,t.c);
