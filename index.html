@@ -23,47 +23,70 @@
   <h1>Mafyke-pelimaailma</h1>
   <div class="lead">Maksuttomia matematiikan, fysiikan ja kemian oppimispelejä.</div>
 </header>
+
 <main>
   <div class="subjects">
-<section class="card">
-  <h2>Matematiikka</h2>
-  <p class="muted">Valitse aihealue.</p>
 
-  <div class="games">
-    <a class="game" href="games/matematiikka/luvut-ja-laskutoimitukset/">
-      Luvut ja laskutoimitukset
-    </a>
+    <section class="card">
+      <h2>Matematiikka</h2>
+      <p class="muted">Valitse aihealue.</p>
 
-    <a class="game" href="games/matematiikka/potenssit-ja-polynomit/">
-      Potenssit ja polynomit
-    </a>
+      <div class="games">
+        <a class="game" href="games/matematiikka/luvut-ja-laskutoimitukset/">
+          Luvut ja laskutoimitukset
+        </a>
 
-    <a class="game" href="games/matematiikka/funktiot/">
-      Funktiot
-    </a>
-  </div>
-</section>
+        <a class="game" href="games/matematiikka/potenssit-ja-polynomit/">
+          Potenssit ja polynomit
+        </a>
 
-<section class="card">
-  <h2>Fysiikka</h2>
-  <p class="muted">Valitse aihealue.</p>
+        <a class="game" href="games/matematiikka/funktiot/">
+          Funktiot
+        </a>
+      </div>
+    </section>
 
-  <div class="games">
-    <a class="game" href="games/fysiikka/sahkooppi/">
-      Sähköoppi
-    </a>
-  </div>
-</section>
+    <section class="card">
+      <h2>Fysiikka</h2>
+      <p class="muted">Valitse aihealue.</p>
+
+      <div class="games">
+        <a class="game" href="games/fysiikka/sahkooppi/">
+          Sähköoppi
+        </a>
+      </div>
+    </section>
 
     <section class="card">
       <h2>Kemia</h2>
       <p class="muted">Valitse aihealue.</p>
+
       <div class="games">
-        <a class="game" href="kemia/orgaaninen-kemia/">Orgaaninen kemia</a>
+        <a class="game" href="kemia/orgaaninen-kemia/">
+          Orgaaninen kemia
+        </a>
       </div>
     </section>
+
   </div>
 </main>
+
 <footer>Pelimaailman julkaisupohja</footer>
+
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"7b3ab829fdcf4cfb81d9230fc7eebd67"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+
 </body>
 </html>
