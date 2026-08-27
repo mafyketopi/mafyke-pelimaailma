@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Graafinen ohjelmointi – alakoulun kertaus</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f7fb;color:#172033}
+header{background:#fff;border-bottom:1px solid #dfe5ec;padding:18px 24px}
+h1{margin:0;font-size:clamp(1.7rem,4vw,2.6rem)}
+header p{margin:.4rem 0 0;color:#5a6678}
+main{max-width:1180px;margin:auto;padding:22px}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+button{border:0;border-radius:11px;padding:9px 13px;font-weight:700;cursor:pointer;background:#1f6feb;color:#fff}
+button.secondary{background:#e9eef5;color:#172033}
+button.danger{background:#c83b3b}
+button:disabled{opacity:.45;cursor:not-allowed}
+.badge{background:#fff;border:1px solid #dfe5ec;padding:9px 12px;border-radius:11px}
+.layout{display:grid;grid-template-columns:245px 1fr 320px;gap:16px;align-items:start}
+.panel{background:#fff;border:1px solid #dfe5ec;border-radius:16px;padding:14px;box-shadow:0 4px 18px rgba(30,45,70,.06)}
+.panel h2{font-size:1.05rem;margin:.2rem 0 12px}
+.palette{display:grid;gap:8px}
+.block{border-radius:11px;padding:10px 12px;font-weight:700;cursor:pointer;border:1px solid #d3dce7;background:#eef4ff}
+.block.turn{background:#fff1d8}.block.loop{background:#e8f7e8}.block.if{background:#f5e9ff}.block.pick{background:#ffe7ef}
+.program{min-height:260px;border:2px dashed #c8d2df;border-radius:14px;padding:10px;display:grid;align-content:start;gap:8px;background:#fafcff}
+.program-item{display:flex;align-items:center;gap:6px;background:#f0f4f9;border:1px solid #d9e1eb;border-radius:10px;padding:8px}
+.program-item .label{flex:1}
+.program-item input,.program-item select{max-width:92px;padding:5px;border:1px solid #c9d4e0;border-radius:7px}
+.grid-wrap{display:flex;justify-content:center;overflow:auto}
+#grid{display:grid;grid-template-columns:repeat(8,44px);grid-template-rows:repeat(8,44px);gap:2px;background:#cdd7e4;padding:2px;border-radius:10px}
+.cell{width:44px;height:44px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:24px}
+.cell.wall{background:#667085}
+.cell.goal{background:#dff5df}
+.cell.star::after{content:"★";font-size:22px}
+.robot{position:relative;width:28px;height:25px;display:inline-block;background:#dfe7f1;border:2px solid #172033;border-radius:6px;transform-origin:center}
+.robot::before{content:"";position:absolute;left:5px;top:-9px;width:14px;height:9px;background:#dfe7f1;border:2px solid #172033;border-bottom:0;border-radius:5px 5px 0 0}
+.robot::after{content:"";position:absolute;right:-8px;top:7px;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:7px solid #172033}
+.robot .eye1,.robot .eye2{position:absolute;top:6px;width:4px;height:4px;background:#172033;border-radius:50%}
+.robot .eye1{left:6px}.robot .eye2{left:15px}
+.robot.d0{transform:rotate(0deg)}.robot.d1{transform:rotate(90deg)}.robot.d2{transform:rotate(180deg)}.robot.d3{transform:rotate(270deg)}
+.task{line-height:1.45;margin-bottom:12px}
+.feedback{min-height:50px;padding:10px;border-radius:10px;background:#f6f8fb;margin-top:10px}
+.legend,small{font-size:.9rem;color:#667085}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.panel:nth-child(2){order:-1}}
+@media(max-width:480px){#grid{grid-template-columns:repeat(8,36px);grid-template-rows:repeat(8,36px)}.cell{width:36px;height:36px;font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Graafinen ohjelmointi</h1>
+<p>Scratch-henkinen miniharjoitus: komennot, toisto, ehdot, virheiden korjaus ja ongelmanratkaisu.</p>
+</header>
+<main><div style="max-width:1180px;margin:12px auto 0;padding:0 22px"><a href="index.html" style="text-decoration:none"><button class="secondary">← Etusivu</button></a></div>
+<div class="topbar">
+<button id="prev" class="secondary">← Edellinen</button>
+<button id="next" class="secondary">Seuraava →</button>
+<div class="badge">Tehtävä <b id="taskNo">1</b>/12</div>
+<div class="badge">Taso <b id="level">5</b></div>
+<button id="run">▶ Aja ohjelma</button>
+<button id="reset" class="secondary">Nollaa ajo</button>
+</div>
+
+<div class="layout">
+<section class="panel">
+<h2>Komentopalikat</h2>
+<div id="palette" class="palette"></div>
+<p class="legend">Klikkaa palikkaa lisätäksesi sen ohjelmaan.</p>
+</section>
+
+<section class="panel">
+<h2>Pelialue</h2>
+<div class="task" id="taskText"></div>
+<div class="grid-wrap"><div id="grid"></div></div>
+<div id="feedback" class="feedback">Rakenna tai muokkaa ohjelmaa ja aja se.</div>
+</section>
+
+<section class="panel">
+<h2>Oma ohjelma</h2>
+<div id="program" class="program"></div>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button id="clear" class="danger">Tyhjennä</button>
+<button id="check" class="secondary">Tarkista</button>
+</div>
+<small>Toistossa voit säätää kertojen määrää. Ehdossa voit valita kääntymissuunnan.</small>
+</section>
+</div>
+</main>
+
+<script>
+const DIRS=[[1,0],[0,1],[-1,0],[0,-1]];
+const labels={move:"Liiku 1 askel",left:"Käänny vasemmalle",right:"Käänny oikealle",loop:"Toista",ifwall:"Jos edessä on este",pick:"Kerää tähti"};
+const tasks=[
+{level:5,text:"Aja valmis ohjelma ja katso, mihin ruutuun robotti päätyy.",start:[1,6,3],goal:[1,3],walls:[],stars:[],preset:[["move"],["move"],["move"]],allow:["move","left","right"]},
+{level:5,text:"Korjaa valmis ohjelma niin, että robotti pääsee vihreään ruutuun.",start:[1,6,3],goal:[4,6],walls:[],stars:[],preset:[["move"],["right"],["move"],["move"]],allow:["move","left","right"]},
+{level:5,text:"Lisää sopiva kääntymiskomento ja vie robotti maaliin.",start:[2,5,3],goal:[4,5],walls:[],stars:[],preset:[["move"],["move"]],allow:["move","left","right"]},
+{level:7,text:"Virheenkorjaus: robotin pitäisi kiertää pieni neliö ja palata lähtöön. Korjaa ohjelma.",start:[3,3,0],goal:[3,3],walls:[],stars:[],preset:[["loop",3,"move-right"]],allow:["move","right","loop"]},
+{level:7,text:"Vie robotti neljä ruutua eteenpäin mahdollisimman lyhyellä ohjelmalla käyttäen toistoa.",start:[1,6,3],goal:[1,2],walls:[],stars:[],preset:[],allow:["move","loop"]},
+{level:7,text:"Etsi virhe ja korjaa ohjelma niin, ettei robotti törmää esteeseen.",start:[1,6,3],goal:[4,6],walls:[[1,4],[2,4],[3,4]],stars:[],preset:[["move"],["move"],["right"],["move"],["move"],["move"]],allow:["move","left","right","loop"]},
+{level:8,text:"Ohjelmoi robotti maaliin. Käytä vähintään yhtä toistorakennetta.",start:[1,6,3],goal:[5,2],walls:[[1,4],[2,4],[3,4],[4,4]],stars:[],preset:[],allow:["move","left","right","loop"]},
+{level:8,text:"Kerää tähdet ja mene maaliin. Käytä toistoa.",start:[1,6,3],goal:[6,1],walls:[[4,5],[4,4],[4,3]],stars:[[1,4],[1,2],[3,2],[6,2]],preset:[],allow:["move","left","right","loop","pick"]},
+{level:8,text:"Käytä ehtoa 'jos edessä on este' osana ratkaisua.",start:[1,6,3],goal:[6,1],walls:[[1,3],[2,3],[3,3],[3,4],[3,5]],stars:[],preset:[],allow:["move","left","right","ifwall","loop"]},
+{level:9,text:"Kerää tähdet ja mene maaliin mahdollisimman järkevällä ohjelmalla.",start:[1,6,3],goal:[6,1],walls:[[2,5],[2,4],[4,3],[5,3]],stars:[[1,4],[3,4],[3,2],[6,2]],preset:[],allow:["move","left","right","loop","pick"]},
+{level:9,text:"Valmis ohjelma toimii, mutta on pitkä. Korvaa peräkkäiset liikkumiset toistolla.",start:[1,6,3],goal:[1,1],walls:[],stars:[],preset:[["move"],["move"],["move"],["move"],["move"]],allow:["move","loop"]},
+{level:9,text:"Haaste: rakenna toimiva ohjelma, jossa käytetään sekä toistoa että ehtoa.",start:[1,6,3],goal:[6,1],walls:[[1,3],[2,3],[3,3],[4,3],[4,2],[6,4]],stars:[],preset:[],allow:["move","left","right","loop","ifwall"]}
+];
+
+let idx=0, prog=[], robot={}, collected=new Set(), running=false;
+
+function clone(x){return JSON.parse(JSON.stringify(x||[]))}
+function resetRobot(){
+ const t=tasks[idx]; robot={x:t.start[0],y:t.start[1],d:t.start[2]}; collected=new Set(); renderGrid();
+}
+function setup(){
+ const t=tasks[idx]; prog=clone(t.preset); resetRobot();
+ taskNo.textContent=idx+1; level.textContent=t.level; taskText.textContent=t.text;
+ prev.disabled=idx===0; next.disabled=idx===tasks.length-1;
+ feedback.textContent="Rakenna tai muokkaa ohjelmaa ja aja se.";
+ renderPalette(); renderProgram();
+}
+function renderPalette(){
+ palette.innerHTML="";
+ tasks[idx].allow.forEach(type=>{
+  const d=document.createElement("div");
+  d.className="block "+(type==="loop"?"loop":type==="ifwall"?"if":type==="pick"?"pick":(type==="left"||type==="right")?"turn":"");
+  d.textContent=labels[type];
+  d.onclick=()=>{if(running)return;
+   if(type==="loop") prog.push(["loop",2,"move"]);
+   else if(type==="ifwall") prog.push(["ifwall","right"]);
+   else prog.push([type]);
+   renderProgram();
+  };
+  palette.appendChild(d);
+ });
+}
+function renderProgram(){
+ program.innerHTML="";
+ if(!prog.length){program.innerHTML="<small>Ohjelma on tyhjä.</small>";return}
+ prog.forEach((cmd,i)=>{
+  const row=document.createElement("div"); row.className="program-item";
+  const lab=document.createElement("div"); lab.className="label";
+  if(cmd[0]==="loop"){
+   lab.append("Toista ");
+   const n=document.createElement("input");n.type="number";n.min=2;n.max=10;n.value=cmd[1];
+   n.onchange=()=>cmd[1]=Math.max(2,Math.min(10,+n.value||2));
+   lab.appendChild(n);
+   const sel=document.createElement("select");
+   [["move","liiku"],["move-right","liiku + käänny oikealle"]].forEach(([v,t])=>{let o=document.createElement("option");o.value=v;o.textContent=t;if(cmd[2]===v)o.selected=true;sel.appendChild(o)});
+   sel.onchange=()=>cmd[2]=sel.value; lab.append(" kertaa: ");lab.appendChild(sel);
+  } else if(cmd[0]==="ifwall"){
+   lab.append("Jos edessä on este → ");
+   const sel=document.createElement("select");
+   [["right","käänny oikealle"],["left","käänny vasemmalle"]].forEach(([v,t])=>{let o=document.createElement("option");o.value=v;o.textContent=t;if(cmd[1]===v)o.selected=true;sel.appendChild(o)});
+   sel.onchange=()=>cmd[1]=sel.value;lab.appendChild(sel);
+  } else lab.textContent=labels[cmd[0]];
+  const up=document.createElement("button");up.className="secondary";up.textContent="↑";
+  up.onclick=()=>{if(i>0){[prog[i-1],prog[i]]=[prog[i],prog[i-1]];renderProgram()}};
+  const del=document.createElement("button");del.className="danger";del.textContent="×";
+  del.onclick=()=>{prog.splice(i,1);renderProgram()};
+  row.append(lab,up,del); program.appendChild(row);
+ });
+}
+function renderGrid(){
+ grid.innerHTML=""; const t=tasks[idx];
+ for(let y=0;y<8;y++)for(let x=0;x<8;x++){
+  const c=document.createElement("div");c.className="cell";
+  if(t.walls.some(p=>p[0]===x&&p[1]===y)) c.classList.add("wall");
+  if(t.goal[0]===x&&t.goal[1]===y) c.classList.add("goal");
+  const key=x+","+y;
+  if(t.stars.some(p=>p[0]===x&&p[1]===y)&&!collected.has(key)) c.classList.add("star");
+  if(robot.x===x&&robot.y===y){
+    const r=document.createElement("span");
+    r.className="robot d"+robot.d;
+    r.innerHTML='<i class="eye1"></i><i class="eye2"></i>';
+    c.appendChild(r)
+  }
+  grid.appendChild(c);
+ }
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function blockedAhead(){
+ const [dx,dy]=DIRS[robot.d], nx=robot.x+dx, ny=robot.y+dy, t=tasks[idx];
+ return nx<0||ny<0||nx>=8||ny>=8||t.walls.some(p=>p[0]===nx&&p[1]===ny);
+}
+async function doCmd(cmd){
+ if(cmd==="move"){
+  if(blockedAhead()){feedback.textContent="Robotti törmäsi esteeseen tai reunaan.";throw Error("stop")}
+  const [dx,dy]=DIRS[robot.d];robot.x+=dx;robot.y+=dy;renderGrid();await sleep(260);
+ } else if(cmd==="right"){robot.d=(robot.d+1)%4;renderGrid();await sleep(180)}
+ else if(cmd==="left"){robot.d=(robot.d+3)%4;renderGrid();await sleep(180)}
+ else if(cmd==="pick"){let key=robot.x+","+robot.y;if(tasks[idx].stars.some(p=>p[0]===robot.x&&p[1]===robot.y))collected.add(key);renderGrid();await sleep(180)}
+}
+async function runProgram(){
+ if(running)return; running=true; resetRobot(); feedback.textContent="Ohjelma käynnissä…";
+ try{
+  for(const c of prog){
+   if(c[0]==="loop"){
+    for(let k=0;k<c[1];k++){
+     if(c[2]==="move-right"){await doCmd("move");await doCmd("right")}
+     else await doCmd("move");
+    }
+   } else if(c[0]==="ifwall"){
+    if(blockedAhead()) await doCmd(c[1]);
+   } else await doCmd(c[0]);
+  }
+  feedback.textContent="Ajo valmis. Paina Tarkista.";
+ }catch(e){}
+ running=false;
+}
+function checkSolution(){
+ const t=tasks[idx];
+ const atGoal=robot.x===t.goal[0]&&robot.y===t.goal[1];
+ const allStars=t.stars.every(p=>collected.has(p[0]+","+p[1]));
+ let structural=true;
+ if([4,6,7,9,10,11].includes(idx)) structural=prog.some(c=>c[0]==="loop");
+ if([8,11].includes(idx)) structural=structural&&prog.some(c=>c[0]==="ifwall");
+ if(atGoal&&allStars&&structural) feedback.textContent="Oikein! Tehtävä ratkaistu.";
+ else if(!atGoal) feedback.textContent="Ei vielä: robotti ei ole maalissa.";
+ else if(!allStars) feedback.textContent="Melkein: kaikkia tähtiä ei ole kerätty.";
+ else feedback.textContent="Ratkaisu toimii osittain, mutta tehtävän pyytämä rakenne puuttuu.";
+}
+prev.onclick=()=>{if(idx>0){idx--;setup()}};
+next.onclick=()=>{if(idx<tasks.length-1){idx++;setup()}};
+run.onclick=runProgram;
+reset.onclick=resetRobot;
+clear.onclick=()=>{prog=[];renderProgram();resetRobot();feedback.textContent="Ohjelma tyhjennetty."};
+check.onclick=checkSolution;
+setup();
+</script>
+</body>
+</html>

@@ -1,47 +1,13 @@
-<!doctype html>
-<html lang="fi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Alakoulun kertaus – Mafyke-pelimaailma</title>
-  <style>
-    *{box-sizing:border-box}
-    body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f5f7fa;color:#172033}
-    header{background:white;border-bottom:1px solid #dde3ea;padding:28px 6%}
-    main{max-width:1050px;margin:auto;padding:40px 6%}
-    h1{margin:0 0 8px;font-size:clamp(2rem,5vw,3.5rem)}
-    .lead{font-size:1.15rem;color:#526071}
-    .breadcrumb{margin-top:12px;font-size:.95rem;color:#667085}
-    .breadcrumb a{color:#315d96;text-decoration:none}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:30px}
-    .card{background:white;border:1px solid #dfe4eb;border-radius:16px;padding:22px;box-shadow:0 2px 10px #2230440a}
-    h2{margin:0 0 8px}.muted{color:#667085;line-height:1.45}
-    .games{display:grid;gap:10px;margin-top:18px}
-    .game{display:block;text-decoration:none;color:#172033;border:1px solid #dfe4eb;border-radius:12px;padding:13px 14px;background:#fafbfc;font-weight:700}
-    .game:hover{border-color:#aebddd;background:#f4f7ff}
-    .small{display:block;font-size:.9rem;font-weight:400;color:#667085;margin-top:3px;line-height:1.35}
-    footer{max-width:1050px;margin:auto;padding:0 6% 32px;color:#7a8495;font-size:.9rem}
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Alakoulun kertaus</h1>
-    <div class="lead">Kertaa alakoulun matematiikan keskeisiä taitoja pelaten.</div>
-    <div class="breadcrumb"><a href="../../../index.html">Mafyke-pelimaailma</a> › <a href="../">Matematiikka</a> › Alakoulun kertaus</div>
-  </header>
-  <main>
-    <div class="cards">
-      <section class="card">
-        <h2>Kertolaskujuna</h2>
-        <p class="muted">Harjoittele kertotauluja täyttämällä junan vaunut ja lähetä valmis juna matkaan.</p>
-        <div class="games">
-          <a class="game" href="kertolaskujuna.html">Avaa Kertolaskujuna
-            <span class="small">Kertotaulut 2–10, näppäimistö- ja kosketusohjaus sekä animoitu lähtö.</span>
-          </a>
-        </div>
-      </section>
-    </div>
-  </main>
-  <footer>Mafyke-pelimaailma</footer>
-</body>
-</html>
+<!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Alakoulun matematiikan kertaus</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f3f6fa;color:#172033}
+header{background:#fff;border-bottom:1px solid #dbe3ec;padding:17px 4%}header h1{margin:0;font-size:clamp(1.65rem,3.6vw,2.55rem)}header p{margin:.35rem 0 0;color:#5d6878}
+.wrap{max-width:1220px;margin:auto;padding:17px 4% 34px}.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.badge{background:#fff;border:1px solid #dbe3ec;border-radius:10px;padding:7px 10px}
+button{border:0;border-radius:10px;padding:9px 13px;font-weight:700;cursor:pointer;background:#1769d2;color:#fff}button.secondary{background:#e9eef5;color:#172033}button:disabled{opacity:.4}
+.qgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.q{background:#fff;border:1px solid #dbe3ec;border-radius:14px;padding:13px;min-height:150px;box-shadow:0 3px 13px rgba(25,45,70,.04)}
+.q h3{font-size:1rem;margin:.05rem 0 .5rem;line-height:1.35}.phase{display:inline-block;font-size:.75rem;font-weight:750;background:#eef3f8;border-radius:999px;padding:3px 8px;margin-bottom:7px;color:#526071}.choices{display:grid;gap:6px;margin-top:8px}.choice{display:block;border:1px solid #ccd7e3;background:#fbfcfe;border-radius:9px;padding:7px 8px;cursor:pointer}.choice:hover{background:#f0f5fb}
+input[type=text]{font:inherit;padding:8px;border:1px solid #bdc9d8;border-radius:8px;width:155px;max-width:100%}.exprline{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.feedback{min-height:22px;margin-top:7px;font-weight:700}.ok{color:#14803d}.bad{color:#b42318}.solution{font-weight:400;margin-top:7px;padding:8px 9px;background:#f6f8fb;border-left:3px solid #9aabc0;border-radius:6px;line-height:1.36}
+.coordpick{display:flex;flex-direction:column;align-items:center;gap:5px}.coordpick svg{max-width:310px;width:100%;height:auto}.hitpt{fill:transparent;cursor:pointer}.hitpt:hover{fill:#dceafa}.anglebox{position:relative;width:190px;height:105px;margin:4px auto}.ray{position:absolute;left:45px;bottom:25px;width:120px;height:3px;background:#172033;transform-origin:left center}.ray.moving{transform:rotate(-90deg)}.angleslider{width:min(280px,100%)}
+.visual{display:flex;justify-content:center;align-items:center;min-height:82px;margin:5px 0 7px;overflow:auto}.visual svg{max-width:100%;height:auto}.nav{display:flex;justify-content:space-between;gap:8px;margin-top:12px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:13px}.cardlink{text-decoration:none;color:inherit}.card{background:#fff;border:1px solid #dbe3ec;border-radius:14px;padding:16px;min-height:128px;box-shadow:0 3px 13px rgba(25,45,70,.04)}.card:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(25,45,70,.09)}.card h2{font-size:1.08rem;margin:.1rem 0 .45rem}.small{color:#667085;font-size:.88rem}
+@media(min-width:1050px){body.compact4 .qgrid{grid-template-columns:repeat(2,minmax(0,1fr))}body.compact4 .q{min-height:145px}}
+@media(max-width:780px){.qgrid{grid-template-columns:1fr}.q{min-height:0}}
+</style></head><body><header><h1>Alakoulun matematiikan kertaus</h1><p>5.–6. luokan osaamisen varmistamiseen • perustaidosta ongelmanratkaisuun</p></header><main class="wrap"><div class="cards"><a class="cardlink" href="01-kymmenjarjestelma.html"><article class="card"><h2>1. Luvut ja kymmenjärjestelmä</h2><p>21 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="02-peruslaskut.html"><article class="card"><h2>2. Peruslaskutoimitukset ja laskustrategiat</h2><p>24 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="03-rationaaliluvut.html"><article class="card"><h2>3. Murtoluvut, desimaaliluvut, prosentit ja negatiiviset luvut</h2><p>24 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="04-soveltava.html"><article class="card"><h2>4. Soveltava lukukertaus</h2><p>20 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="05-lukujonot.html"><article class="card"><h2>5. Lukujonot ja säännönmukaisuus</h2><p>16 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="06-yhtalot.html"><article class="card"><h2>6. Tuntematon ja yhtälö</h2><p>16 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="07-kuviot.html"><article class="card"><h2>7. Kuviot, kappaleet ja kulmat</h2><p>19 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="09-koordinaatisto-mittakaava.html"><article class="card"><h2>8. Koordinaatisto, symmetria ja mittakaava</h2><p>17 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="10-mittaaminen.html"><article class="card"><h2>9. Mittaaminen, yksiköt, piiri, pinta-ala ja tilavuus</h2><p>20 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="11-tilastot.html"><article class="card"><h2>10. Tilastot ja todennäköisyys</h2><p>18 tehtävää • vaikeutuva sarja</p><span class="small">Avaa harjoitus →</span></article></a><a class="cardlink" href="12-kertauskoe.html"><article class="card"><h2>11. Alakoulun kertauskoe</h2><p>30 tehtävää • monivalinta + avovastaukset</p><span class="small">Avaa koe →</span></article></a></div></main><a class="cardlink" href="graafinen-ohjelmointi.html"><div class="card"><h2>12. Graafinen ohjelmointi – robotti</h2><p>Scratch-henkinen ohjelmointiharjoitus</p><span class="small">Avaa harjoitus →</span></div></a></body></html>
