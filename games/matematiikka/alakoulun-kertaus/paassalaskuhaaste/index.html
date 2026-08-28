@@ -520,7 +520,7 @@ function explodeField(reason){
  finalScore.textContent=String(score);
  const overText=document.querySelector('#overText');
  if(!retryUsed){
-   overText.textContent=`${reason} Toinen virhe räjäytti laskimen. Saat yrittää tämän kentän vielä kerran. Parempi yrityspistemäärä jää voimaan.`;
+   overText.textContent=`${reason} Toinen virhe räjäytti laskimen. Saat yrittää suorittaa tämän kentän vielä kerran. Parempi yrityspistemäärä jää voimaan.`;
    againBtn.textContent='Yritä kenttä uudelleen';
  }else{
    overText.textContent=`${reason} Toinen epäonnistuminen tällä kentällä. Nyt palataan kenttään 1.`;
