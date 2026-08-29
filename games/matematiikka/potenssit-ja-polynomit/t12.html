@@ -89,7 +89,7 @@ function game(tasks){
  }
  function blockVals(block){return Object.fromEntries([...block.querySelectorAll('input')].map(x=>[x.name,x.value]))}
  document.querySelector('#check').onclick=()=>{
-   [...q.querySelectorAll('.taskblock')].forEach(block=>{let idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));let feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg;if(r.ok&&!credited.has(idx)){credited.add(idx);score++}let sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feed,sol])});
+   [...q.querySelectorAll('.taskblock')].forEach(block=>{let idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));let feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg;if(r.ok&&!credited.has(idx)){credited.add(idx);score++}let sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feed,sol])});
  };
  document.querySelector('#next').onclick=()=>{const end=Math.min(start+pageSize,tasks.length);if(end<tasks.length){start=end;render();window.scrollTo({top:0,behavior:'smooth'})}else{pr.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><b>Valmis!</b><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}};
  render();
@@ -107,14 +107,14 @@ const multi=`<svg viewBox="0 0 640 340"><path d="M80 60 H500 V130 H570 V285 H230
 const prism=`<svg viewBox="0 0 640 350"><path d="M150 110 L420 110 L520 55 L250 55 Z M420 110 L420 270 L520 215 L520 55 M150 110 L150 270 L420 270" fill="none" stroke="#26323c" stroke-width="3"/><text x="285" y="300" font-size="20">x + 2</text><text x="95" y="195" font-size="20">x</text><text x="455" y="285" font-size="20">3</text></svg>`;
 const cube=`<svg viewBox="0 0 620 350"><path d="M165 105 L395 105 L455 75 L225 75 Z M395 105 L395 285 L455 255 L455 75 M165 105 L165 285 L395 285" fill="none" stroke="#26323c" stroke-width="3"/><text x="280" y="315" text-anchor="middle" font-size="21">x + 2</text></svg>`;
 const tasks=[
-{prompt:'Suorakulmion sivut ovat x ja x+3. Muodosta piirin lauseke ja sievennä.',svg:rect('x','x + 3'),fields:F,check:both(['2*x+2*(x+3)','x+(x+3)+x+(x+3)','2x+2(x+3)'],['4x+6','6+4x'])},
-{prompt:'Suorakulmion sivut ovat x+2 ja x+5. Muodosta piirin lauseke ja sievennä.',svg:rect('x + 2','x + 5'),fields:F,check:both(['2*(x+2)+2*(x+5)','2(x+2)+2(x+5)'],['4x+14','14+4x'])},
-{prompt:'Muodosta suorakulmion pinta-alan lauseke ja sievennä.',svg:rect('x + 2','x + 4'),fields:F,check:both(['(x+2)(x+4)','(x+2)*(x+4)'],['x^2+6x+8'])},
-{prompt:'L-kuvio voidaan jakaa suorakulmioihin. Muodosta sen piirin lauseke ja sievennä. Kuvan sisämitat auttavat puuttuvien sivujen päättelyssä.',svg:lshape,fields:F,check:both(['2*(x+8)+2*(x+5)','2(x+8)+2(x+5)'],['4x+26','26+4x'])},
-{prompt:'Muodosta särmiön tilavuuden lauseke ja sievennä.',svg:prism,fields:F,check:both(['x*(x+2)*3','3x(x+2)','3*x*(x+2)'],['3x^2+6x'])},
-{prompt:'Kuution särmä on x+2. Muodosta tilavuuden lauseke ja sievennä.',svg:cube,fields:F,check:both(['(x+2)^3','(x+2)(x+2)(x+2)'],['x^3+6x^2+12x+8'])},
-{prompt:'Tummennettu alue saadaan vähentämällä sisempi suorakulmio ulommasta. Muodosta pinta-alan lauseke ja sievennä.',svg:frame,fields:F,check:both(['(x+8)(x+6)-(x+2)*x','(x+8)*(x+6)-(x+2)*x'],['12x+48','48+12x'])},
-{prompt:'Haaste: tummennettu alue muodostuu useasta suorakulmiosta. Jaa kuvio mielessäsi sopiviin osiin, muodosta pinta-alan lauseke ja sievennä.',svg:multi,fields:F,check:both(['(x+5)*2+(x+3)*(x+1)','2*(x+5)+(x+3)*(x+1)'],['x^2+6x+13'])}
+{prompt:'Suorakulmion sivut ovat x ja x+3. Muodosta piirin lauseke ja sievennä.',svg:rect('x','x + 3'),fields:F,solution:'\\(2x+2(x+3)=4x+6\\)',check:both(['2*x+2*(x+3)','x+(x+3)+x+(x+3)','2x+2(x+3)'],['4x+6','6+4x'])},
+{prompt:'Suorakulmion sivut ovat x+2 ja x+5. Muodosta piirin lauseke ja sievennä.',svg:rect('x + 2','x + 5'),fields:F,solution:'\\(2(x+2)+2(x+5)=4x+14\\)',check:both(['2*(x+2)+2*(x+5)','2(x+2)+2(x+5)'],['4x+14','14+4x'])},
+{prompt:'Muodosta suorakulmion pinta-alan lauseke ja sievennä.',svg:rect('x + 2','x + 4'),fields:F,solution:'\\((x+2)(x+4)=x^2+6x+8\\)',check:both(['(x+2)(x+4)','(x+2)*(x+4)'],['x^2+6x+8'])},
+{prompt:'L-kuvio voidaan jakaa suorakulmioihin. Muodosta sen piirin lauseke ja sievennä. Kuvan sisämitat auttavat puuttuvien sivujen päättelyssä.',svg:lshape,fields:F,solution:'\\(2(x+8)+2(x+5)=4x+26\\)',check:both(['2*(x+8)+2*(x+5)','2(x+8)+2(x+5)'],['4x+26','26+4x'])},
+{prompt:'Muodosta särmiön tilavuuden lauseke ja sievennä.',svg:prism,fields:F,solution:'\\(x(x+2)\\cdot3=3x^2+6x\\)',check:both(['x*(x+2)*3','3x(x+2)','3*x*(x+2)'],['3x^2+6x'])},
+{prompt:'Kuution särmä on x+2. Muodosta tilavuuden lauseke ja sievennä.',svg:cube,fields:F,solution:'\\((x+2)^3=x^3+6x^2+12x+8\\)',check:both(['(x+2)^3','(x+2)(x+2)(x+2)'],['x^3+6x^2+12x+8'])},
+{prompt:'Tummennettu alue saadaan vähentämällä sisempi suorakulmio ulommasta. Muodosta pinta-alan lauseke ja sievennä.',svg:frame,fields:F,solution:'\\((x+8)(x+6)-x(x+2)=12x+48\\)',check:both(['(x+8)(x+6)-(x+2)*x','(x+8)*(x+6)-(x+2)*x'],['12x+48','48+12x'])},
+{prompt:'Haaste: tummennettu alue muodostuu useasta suorakulmiosta. Jaa kuvio mielessäsi sopiviin osiin, muodosta pinta-alan lauseke ja sievennä.',svg:multi,fields:F,solution:'\\(2(x+5)+(x+3)(x+1)=x^2+6x+13\\)',check:both(['(x+5)*2+(x+3)*(x+1)','2*(x+5)+(x+3)*(x+1)'],['x^2+6x+13'])}
 ];game(tasks);
 
 const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}

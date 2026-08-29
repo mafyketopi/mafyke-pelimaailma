@@ -96,7 +96,7 @@ function basicGame(tasks){
      const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
      const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
      if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
      if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
    });
  };
@@ -122,24 +122,24 @@ function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,
 <div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
 </div></main><script>
 const basic=[
-{prompt:'Sievennä.',latex:'x^3\\cdot x^4',check:E(['x^7'])},
-{prompt:'Sievennä.',latex:'a^2\\cdot a^5',check:E(['a^7'])},
-{prompt:'Sievennä.',latex:'(x^3)^2',check:E(['x^6'])},
-{prompt:'Sievennä.',latex:'(ab)^3',check:E(['a^3b^3','a^3*b^3','b^3a^3','b^3*a^3'])},
-{prompt:'Sievennä.',latex:'(2x)^3',check:E(['8x^3','8*x^3'])},
-{prompt:'Sievennä.',latex:'(-3x^2)^2',check:E(['9x^4','9*x^4'])},
-{prompt:'Sievennä.',latex:'(-2x^3y)^3',check:E(['-8x^9y^3','-8*x^9*y^3'])},
-{prompt:'Sievennä.',latex:'(-9x^6y)^2',check:E(['81x^12y^2','81*x^12*y^2'])},
-{prompt:'Sievennä.',latex:'(x^{k+2})^3',check:E(['x^(3k+6)','x^(3*k+6)','x^3k+6'],'Eksponentti \\(k+2\\) kerrotaan kolmella.')},
-{prompt:'Sievennä.',latex:'x^3\\cdot x^8\\cdot(x^2)^2',check:E(['x^15'])},
-{prompt:'Sievennä.',latex:'(2x^2)^3\\cdot x^4',check:E(['8x^10','8*x^10'])}
+{prompt:'Sievennä.',latex:'x^3\\cdot x^4',solution:'\\(x^3\\cdot x^4=x^{3+4}=x^7\\)',check:E(['x^7'])},
+{prompt:'Sievennä.',latex:'a^2\\cdot a^5',solution:'\\(a^2\\cdot a^5=a^{2+5}=a^7\\)',check:E(['a^7'])},
+{prompt:'Sievennä.',latex:'(x^3)^2',solution:'\\((x^3)^2=x^{3\\cdot2}=x^6\\)',check:E(['x^6'])},
+{prompt:'Sievennä.',latex:'(ab)^3',solution:'\\((ab)^3=a^3b^3\\)',check:E(['a^3b^3','a^3*b^3','b^3a^3','b^3*a^3'])},
+{prompt:'Sievennä.',latex:'(2x)^3',solution:'\\((2x)^3=2^3x^3=8x^3\\)',check:E(['8x^3','8*x^3'])},
+{prompt:'Sievennä.',latex:'(-3x^2)^2',solution:'\\((-3x^2)^2=(-3)^2x^4=9x^4\\)',check:E(['9x^4','9*x^4'])},
+{prompt:'Sievennä.',latex:'(-2x^3y)^3',solution:'\\((-2x^3y)^3=-8x^9y^3\\)',check:E(['-8x^9y^3','-8*x^9*y^3'])},
+{prompt:'Sievennä.',latex:'(-9x^6y)^2',solution:'\\((-9x^6y)^2=81x^{12}y^2\\)',check:E(['81x^12y^2','81*x^12*y^2'])},
+{prompt:'Sievennä.',latex:'(x^{k+2})^3',solution:'\\((x^{k+2})^3=x^{3(k+2)}=x^{3k+6}\\)',check:E(['x^(3k+6)','x^(3*k+6)','x^3k+6'],'Eksponentti \\(k+2\\) kerrotaan kolmella.')},
+{prompt:'Sievennä.',latex:'x^3\\cdot x^8\\cdot(x^2)^2',solution:'\\(x^3x^8(x^2)^2=x^{3+8+4}=x^{15}\\)',check:E(['x^15'])},
+{prompt:'Sievennä.',latex:'(2x^2)^3\\cdot x^4',solution:'\\((2x^2)^3x^4=8x^6x^4=8x^{10}\\)',check:E(['8x^10','8*x^10'])}
 ];
 const challenge=[
-{prompt:'Ratkaise eksponentti.',latex:'3^x\\cdot3^3=243',fields:[{name:'a',label:'x ='}],check:v=>({ok:numericEq(v.a,2),msg:numericEq(v.a,2)?'Oikein!':'Kirjoita 243 ensin kolmosen potenssina.'})},
-{prompt:'Kirjoita yhtenä potenssina.',latex:'3^{100}+3^{100}+3^{100}',check:E(['3^101'],'Ota yhteinen tekijä esiin.')},
-{prompt:'Kirjoita yhtenä potenssina.',latex:'5^{200}\\cdot2^{200}',check:E(['10^200'])},
-{prompt:'Laske hyödyntämällä rakennetta.',latex:'4^{31}\\cdot0{,}25^{29}',check:v=>({ok:numericEq(v.a,16),msg:numericEq(v.a,16)?'Oikein!':'Muuta 0,25 neljäsosan avulla nelosen potenssiksi.'})},
-{prompt:'Ratkaise eksponentti.',latex:'27^4=9^x',fields:[{name:'a',label:'x ='}],check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Kirjoita molemmat kolmosen potensseina.'})}
+{prompt:'Ratkaise eksponentti.',latex:'3^x\\cdot3^3=243',fields:[{name:'a',label:'x ='}],solution:'\\(3^x3^3=3^{x+3}=3^5\\Rightarrow x=2\\)',check:v=>({ok:numericEq(v.a,2),msg:numericEq(v.a,2)?'Oikein!':'Kirjoita 243 ensin kolmosen potenssina.'})},
+{prompt:'Kirjoita yhtenä potenssina.',latex:'3^{100}+3^{100}+3^{100}',solution:'\\(3^{100}+3^{100}+3^{100}=3\\cdot3^{100}=3^{101}\\)',check:E(['3^101'],'Ota yhteinen tekijä esiin.')},
+{prompt:'Kirjoita yhtenä potenssina.',latex:'5^{200}\\cdot2^{200}',solution:'\\(5^{200}2^{200}=(5\\cdot2)^{200}=10^{200}\\)',check:E(['10^200'])},
+{prompt:'Laske hyödyntämällä rakennetta.',latex:'4^{31}\\cdot0{,}25^{29}',solution:'\\(4^{31}(1/4)^{29}=4^{31-29}=4^2=16\\)',check:v=>({ok:numericEq(v.a,16),msg:numericEq(v.a,16)?'Oikein!':'Muuta 0,25 neljäsosan avulla nelosen potenssiksi.'})},
+{prompt:'Ratkaise eksponentti.',latex:'27^4=9^x',fields:[{name:'a',label:'x ='}],solution:'\\(27^4=(3^3)^4=3^{12},\\;9^x=3^{2x}\\Rightarrow x=6\\)',check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Kirjoita molemmat kolmosen potensseina.'})}
 ];
 let mode='basic';
 function boot(){ document.querySelector('#fields').innerHTML='';document.querySelector('#feedback').className='feedback'; basicGame(mode==='basic'?basic:challenge); }

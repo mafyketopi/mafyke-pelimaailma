@@ -96,7 +96,7 @@ function basicGame(tasks){
      const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
      const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
      if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
      if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
    });
  };

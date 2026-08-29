@@ -96,7 +96,7 @@ function basicGame(tasks){
      const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
      const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
      if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
      if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
    });
  };
@@ -123,16 +123,16 @@ function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,
 </div></main><script>
 function E2(ans){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':'Tarkista kymmenpotenssin eksponentti ja desimaalipilkun paikka.'})}
 const tasks=[
-{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'4\\,500\\,000',check:E2(['4.5*10^6','4,5*10^6','4.5·10^6','4,5·10^6'])},
-{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'72\\,000\\,000',check:E2(['7.2*10^7','7,2*10^7','7.2·10^7','7,2·10^7'])},
-{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'0{,}000\\,038',check:E2(['3.8*10^-5','3,8*10^-5','3.8·10^-5','3,8·10^-5'])},
-{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'0{,}000\\,000\\,62',check:E2(['6.2*10^-7','6,2*10^-7','6.2·10^-7','6,2·10^-7'])},
-{prompt:'Kirjoita tavallisena lukuna.',latex:'3{,}2\\cdot10^5',check:v=>({ok:numericEq(v.a,320000),msg:numericEq(v.a,320000)?'Oikein!':'Siirrä desimaalipilkkua 5 askelta oikealle.'})},
-{prompt:'Kirjoita tavallisena lukuna.',latex:'6{,}4\\cdot10^{-4}',check:v=>({ok:numericEq(v.a,.00064),msg:numericEq(v.a,.00064)?'Oikein!':'Negatiivinen eksponentti siirtää pilkkua vasemmalle.'})},
-{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(3\\cdot10^5)(2\\cdot10^3)',check:E2(['6*10^8','6·10^8'])},
-{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'\\frac{8\\cdot10^9}{2\\cdot10^4}',check:E2(['4*10^5','4·10^5'])},
-{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(5\\cdot10^{-3})(4\\cdot10^6)',check:E2(['2*10^4','2·10^4'])},
-{prompt:'Laske.',latex:'\\frac{6\\cdot10^{-8}}{3\\cdot10^{-10}}',check:v=>({ok:numericEq(v.a,200)||anyMatch(v.a,['2*10^2']),msg:(numericEq(v.a,200)||anyMatch(v.a,['2*10^2']))?'Oikein!':'Jaa kertoimet ja vähennä eksponentit.'})}
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'4\\,500\\,000',solution:'\\(4\\,500\\,000=4{,}5\\cdot10^6\\)',check:E2(['4.5*10^6','4,5*10^6','4.5·10^6','4,5·10^6'])},
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'72\\,000\\,000',solution:'\\(72\\,000\\,000=7{,}2\\cdot10^7\\)',check:E2(['7.2*10^7','7,2*10^7','7.2·10^7','7,2·10^7'])},
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'0{,}000\\,038',solution:'\\(0{,}000038=3{,}8\\cdot10^{-5}\\)',check:E2(['3.8*10^-5','3,8*10^-5','3.8·10^-5','3,8·10^-5'])},
+{prompt:'Kirjoita kymmenpotenssimuodossa.',latex:'0{,}000\\,000\\,62',solution:'\\(0{,}00000062=6{,}2\\cdot10^{-7}\\)',check:E2(['6.2*10^-7','6,2*10^-7','6.2·10^-7','6,2·10^-7'])},
+{prompt:'Kirjoita tavallisena lukuna.',latex:'3{,}2\\cdot10^5',solution:'\\(3{,}2\\cdot10^5=320\\,000\\)',check:v=>({ok:numericEq(v.a,320000),msg:numericEq(v.a,320000)?'Oikein!':'Siirrä desimaalipilkkua 5 askelta oikealle.'})},
+{prompt:'Kirjoita tavallisena lukuna.',latex:'6{,}4\\cdot10^{-4}',solution:'\\(6{,}4\\cdot10^{-4}=0{,}00064\\)',check:v=>({ok:numericEq(v.a,.00064),msg:numericEq(v.a,.00064)?'Oikein!':'Negatiivinen eksponentti siirtää pilkkua vasemmalle.'})},
+{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(3\\cdot10^5)(2\\cdot10^3)',solution:'\\((3\\cdot10^5)(2\\cdot10^3)=6\\cdot10^8\\)',check:E2(['6*10^8','6·10^8'])},
+{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'\\frac{8\\cdot10^9}{2\\cdot10^4}',solution:'\\((8\\cdot10^9)/(2\\cdot10^4)=4\\cdot10^5\\)',check:E2(['4*10^5','4·10^5'])},
+{prompt:'Laske ja anna vastaus kymmenpotenssimuodossa.',latex:'(5\\cdot10^{-3})(4\\cdot10^6)',solution:'\\((5\\cdot10^{-3})(4\\cdot10^6)=20\\cdot10^3=2\\cdot10^4\\)',check:E2(['2*10^4','2·10^4'])},
+{prompt:'Laske.',latex:'\\frac{6\\cdot10^{-8}}{3\\cdot10^{-10}}',solution:'\\((6\\cdot10^{-8})/(3\\cdot10^{-10})=2\\cdot10^2=200\\)',check:v=>({ok:numericEq(v.a,200)||anyMatch(v.a,['2*10^2']),msg:(numericEq(v.a,200)||anyMatch(v.a,['2*10^2']))?'Oikein!':'Jaa kertoimet ja vähennä eksponentit.'})}
 ,
 {prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'3{,}2\\ \\mathrm{km}',check:E2(['3.2*10^3','3,2*10^3']),solution:'\\(3{,}2\\ \\mathrm{km}=3{,}2\\cdot10^3\\ \\mathrm{m}\\)'},
 {prompt:'Muunna metreiksi kymmenpotenssimuodon avulla.',latex:'4{,}5\\ \\mathrm{mm}',check:E2(['4.5*10^-3','4,5*10^-3']),solution:'\\(4{,}5\\ \\mathrm{mm}=4{,}5\\cdot10^{-3}\\ \\mathrm{m}\\)'}

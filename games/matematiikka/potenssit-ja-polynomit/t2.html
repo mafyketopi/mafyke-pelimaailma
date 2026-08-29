@@ -96,7 +96,7 @@ function basicGame(tasks){
      const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
      const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
      if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
      if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
    });
  };
@@ -122,10 +122,10 @@ function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,
 </div></main><script>
 function two(a,b){return v=>{let ok=anyMatch(v.m,a)&&numericEq(v.a,b);return {ok,msg:ok?'Sekä merkintä että arvo ovat oikein!':'Tarkista sekä potenssimerkintä että laskettu arvo.'}}}
 const tasks=[
-{prompt:'Merkitse potenssina ja laske: luvun 6 neliö.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],check:two(['6^2'],36)},
-{prompt:'Merkitse potenssina ja laske: luvun 4 kuutio.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],check:two(['4^3'],64)},
-{prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 3 ja 5 neliöiden summa.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],check:two(['3^2+5^2','5^2+3^2'],34)},
-{prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 5 ja 2 kuutioiden erotus.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],check:two(['5^3-2^3'],117)},
+{prompt:'Merkitse potenssina ja laske: luvun 6 neliö.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],solution:'\\(6^2=36\\)',check:two(['6^2'],36)},
+{prompt:'Merkitse potenssina ja laske: luvun 4 kuutio.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],solution:'\\(4^3=64\\)',check:two(['4^3'],64)},
+{prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 3 ja 5 neliöiden summa.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],solution:'\\(3^2+5^2=9+25=34\\)',check:two(['3^2+5^2','5^2+3^2'],34)},
+{prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 5 ja 2 kuutioiden erotus.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],solution:'\\(5^3-2^3=125-8=117\\)',check:two(['5^3-2^3'],117)},
 {prompt:'Laske laskujärjestyksen mukaan.',latex:'3+2^3\\cdot4',solution:"\\(3+2^3\\cdot4=3+8\\cdot4=35\\)",check:v=>({ok:numericEq(v.a,35),msg:numericEq(v.a,35)?'Oikein!':'Potenssi lasketaan ennen kertolaskua.'})},
 {prompt:'Laske laskujärjestyksen mukaan.',latex:'24-2\\cdot3^2',solution:"\\(24-2\\cdot3^2=24-18=6\\)",check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Laske ensin potenssi.'})},
 {prompt:'Laske.',latex:'2^4+3^2-5',solution:"\\(16+9-5=20\\)",check:v=>({ok:numericEq(v.a,20),msg:numericEq(v.a,20)?'Oikein!':'Laske potenssit ensin.'})},

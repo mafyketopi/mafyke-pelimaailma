@@ -96,7 +96,7 @@ function basicGame(tasks){
      const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
      const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
      if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
      if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
    });
  };
@@ -118,23 +118,23 @@ function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,
 <div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
 </div></main><script>
 const basic=[
-{prompt:'Sievennä.',latex:'\\frac{x^7}{x^3}',check:E(['x^4'])},
-{prompt:'Sievennä.',latex:'\\frac{a^9}{a^2}',check:E(['a^7'])},
-{prompt:'Sievennä.',latex:'\\left(\\frac{x}{y}\\right)^2',check:E(['x^2/y^2','(x^2)/(y^2)'])},
-{prompt:'Sievennä.',latex:'\\frac{(x^3)^2}{x^2}',check:E(['x^4'])},
-{prompt:'Sievennä.',latex:'\\frac{(2x^2)^3}{4x^2}',check:E(['2x^4','2*x^4'])},
-{prompt:'Sievennä.',latex:'\\frac{(-3x^2y)^2}{9xy}',check:E(['x^3y','x^3*y'])},
-{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{x^3\\cdot x^8}{(x^3)^2}',check:E(['x^5'])},
-{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{(x^2)^4\\cdot x^3}{x^5}',check:E(['x^6'])},
-{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{(3x^2)^3\\cdot x^2}{9x^4}',check:E(['3x^4','3*x^4'])},
-{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{(2a^3b)^2\\cdot a^4}{4a^5b}',check:E(['a^5b','a^5*b'])}
+{prompt:'Sievennä.',latex:'\\frac{x^7}{x^3}',solution:'\\(x^7/x^3=x^{7-3}=x^4\\)',check:E(['x^4'])},
+{prompt:'Sievennä.',latex:'\\frac{a^9}{a^2}',solution:'\\(a^9/a^2=a^{9-2}=a^7\\)',check:E(['a^7'])},
+{prompt:'Sievennä.',latex:'\\left(\\frac{x}{y}\\right)^2',solution:'\\((x/y)^2=x^2/y^2\\)',check:E(['x^2/y^2','(x^2)/(y^2)'])},
+{prompt:'Sievennä.',latex:'\\frac{(x^3)^2}{x^2}',solution:'\\((x^3)^2/x^2=x^{6-2}=x^4\\)',check:E(['x^4'])},
+{prompt:'Sievennä.',latex:'\\frac{(2x^2)^3}{4x^2}',solution:'\\((2x^2)^3/(4x^2)=8x^6/(4x^2)=2x^4\\)',check:E(['2x^4','2*x^4'])},
+{prompt:'Sievennä.',latex:'\\frac{(-3x^2y)^2}{9xy}',solution:'\\((-3x^2y)^2/(9xy)=9x^4y^2/(9xy)=x^3y\\)',check:E(['x^3y','x^3*y'])},
+{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{x^3\\cdot x^8}{(x^3)^2}',solution:'\\(x^3x^8/(x^3)^2=x^{11}/x^6=x^5\\)',check:E(['x^5'])},
+{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{(x^2)^4\\cdot x^3}{x^5}',solution:'\\((x^2)^4x^3/x^5=x^{8+3-5}=x^6\\)',check:E(['x^6'])},
+{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{(3x^2)^3\\cdot x^2}{9x^4}',solution:'\\((3x^2)^3x^2/(9x^4)=27x^8/(9x^4)=3x^4\\)',check:E(['3x^4','3*x^4'])},
+{prompt:'Sievennä käyttäen useita sääntöjä.',latex:'\\frac{(2a^3b)^2\\cdot a^4}{4a^5b}',solution:'\\((2a^3b)^2a^4/(4a^5b)=4a^{10}b^2/(4a^5b)=a^5b\\)',check:E(['a^5b','a^5*b'])}
 ];
 const challenge=[
-{prompt:'Ratkaise eksponentti.',latex:'\\frac{2^{x+5}}{2^3}=2^8',fields:[{name:'a',label:'x ='}],check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Vähennä eksponentit osamäärässä.'})},
-{prompt:'Kirjoita yhtenä potenssina.',latex:'\\frac{7^{120}}{7^{20}}',check:E(['7^100'])},
-{prompt:'Laske hyödyntämällä potenssisääntöjä.',latex:'\\frac{6^{50}}{3^{50}}',check:E(['2^50'])},
-{prompt:'Laske ilman suuren potenssin avaamista.',latex:'\\frac{8^{20}}{4^{20}}',check:E(['2^20','1048576'])},
-{prompt:'Ratkaise eksponentti.',latex:'\\frac{25^6}{5^4}=5^x',fields:[{name:'a',label:'x ='}],check:v=>({ok:numericEq(v.a,8),msg:numericEq(v.a,8)?'Oikein!':'Kirjoita 25 viitosen potenssina.'})}
+{prompt:'Ratkaise eksponentti.',latex:'\\frac{2^{x+5}}{2^3}=2^8',fields:[{name:'a',label:'x ='}],solution:'\\(2^{x+5}/2^3=2^{x+2}=2^8\\Rightarrow x=6\\)',check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Vähennä eksponentit osamäärässä.'})},
+{prompt:'Kirjoita yhtenä potenssina.',latex:'\\frac{7^{120}}{7^{20}}',solution:'\\(7^{120}/7^{20}=7^{100}\\)',check:E(['7^100'])},
+{prompt:'Laske hyödyntämällä potenssisääntöjä.',latex:'\\frac{6^{50}}{3^{50}}',solution:'\\(6^{50}/3^{50}=(6/3)^{50}=2^{50}\\)',check:E(['2^50'])},
+{prompt:'Laske ilman suuren potenssin avaamista.',latex:'\\frac{8^{20}}{4^{20}}',solution:'\\(8^{20}/4^{20}=(8/4)^{20}=2^{20}\\)',check:E(['2^20','1048576'])},
+{prompt:'Ratkaise eksponentti.',latex:'\\frac{25^6}{5^4}=5^x',fields:[{name:'a',label:'x ='}],solution:'\\(25^6/5^4=(5^2)^6/5^4=5^8\\Rightarrow x=8\\)',check:v=>({ok:numericEq(v.a,8),msg:numericEq(v.a,8)?'Oikein!':'Kirjoita 25 viitosen potenssina.'})}
 ];
 let mode='basic';
 function boot(){basicGame(mode==='basic'?basic:challenge)}

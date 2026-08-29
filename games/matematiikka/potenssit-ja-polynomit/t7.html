@@ -94,7 +94,7 @@ function basicGame(tasks){
      const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
      const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
      if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
      if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
    });
  };
@@ -130,17 +130,17 @@ function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,
 </main><script>
 function N(t,alts=[]){return v=>{let ok=numericEq(v.a,t)||anyMatch(v.a,alts);return {ok,msg:ok?'Oikein!':'Tarkista neliöjuuren arvo ja laskujärjestys.'}}}
 const roots=[
-{prompt:'Laske.',latex:'\\sqrt{0}',check:N(0)},{prompt:'Laske.',latex:'\\sqrt{25}',check:N(5)},{prompt:'Laske.',latex:'\\sqrt{81}',check:N(9)},
-{prompt:'Laske.',latex:'\\sqrt{144}',check:N(12)},{prompt:'Laske.',latex:'\\sqrt{225}',check:N(15)},
-{prompt:'Laske. Vihje: mieti, minkä desimaaliluvun neliö on 0,64.',latex:'\\sqrt{0{,}64}',check:N(.8)},{prompt:'Laske.',latex:'\\sqrt{1{,}21}',check:N(1.1)},
-{prompt:'Laske.',latex:'\\sqrt{\\frac{9}{16}}',check:N(.75,['3/4'])},
-{prompt:'Laske. Vihje: muuta sekaluku ensin murtoluvuksi.',latex:'\\sqrt{2\\frac14}',check:N(1.5,['3/2'])},
-{prompt:'Voiko tämän laskea reaalilukuna? Vastaa kyllä tai ei.',latex:'\\sqrt{-16}',check:v=>({ok:anyMatch(v.a,['ei']),msg:anyMatch(v.a,['ei'])?'Oikein! Negatiivisella luvulla ei ole reaalista neliöjuurta.':'Reaaliluvuissa negatiivisen luvun neliöjuurta ei ole.'})},
-{prompt:'Laske.',latex:'\\sqrt{64}+\\sqrt{36}',check:N(14)},
-{prompt:'Laske.',latex:'3+2\\sqrt{49}',check:N(17)},
-{prompt:'Laske laskujärjestyksen mukaan.',latex:'2\\sqrt{81}-3^2',check:N(9)},
-{prompt:'Laske laskujärjestyksen mukaan.',latex:'\\frac{\\sqrt{144}+\\sqrt{36}}{3}',check:N(6)},
-{prompt:'Laske.',latex:'\\sqrt{0{,}25}+\\sqrt{2{,}25}',check:N(2)}
+{prompt:'Laske.',latex:'\\sqrt{0}',check:N(0),solution:'\\(\\sqrt{0}=0\\)'},{prompt:'Laske.',latex:'\\sqrt{25}',check:N(5),solution:'\\(\\sqrt{25}=5\\)'},{prompt:'Laske.',latex:'\\sqrt{81}',check:N(9),solution:'\\(\\sqrt{81}=9\\)'},
+{prompt:'Laske.',latex:'\\sqrt{144}',check:N(12),solution:'\\(\\sqrt{144}=12\\)'},{prompt:'Laske.',latex:'\\sqrt{225}',check:N(15),solution:'\\(\\sqrt{225}=15\\)'},
+{prompt:'Laske. Vihje: mieti, minkä desimaaliluvun neliö on 0,64.',latex:'\\sqrt{0{,}64}',check:N(.8),solution:'\\(0{,}8^2=0{,}64\\Rightarrow\\sqrt{0{,}64}=0{,}8\\)'},{prompt:'Laske.',latex:'\\sqrt{1{,}21}',check:N(1.1),solution:'\\(1{,}1^2=1{,}21\\Rightarrow\\sqrt{1{,}21}=1{,}1\\)'},
+{prompt:'Laske.',latex:'\\sqrt{\\frac{9}{16}}',check:N(.75,['3/4']),solution:'\\(\\sqrt{\\frac{9}{16}}=\\frac34\\)'},
+{prompt:'Laske. Vihje: muuta sekaluku ensin murtoluvuksi.',latex:'\\sqrt{2\\frac14}',check:N(1.5,['3/2']),solution:'\\(2\\frac14=\\frac94,\\;\\sqrt{\\frac94}=\\frac32\\)'},
+{prompt:'Voiko tämän laskea reaalilukuna? Vastaa kyllä tai ei.',latex:'\\sqrt{-16}',check:v=>({ok:anyMatch(v.a,['ei']),msg:anyMatch(v.a,['ei'])?'Oikein! Negatiivisella luvulla ei ole reaalista neliöjuurta.':'Reaaliluvuissa negatiivisen luvun neliöjuurta ei ole.'}),solution:'Reaaliluvuissa \\(\\sqrt{-16}\\) ei ole määritelty.'},
+{prompt:'Laske.',latex:'\\sqrt{64}+\\sqrt{36}',check:N(14),solution:'\\(8+6=14\\)'},
+{prompt:'Laske.',latex:'3+2\\sqrt{49}',check:N(17),solution:'\\(3+2\\cdot7=17\\)'},
+{prompt:'Laske laskujärjestyksen mukaan.',latex:'2\\sqrt{81}-3^2',check:N(9),solution:'\\(2\\cdot9-9=9\\)'},
+{prompt:'Laske laskujärjestyksen mukaan.',latex:'\\frac{\\sqrt{144}+\\sqrt{36}}{3}',check:N(6),solution:'\\(\\frac{12+6}{3}=6\\)'},
+{prompt:'Laske.',latex:'\\sqrt{0{,}25}+\\sqrt{2{,}25}',check:N(2),solution:'\\(0{,}5+1{,}5=2\\)'}
 ,
 {prompt:'Laske.',latex:'\\sqrt{196}',check:N(14),solution:'\\(\\sqrt{196}=14\\)'},
 {prompt:'Laske. Vihje: mieti sopivaa desimaalilukua.',latex:'\\sqrt{0{,}09}',check:N(.3),solution:'\\(0{,}3^2=0{,}09\\), joten \\(\\sqrt{0{,}09}=0{,}3\\)'},

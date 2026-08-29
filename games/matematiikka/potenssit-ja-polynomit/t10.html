@@ -89,7 +89,7 @@ function game(tasks){
  }
  function blockVals(block){return Object.fromEntries([...block.querySelectorAll('input')].map(x=>[x.name,x.value]))}
  document.querySelector('#check').onclick=()=>{
-   [...q.querySelectorAll('.taskblock')].forEach(block=>{let idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));let feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg;if(r.ok&&!credited.has(idx)){credited.add(idx);score++}let sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feed,sol])});
+   [...q.querySelectorAll('.taskblock')].forEach(block=>{let idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));let feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg;if(r.ok&&!credited.has(idx)){credited.add(idx);score++}let sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feed,sol])});
  };
  document.querySelector('#next').onclick=()=>{const end=Math.min(start+pageSize,tasks.length);if(end<tasks.length){start=end;render();window.scrollTo({top:0,behavior:'smooth'})}else{pr.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><b>Valmis!</b><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}};
  render();
@@ -102,17 +102,17 @@ function three(form,prod,ans){return v=>{let o=okAny(v.m,form)&&okAny(v.p,prod)&
 const F=[{name:'m',label:'Muodostettu lauseke'},{name:'a',label:'Sievennetty vastaus'}];
 const P=[{name:'m',label:'Potenssimuoto'},{name:'p',label:'Kirjoita potenssi tulona'},{name:'a',label:'Sievennetty polynomi'}];
 const tasks=[
-{prompt:'Muodosta polynomien a+3 ja a-4 summa ja sievennä.',fields:F,check:two(['(a+3)+(a-4)','a+3+a-4'],['2a-1','-1+2a'])},
-{prompt:'Muodosta polynomien a+3 ja a-4 erotus tässä järjestyksessä ja sievennä.',fields:F,check:two(['(a+3)-(a-4)','a+3-(a-4)'],['7'])},
-{prompt:'Muodosta polynomien 2x+5 ja x-3 summa ja sievennä.',fields:F,check:two(['(2x+5)+(x-3)','2x+5+x-3'],['3x+2','2+3x'])},
-{prompt:'Muodosta polynomien 4x-1 ja 2x+6 erotus ja sievennä.',fields:F,check:two(['(4x-1)-(2x+6)','4x-1-(2x+6)'],['2x-7','-7+2x'])},
-{prompt:'Muodosta polynomien x+2 ja x+3 tulo ja sievennä.',fields:F,check:two(['(x+2)(x+3)','(x+2)*(x+3)'],['x^2+5x+6'])},
-{prompt:'Muodosta polynomien 2x-1 ja x+4 tulo ja sievennä.',fields:F,check:two(['(2x-1)(x+4)','(2x-1)*(x+4)'],['2x^2+7x-4'])},
-{prompt:'Muodosta trinomien x^2+x+1 ja 2x^2-3x+4 summa ja sievennä.',fields:F,check:two(['(x^2+x+1)+(2x^2-3x+4)','x^2+x+1+2x^2-3x+4'],['3x^2-2x+5'])},
-{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(a+2)^2'],['(a+2)(a+2)','(a+2)*(a+2)'],['a^2+4a+4'])},
-{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(x-3)^2'],['(x-3)(x-3)','(x-3)*(x-3)'],['x^2-6x+9'])},
-{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(2x+1)^2'],['(2x+1)(2x+1)','(2x+1)*(2x+1)'],['4x^2+4x+1'])},
-{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,check:three(['(a+1)^3'],['(a+1)(a+1)(a+1)','(a+1)*(a+1)*(a+1)'],['a^3+3a^2+3a+1'])}
+{prompt:'Muodosta polynomien a+3 ja a-4 summa ja sievennä.',fields:F,solution:'\\((a+3)+(a-4)=2a-1\\)',check:two(['(a+3)+(a-4)','a+3+a-4'],['2a-1','-1+2a'])},
+{prompt:'Muodosta polynomien a+3 ja a-4 erotus tässä järjestyksessä ja sievennä.',fields:F,solution:'\\((a+3)-(a-4)=a+3-a+4=7\\)',check:two(['(a+3)-(a-4)','a+3-(a-4)'],['7'])},
+{prompt:'Muodosta polynomien 2x+5 ja x-3 summa ja sievennä.',fields:F,solution:'\\((2x+5)+(x-3)=3x+2\\)',check:two(['(2x+5)+(x-3)','2x+5+x-3'],['3x+2','2+3x'])},
+{prompt:'Muodosta polynomien 4x-1 ja 2x+6 erotus ja sievennä.',fields:F,solution:'\\((4x-1)-(2x+6)=2x-7\\)',check:two(['(4x-1)-(2x+6)','4x-1-(2x+6)'],['2x-7','-7+2x'])},
+{prompt:'Muodosta polynomien x+2 ja x+3 tulo ja sievennä.',fields:F,solution:'\\((x+2)(x+3)=x^2+5x+6\\)',check:two(['(x+2)(x+3)','(x+2)*(x+3)'],['x^2+5x+6'])},
+{prompt:'Muodosta polynomien 2x-1 ja x+4 tulo ja sievennä.',fields:F,solution:'\\((2x-1)(x+4)=2x^2+7x-4\\)',check:two(['(2x-1)(x+4)','(2x-1)*(x+4)'],['2x^2+7x-4'])},
+{prompt:'Muodosta trinomien x^2+x+1 ja 2x^2-3x+4 summa ja sievennä.',fields:F,solution:'\\((x^2+x+1)+(2x^2-3x+4)=3x^2-2x+5\\)',check:two(['(x^2+x+1)+(2x^2-3x+4)','x^2+x+1+2x^2-3x+4'],['3x^2-2x+5'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,solution:'\\((a+2)^2=(a+2)(a+2)=a^2+4a+4\\)',check:three(['(a+2)^2'],['(a+2)(a+2)','(a+2)*(a+2)'],['a^2+4a+4'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,solution:'\\((x-3)^2=(x-3)(x-3)=x^2-6x+9\\)',check:three(['(x-3)^2'],['(x-3)(x-3)','(x-3)*(x-3)'],['x^2-6x+9'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,solution:'\\((2x+1)^2=(2x+1)(2x+1)=4x^2+4x+1\\)',check:three(['(2x+1)^2'],['(2x+1)(2x+1)','(2x+1)*(2x+1)'],['4x^2+4x+1'])},
+{prompt:'Sievennä. Vihje: avaa potenssi ensin tuloksi.',fields:P,solution:'\\((a+1)^3=(a+1)(a+1)(a+1)=a^3+3a^2+3a+1\\)',check:three(['(a+1)^3'],['(a+1)(a+1)(a+1)','(a+1)*(a+1)*(a+1)'],['a^3+3a^2+3a+1'])}
 ];game(tasks);
 
 const _sg=document.querySelector('#startGame');if(_sg){_sg.onclick=()=>{document.querySelector('#introScreen').style.display='none';document.querySelector('#gameScreen').style.display='block';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.querySelector('#gameScreen')]);};}
