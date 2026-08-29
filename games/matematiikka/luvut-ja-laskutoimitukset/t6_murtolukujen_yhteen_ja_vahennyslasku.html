@@ -10,13 +10,15 @@ main{max-width:1050px;margin:auto;padding:22px 5% 36px}.tabs{display:flex;gap:7p
 .correct{font-size:.82rem;color:var(--bad);min-height:17px;margin-top:4px}.actions{display:flex;justify-content:center;gap:9px;margin-top:15px;flex-wrap:wrap}.action{font:inherit;font-weight:750;border:0;border-radius:9px;padding:10px 15px;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eef2f6;border:1px solid var(--line);color:var(--ink)}.score{text-align:center;font-weight:850;margin-top:10px}
 .finnish{display:inline-flex;align-items:flex-start;gap:3px}.factor{font-weight:850;font-size:.9rem;margin-top:-2px}.factor.right{margin-left:2px}
 @media(max-width:720px){.grid,.theory{grid-template-columns:1fr}}
+
+.backbar{max-width:1050px;margin:0 auto 14px}.backlink{display:inline-block;color:#2457a7;text-decoration:none;font-weight:750;background:#fff;border:1px solid #d8e0e8;border-radius:10px;padding:8px 12px}.backlink:hover{border-color:#2457a7}
 </style>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'global'}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
-<header><h1>Murtolukujen yhteen- ja vähennyslasku</h1><p>7. luokka · yhteen- ja vähennyslaskut</p></header><main><div class="tabs"><button class="tab active" data-page="easy">Päässälaskut</button><button class="tab" data-page="medium">Keskitaso</button><button class="tab" data-page="hard">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
+<header><h1>Murtolukujen yhteen- ja vähennyslasku</h1><p>7. luokka · yhteen- ja vähennyslaskut</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs"><button class="tab active" data-page="easy">Päässälaskut</button><button class="tab" data-page="medium">Keskitaso</button><button class="tab" data-page="hard">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function raw(s){return String(s).trim().replace(/−/g,'-').replace(/,/g,'.')}
 function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
@@ -64,8 +66,8 @@ function render(){
  tasks=page==='easy'?easy:page==='medium'?medium:hard;
  $('#title').textContent=page==='easy'?'Päässälaskut':page==='medium'?'Erinimiset ja sekaluvut':'Haastavammat laskut';
  $('#intro').textContent='Anna vastaus supistettuna murto- tai sekalukuna. Jos tulos on kokonaisluku, kirjoita kokonaisluku.';
- $('#theory').innerHTML=`<div class="box"><b>Supista vastaus.</b> Esim. ${tex(6,4)} = ${tex(3,2)} = 1 ${tex(1,2)}. Vastaukseksi käy <b>3/2</b> tai <b>1 1/2</b>.</div><div class="box">Erinimisissä murtoluvuissa lavenna ensin samannimisiksi. Välivaiheita ei tarvitse kirjoittaa koneelle.</div>`;
- $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" placeholder="esim. 3/4 tai 1 1/2"></div><div class="correct" id="c${i}"></div></div>`).join('');
+ $('#theory').innerHTML=`<div class="box"><b>Vastauksen kirjoittaminen:</b> käytä /-merkkiä jakoviivana. Esim. ${tex(3,4)} kirjoitetaan <b>3/4</b> ja ${mix(1,1,2)} kirjoitetaan <b>1 1/2</b>. Supista vastaus.</div><div class="box"><b>Malliratkaisu:</b> ${tex(1,2)} + ${tex(1,4)} = ${tex(2,4)} + ${tex(1,4)} = ${tex(3,4)}. Erinimisissä murtoluvuissa lavenna ensin samannimisiksi.</div>`;
+ $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" ></div><div class="correct" id="c${i}"></div></div>`).join('');
  $('#score').textContent='';typeset();
 }
 function check(){let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t.d===1?t.n:`${t.n}/${t.d}`);if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}

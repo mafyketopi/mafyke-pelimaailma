@@ -10,8 +10,15 @@ main{max-width:1050px;margin:auto;padding:22px 5% 36px}.tabs{display:flex;gap:7p
 .correct{font-size:.82rem;color:var(--bad);min-height:17px;margin-top:4px}.actions{display:flex;justify-content:center;gap:9px;margin-top:15px;flex-wrap:wrap}.action{font:inherit;font-weight:750;border:0;border-radius:9px;padding:10px 15px;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eef2f6;border:1px solid var(--line);color:var(--ink)}.score{text-align:center;font-weight:850;margin-top:10px}
 .finnish{display:inline-flex;align-items:flex-start;gap:3px}.factor{font-weight:850;font-size:.9rem;margin-top:-2px}.factor.right{margin-left:2px}
 @media(max-width:720px){.grid,.theory{grid-template-columns:1fr}}
-</style></head><body>
-<header><h1>Laskemista negatiivisilla luvuilla</h1><p>7. luokka · kaikki laskutoimitukset negatiivisilla luvuilla</p></header><main>
+
+.backbar{max-width:1050px;margin:0 auto 14px}.backlink{display:inline-block;color:#2457a7;text-decoration:none;font-weight:750;background:#fff;border:1px solid #d8e0e8;border-radius:10px;padding:8px 12px}.backlink:hover{border-color:#2457a7}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head><body>
+<header><h1>Laskemista negatiivisilla luvuilla</h1><p>7. luokka · kaikki laskutoimitukset negatiivisilla luvuilla</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav>
 <div class="tabs"><button class="tab active" data-page="add">Yhteenlasku</button><button class="tab" data-page="sub">Vähennyslasku</button><button class="tab" data-page="mixed">Useita laskuja</button><button class="tab" data-page="mul">Kertolasku</button><button class="tab" data-page="div">Jakolasku</button><button class="tab" data-page="order">Kaikki laskutoimitukset</button></div>
 <section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main>
 <script>
@@ -27,8 +34,8 @@ function render(){
  tasks=page==='add'?add:page==='sub'?sub:page==='mixed'?mixed:page==='mul'?mul:page==='div'?div:order;
  $('#title').textContent=page==='add'?'Yhteenlasku':page==='sub'?'Vähennyslasku':page==='mixed'?'Useita yhteen- ja vähennyslaskuja':page==='mul'?'Kertolasku':page==='div'?'Jakolasku':'Kaikki laskutoimitukset';
  $('#intro').textContent=page==='order'?'Noudata laskujärjestystä. Välivaiheita ei tarvitse kirjoittaa koneelle.':'Laske. Välivaiheita ei tarvitse kirjoittaa koneelle.';
- $('#theory').innerHTML=page==='mul'?'<div class="box">Sama etumerkki → positiivinen tulo. Eri etumerkit → negatiivinen tulo.</div>':page==='div'?'<div class="box">Sama etumerkki → positiivinen osamäärä. Eri etumerkit → negatiivinen osamäärä.</div><div class="box"><b>Nollalla ei voi jakaa.</b> Esim. 5 : 0 ei ole määritelty. Kirjoita vastaukseksi <b>ei määritelty</b>.</div>':page==='sub'?'<div class="box">Kun vähennät negatiivisen luvun, vähennys muuttuu yhteenlaskuksi: 8 − (−3) = 11.</div>':'';
- $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${i+1}.</span><span>${t[0]} =</span><input id="a${i}"></div><div class="correct" id="c${i}"></div></div>`).join('');$('#score').textContent='';
+ $('#theory').innerHTML=page==='order'?'<div class="box"><b>Malliratkaisu:</b> \\(24-4\\cdot10=24-40=-16\\).</div><div class="box"><b>Malliratkaisu:</b> \\(20-(15-20\\cdot2)=20-(15-40)=20-(-25)=45\\).</div>':page==='mul'?'<div class="box">Sama etumerkki → positiivinen tulo. Eri etumerkit → negatiivinen tulo.</div>':page==='div'?'<div class="box">Sama etumerkki → positiivinen osamäärä. Eri etumerkit → negatiivinen osamäärä.</div><div class="box"><b>Nollalla ei voi jakaa.</b> Esim. 5 : 0 ei ole määritelty. Kirjoita vastaukseksi <b>ei määritelty</b>.</div>':page==='sub'?'<div class="box">Kun vähennät negatiivisen luvun, vähennys muuttuu yhteenlaskuksi: 8 − (−3) = 11.</div>':'';
+ $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${i+1}.</span><span>${t[0]} =</span><input id="a${i}"></div><div class="correct" id="c${i}"></div></div>`).join('');$('#score').textContent='';if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory')]);}
 }
 function check(){let p=0;tasks.forEach((t,i)=>{let z=$('#a'+i).value.trim(),ok=t[1]==='undef'?/ei\s*määritelty|määrittelemätön/i.test(z):EQ(z,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t[1]==='undef'?'ei määritelty':String(t[1]).replace('.',','));if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;render()});$('#check').onclick=check;$('#new').onclick=render;render();

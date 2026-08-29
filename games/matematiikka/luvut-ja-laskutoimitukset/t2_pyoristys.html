@@ -10,6 +10,8 @@ main{max-width:1020px;margin:auto;padding:22px 5% 36px}.tabs{display:flex;gap:7p
 input{font:inherit;padding:8px 10px;border:1px solid #bac6d3;border-radius:8px;width:150px;max-width:55vw}.wide{width:290px;max-width:80vw}.mark{font-weight:900}.correct{font-size:.82rem;color:var(--bad);min-height:17px;margin-top:4px}
 .actions{display:flex;justify-content:center;gap:9px;margin-top:15px;flex-wrap:wrap}.action{font:inherit;font-weight:750;border:0;border-radius:9px;padding:10px 15px;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eef2f6;border:1px solid var(--line);color:var(--ink)}.score{text-align:center;font-weight:850;margin-top:10px}
 @media(max-width:720px){.grid,.theory{grid-template-columns:1fr}}
+
+.backbar{max-width:1050px;margin:0 auto 14px}.backlink{display:inline-block;color:#2457a7;text-decoration:none;font-weight:750;background:#fff;border:1px solid #d8e0e8;border-radius:10px;padding:8px 12px}.backlink:hover{border-color:#2457a7}
 </style>
 
 <script>
@@ -18,7 +20,7 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
 <header><h1>Pyöristäminen ja lukujen tarkkuus</h1><p>7. luokka · pyöristäminen, merkitsevät numerot ja mittaustulokset</p></header>
-<main><div class="tabs">
+<main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs">
 <button class="tab active" data-page="round">Pyöristäminen</button>
 <button class="tab" data-page="sig">Merkitsevät numerot</button>
 <button class="tab" data-page="approx">Likiarvot</button>
@@ -46,12 +48,12 @@ const sigSets=[
  {q:'Ilmoita kahden merkitsevän numeron tarkkuudella.',n:2,vals:[125540,1180545,3.875,28.8,.9999,124.888]}
 ];
 const approx=[
- {q:'Ilmoita luvun \\\\(\\\\frac{2}{3}\\\\) kaksidesimaalinen likiarvo.',a:.67},
- {q:'Ilmoita luvun \\\\(\\\\frac{7}{11}\\\\) kaksidesimaalinen likiarvo.',a:.64},
- {q:'Ilmoita luvun \\\\(\\\\frac{12}{17}\\\\) kaksidesimaalinen likiarvo.',a:.71},
- {q:'Ilmoita luvun \\\\(\\\\frac{9}{11}\\\\) likiarvo kolmella merkitsevällä numerolla.',a:.818},
- {q:'Ilmoita luvun \\\\(\\\\frac{8}{3}\\\\) likiarvo kolmella merkitsevällä numerolla.',a:2.67},
- {q:'Ilmoita luvun \\\\(\\\\frac{2}{91}\\\\) likiarvo kolmella merkitsevällä numerolla.',a:.0220,show:'0,0220'}
+ {q:'Ilmoita luvun \\(\\frac{2}{3}\\) kaksidesimaalinen likiarvo.',a:.67},
+ {q:'Ilmoita luvun \\(\\frac{7}{11}\\) kaksidesimaalinen likiarvo.',a:.64},
+ {q:'Ilmoita luvun \\(\\frac{12}{17}\\) kaksidesimaalinen likiarvo.',a:.71},
+ {q:'Ilmoita luvun \\(\\frac{9}{11}\\) likiarvo kolmella merkitsevällä numerolla.',a:.818},
+ {q:'Ilmoita luvun \\(\\frac{8}{3}\\) likiarvo kolmella merkitsevällä numerolla.',a:2.67},
+ {q:'Ilmoita luvun \\(\\frac{2}{91}\\) likiarvo kolmella merkitsevällä numerolla.',a:.0220,show:'0,0220'}
 ];
 const measure=[
  {q:'3,85 kg + 0,4 kg + 2,27 kg',a:6.5,u:'kg'},
@@ -61,19 +63,41 @@ const measure=[
 function theory(){
  if(page==='round')return `<div class="box"><b>Pyöristäminen:</b> katso pyöristettävää kohtaa seuraavaa numeroa. 0–4 → alas, 5–9 → ylös.</div><div class="box"><b>Esimerkki:</b> 4,67 ≈ 4,7 kymmenesosien tarkkuudella.</div>`;
  if(page==='sig')return `<div class="box"><b>Merkitsevät numerot:</b> laskeminen alkaa ensimmäisestä nollasta poikkeavasta numerosta.<br><b>Kokonaisluku:</b> 47 678 ≈ 47 700 (3 merkitsevää numeroa).</div><div class="box"><b>Desimaaliluku:</b> 0,01255 ≈ 0,0126 (3 merkitsevää numeroa). Alun nollat eivät ole merkitseviä.</div>`;
- if(page==='approx')return `<div class="box">Laske ensin mahdollisimman tarkasti ja pyöristä vasta lopuksi.</div><div class="box">Esim. \\\\(\\\\frac{1}{3}=0,333...\\\\), joten kahden desimaalin likiarvo on 0,33.</div>`;
+ if(page==='approx')return `<div class="box">Laske ensin mahdollisimman tarkasti ja pyöristä vasta lopuksi.</div><div class="box">Esim. \\(\\frac{1}{3}=0,333...\\), joten kahden desimaalin likiarvo on 0,33.</div>`;
  return `<div class="box"><b>Yhteen- ja vähennyslasku:</b> tulos ilmoitetaan epätarkimman lähtöluvun desimaalitarkkuuden mukaan.<br>3,85 + 0,4 → vastaus kymmenesosina.</div><div class="box"><b>Kerto- ja jakolasku:</b> tuloksessa on yhtä monta merkitsevää numeroa kuin epätarkimmassa lähtöluvussa.<br>3,8 · 4,9 = 18,62 ≈ 19.</div>`;
+}
+const roundBatches=roundSets.flatMap(g=>g.sets.map(set=>({g,set})));
+const sigBatches=sigSets.flatMap(g=>[g.vals.slice(0,3),g.vals.slice(3,6)].map(set=>({g,set})));
+function updateNext(){
+ const b=$('#next');
+ if(page==='approx'||page==='measure'){b.style.display='none';return;}
+ b.style.display='';
+ const max=page==='round'?roundBatches.length:sigBatches.length;
+ const done=roundIndex>=max-1;
+ b.disabled=done;
+ b.style.opacity=done?'.45':'1';
+ b.style.cursor=done?'default':'pointer';
+ b.textContent=done?'Tehtävät tehty':'Seuraava tehtävä';
 }
 function render(){
  $('#theory').innerHTML=theory();$('#score').textContent='';
- if(page==='round'){let g=roundSets[roundIndex%roundSets.length],set=g.sets[Math.floor(roundIndex/g.sets.length)%g.sets.length];tasks=set.map(x=>({q:`${fmt(x)} ≈`,a:g.kind==='place'?rplace(x,g.p):rdec(x,g.d)}));$('#title').textContent=g.q;$('#intro').textContent='Kaikki neljä lukua pyöristetään samaan tarkkuuteen.'}
- if(page==='sig'){let g=sigSets[roundIndex%sigSets.length];tasks=g.vals.slice((roundIndex%2)*3,(roundIndex%2)*3+3).map(x=>({q:`${fmt(x)} ≈`,a:rsig(x,g.n)}));$('#title').textContent=g.q;$('#intro').textContent='Kiinnitä huomiota siihen, mistä merkitsevien numeroiden laskeminen alkaa.'}
+ if(page==='round'){
+   const o=roundBatches[Math.min(roundIndex,roundBatches.length-1)],g=o.g,set=o.set;
+   tasks=set.map(x=>({q:`${fmt(x)} ≈`,a:g.kind==='place'?rplace(x,g.p):rdec(x,g.d)}));
+   $('#title').textContent=g.q;$('#intro').textContent='Kaikki neljä lukua pyöristetään samaan tarkkuuteen.';
+ }
+ if(page==='sig'){
+   const o=sigBatches[Math.min(roundIndex,sigBatches.length-1)],g=o.g;
+   tasks=o.set.map(x=>({q:`${fmt(x)} ≈`,a:rsig(x,g.n)}));
+   $('#title').textContent=g.q;$('#intro').textContent='Kiinnitä huomiota siihen, mistä merkitsevien numeroiden laskeminen alkaa.';
+ }
  if(page==='approx'){tasks=approx;$('#title').textContent='Likiarvot';$('#intro').textContent='Näissä tehtävissä laskinta saa käyttää.'}
  if(page==='measure'){tasks=measure;$('#title').textContent='Mittaustulosten tarkkuus';$('#intro').textContent='Laske ja ilmoita vastaus lähtötietojen tarkkuuden mukaisesti.'}
  $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q}</span><input id="a${i}" placeholder="${t.u?'vastaus '+t.u:'vastaus'}"><span class="mark" id="m${i}"></span></div><div class="correct" id="c${i}"></div></div>`).join('');
+ updateNext();
  if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory'),$('#grid')]);}
 }
 function check(){let p=0;tasks.forEach((t,i)=>{let raw=$('#a'+i).value,ok=EQ(raw.replace(/[a-zA-Z°]/g,''),t.a);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#m'+i).textContent=ok?'✓':'✗';$('#c'+i).textContent=ok?'':'Oikea vastaus: '+(t.show||fmt(t.a))+(t.u?' '+t.u:'');if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;roundIndex=0;render()});
-$('#check').onclick=check;$('#next').onclick=()=>{roundIndex++;render()};render();
+$('#check').onclick=check;$('#next').onclick=()=>{if(!$('#next').disabled){roundIndex++;render()}};render();
 </script></body></html>

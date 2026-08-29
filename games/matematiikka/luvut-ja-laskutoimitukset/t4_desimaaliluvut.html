@@ -29,11 +29,13 @@ button.action{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-wei
 .targetdot:active{cursor:grabbing}.lineprompt{font-weight:750;margin-bottom:2px}.linehint{font-size:.8rem;color:var(--muted)}
 .linevalue{font-size:.8rem;color:var(--blue);font-weight:800;margin-top:2px;min-height:18px}
 @media(max-width:700px){.grid,.examples{grid-template-columns:1fr}}
+
+.backbar{max-width:1050px;margin:0 auto 14px}.backlink{display:inline-block;color:#2457a7;text-decoration:none;font-weight:750;background:#fff;border:1px solid #d8e0e8;border-radius:10px;padding:8px 12px}.backlink:hover{border-color:#2457a7}
 </style>
 </head>
 <body>
 <header><h1>Desimaalilukujen laskuharjoittelu</h1><p>7. luokka · ilman laskinta</p></header>
-<main>
+<main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav>
 <div class="tabs">
 <button class="tab active" data-page="add">Yhteen- ja vähennyslasku</button>
 <button class="tab" data-page="ten">Kertominen ja jakaminen luvuilla 10, 100 ja 1000</button>
@@ -176,6 +178,7 @@ function generate(){tasks=page==='add'?addTasks():page==='ten'?tenTasks():page==
 function normStep(s){return String(s).replace(/\s/g,'').replace(/÷/g,':').replace(/,/g,'.')}
 function render(){
  let I=info[page]; document.getElementById('title').textContent=I.title;document.getElementById('intro').textContent=I.intro;
+ document.getElementById('new').style.display=page==='line'?'none':'';
  let ex=document.getElementById('examples');ex.innerHTML=I.examples.map(x=>`<div class="example">${x}</div>`).join('');ex.classList.toggle('hidden',!I.examples.length);
  if(page==='line'){
    document.getElementById('grid').innerHTML=tasks.map((t,i)=>makeLine(t,i)).join('');

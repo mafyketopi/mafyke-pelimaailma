@@ -10,13 +10,15 @@ main{max-width:1050px;margin:auto;padding:22px 5% 36px}.tabs{display:flex;gap:7p
 .correct{font-size:.82rem;color:var(--bad);min-height:17px;margin-top:4px}.actions{display:flex;justify-content:center;gap:9px;margin-top:15px;flex-wrap:wrap}.action{font:inherit;font-weight:750;border:0;border-radius:9px;padding:10px 15px;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eef2f6;border:1px solid var(--line);color:var(--ink)}.score{text-align:center;font-weight:850;margin-top:10px}
 .finnish{display:inline-flex;align-items:flex-start;gap:3px}.factor{font-weight:850;font-size:.9rem;margin-top:-2px}.factor.right{margin-left:2px}
 @media(max-width:720px){.grid,.theory{grid-template-columns:1fr}}
+
+.backbar{max-width:1050px;margin:0 auto 14px}.backlink{display:inline-block;color:#2457a7;text-decoration:none;font-weight:750;background:#fff;border:1px solid #d8e0e8;border-radius:10px;padding:8px 12px}.backlink:hover{border-color:#2457a7}
 </style>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'global'}};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
-<header><h1>Murtolukujen kerto- ja jakolasku</h1><p>7. luokka · kertolasku ja jakolasku</p></header><main><div class="tabs"><button class="tab active" data-page="mul">Kertolasku</button><button class="tab" data-page="div">Jakolasku</button><button class="tab" data-page="challenge">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
+<header><h1>Murtolukujen kerto- ja jakolasku</h1><p>7. luokka · kertolasku ja jakolasku</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs"><button class="tab active" data-page="mul">Kertolasku</button><button class="tab" data-page="div">Jakolasku</button><button class="tab" data-page="challenge">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function raw(s){return String(s).trim().replace(/−/g,'-').replace(/,/g,'.')}
 function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
@@ -55,9 +57,9 @@ function render(){
  $('#title').textContent=page==='mul'?'Murtolukujen kertolasku':page==='div'?'Murtolukujen jakolasku':'Haaste';
  $('#intro').textContent='Kirjoita vastaus muodossa 1/4 tai 2 1/3. Anna vastaus aina supistettuna. Kokonaisluku kirjoitetaan kokonaislukuna.';
  $('#theory').innerHTML=page==='div'
- ?`<div class="box"><b>Jakolasku:</b> ${tex(3,8)} : ${tex(2,5)} = ${tex(3,8)} · ${tex(5,2)}. Jakajan tilalle tulee sen käänteisluku.</div><div class="box">Supista lopuksi. Esim. 6/4 → 3/2 → 1 1/2.</div>`
- :`<div class="box"><b>Kertolasku:</b> kerro osoittajat keskenään ja nimittäjät keskenään.</div><div class="box">Supista ennen kertomista tai viimeistään lopuksi. Vastaukseksi käy supistettu murto- tai sekaluku.</div>`;
- $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" placeholder="esim. 1/4 tai 2 1/3"></div><div class="correct" id="c${i}"></div></div>`).join('');
+ ?`<div class="box"><b>Jakolaskun malliratkaisu:</b> ${tex(3,8)} : ${tex(2,5)} = ${tex(3,8)} · ${tex(5,2)} = ${tex(15,16)}. Jakajan tilalle tulee sen käänteisluku.</div><div class="box"><b>Vastauksen kirjoittaminen:</b> käytä /-merkkiä jakoviivana. Esim. ${tex(15,16)} kirjoitetaan <b>15/16</b>. Supista aina.</div>`
+ :`<div class="box"><b>Kertolaskun malliratkaisu:</b> ${tex(2,3)} · ${tex(3,5)} = ${tex(6,15)} = ${tex(2,5)}.</div><div class="box"><b>Vastauksen kirjoittaminen:</b> käytä /-merkkiä jakoviivana. Sekaluku kirjoitetaan esim. <b>2 1/3</b>. Supista aina.</div>`;
+ $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" ></div><div class="correct" id="c${i}"></div></div>`).join('');
  $('#score').textContent='';typeset();
 }
 function check(){let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t.d===1?t.n:`${t.n}/${t.d}`);if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
