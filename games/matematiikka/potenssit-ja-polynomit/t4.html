@@ -37,7 +37,7 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 
 </style>
 <script>
-window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]}};
 
 function norm(s){return String(s??'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
 function numericEq(a,b,tol=1e-9){const x=Number(norm(a));return Number.isFinite(x)&&Math.abs(x-b)<=tol*Math.max(1,Math.abs(b))}
@@ -108,7 +108,7 @@ function basicGame(tasks){
  render();
 }
 function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
-</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script></head>
 <body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
 <div class="card"><h1>T4 – Potenssisäännöt II</h1><p class="lead">Potenssien osamäärä, osamäärän potenssi ja näiden yhdistäminen potenssin potenssiin.</p><div class="modebar"><button id="basicBtn" class="secondary active">Perus</button><button id="challBtn" class="secondary">Haaste</button></div>
 <div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Potenssien osamäärä</h2>

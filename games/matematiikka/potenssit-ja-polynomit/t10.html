@@ -11,7 +11,7 @@ h1{margin:0 0 7px;font-size:clamp(1.65rem,4vw,2.35rem)}.lead{color:var(--muted);
 .preview:empty:before{content:"Matemaattinen vastaus näkyy tässä";color:#9aa5af;font-size:.9rem}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{font:inherit;border:0;border-radius:10px;padding:10px 15px;font-weight:700;cursor:pointer}
 .primary{background:var(--accent);color:white}.secondary{background:#e9eef3}.feedback{display:none;margin-top:14px;padding:12px 14px;border-radius:10px}.feedback.ok{display:block;background:var(--ok)}.feedback.bad{display:block;background:var(--bad)}
-.svgbox{max-width:680px;margin:12px auto 18px;background:#fbfcfd;border:1px solid #e0e5ea;border-radius:12px;padding:8px}.svgbox svg{display:block;width:100%;height:auto}
+.svgbox{max-width:680px;margin:12px auto 18px;background:#fbfcfd;border:1px solid #e0e5ea;border-radius:12px;padding:8px}.svgbox > svg{display:block;width:100%;height:auto}
 .note{background:var(--soft);padding:12px 14px;border-radius:10px;margin-bottom:18px;line-height:1.5}.done{text-align:center;padding:24px}.done b{font-size:2rem}
 
 .backlink{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:8px 11px;border:1px solid var(--line,#d9e0e6);border-radius:9px;background:#fff;color:var(--ink,#17212b);text-decoration:none;font-size:.9rem;font-weight:700}
@@ -28,7 +28,7 @@ h1{margin:0 0 7px;font-size:clamp(1.65rem,4vw,2.35rem)}.lead{color:var(--muted);
 @media(max-width:620px){.batch,.batch.batch-two{grid-template-columns:1fr}.taskblock{padding:12px}}
 
 </style><script>
-window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]}};
 function norm(s){return String(s||'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
 function canon(s){return norm(s).replace(/\^\{([^}]+)\}/g,'^$1').replace(/\*+/g,'*')}
 function okAny(s,arr){let n=canon(s);return arr.some(a=>n===canon(a))}
@@ -94,7 +94,7 @@ function game(tasks){
  document.querySelector('#next').onclick=()=>{const end=Math.min(start+pageSize,tasks.length);if(end<tasks.length){start=end;render();window.scrollTo({top:0,behavior:'smooth'})}else{pr.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><b>Valmis!</b><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}};
  render();
 }
-</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head><body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top" id="count"></div><section class="card"><h1>T10 – Laskutoimituksen muodostaminen</h1><p class="lead">Muodosta ensin pyydetty polynomilasku ja sievennä vasta sen jälkeen. Potenssitehtävissä vaaditaan myös tulomuoto.</p><div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Muodosta lauseke</h2>
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script></head><body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top" id="count"></div><section class="card"><h1>T10 – Laskutoimituksen muodostaminen</h1><p class="lead">Muodosta ensin pyydetty polynomilasku ja sievennä vasta sen jälkeen. Potenssitehtävissä vaaditaan myös tulomuoto.</p><div class="note" style="margin-bottom:12px">Kun vastauksessa tarvitaan potenssia, kirjoita se ^-merkillä, esimerkiksi <b>x^3</b>. Vastaus näkyy matemaattisessa muodossa kentän alla.</div><div id="introScreen"><div class="note"><h2>Muodosta lauseke</h2>
 <p>Esimerkiksi polynomien \(a+3\) ja \(a-4\) summa:</p><p>\((a+3)+(a-4)=2a-1\)</p>
 <h2>Potenssi</h2><p>\((a+2)^2=(a+2)(a+2)=a^2+4a+4\)</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="q" class="task"></div><div id="m" class="math"></div><div id="pic" class="svgbox" style="display:none"></div><div id="fields" class="inputs"></div><div id="fb" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div><div class="actions"><button id="check" class="primary">Tarkista</button><button id="next" class="secondary">Seuraava</button></div></div></section></main><script>
 function two(form,ans,midlabel='Muodostettu lauseke'){return v=>{let o=okAny(v.m,form)&&okAny(v.a,ans);return {ok:o,msg:o?'Sekä merkintä että sievennetty vastaus ovat oikein!':'Tarkista sekä muodostettu lasku että sievennetty vastaus.'}}}

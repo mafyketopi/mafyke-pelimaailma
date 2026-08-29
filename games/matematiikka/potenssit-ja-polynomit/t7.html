@@ -35,7 +35,7 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 
 </style>
 <script>
-window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
+window.MathJax={tex:{inlineMath:[['\\(','\\)']]}};
 
 function norm(s){return String(s??'').toLowerCase().trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/·|×/g,'*').replace(/,/g,'.')}
 function numericEq(a,b,tol=1e-9){const x=Number(norm(a));return Number.isFinite(x)&&Math.abs(x-b)<=tol*Math.max(1,Math.abs(b))}
@@ -106,7 +106,7 @@ function basicGame(tasks){
  render();
 }
 function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
-</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
+</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script></head>
 <body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
 <div class="card"><h1>T7 – Neliöjuuri</h1><p class="lead">Harjoittele täydellisiä neliöitä, desimaali- ja murtolukujuuria, negatiivista juurrettavaa sekä laskulausekkeita. Lukusuora-osiossa vertaillaan myös irrationaalisia juuria.</p>
 <div class="modebar"><button id="rootBtn" class="secondary active">Neliöjuuret</button><button id="lineBtn" class="secondary">Lukusuora</button></div>
