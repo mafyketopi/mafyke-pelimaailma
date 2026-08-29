@@ -34,9 +34,19 @@ function render(){
  tasks=page==='add'?add:page==='sub'?sub:page==='mixed'?mixed:page==='mul'?mul:page==='div'?div:order;
  $('#title').textContent=page==='add'?'Yhteenlasku':page==='sub'?'Vähennyslasku':page==='mixed'?'Useita yhteen- ja vähennyslaskuja':page==='mul'?'Kertolasku':page==='div'?'Jakolasku':'Kaikki laskutoimitukset';
  $('#intro').textContent=page==='order'?'Noudata laskujärjestystä. Välivaiheita ei tarvitse kirjoittaa koneelle.':'Laske. Välivaiheita ei tarvitse kirjoittaa koneelle.';
- $('#theory').innerHTML=page==='order'?'<div class="box"><b>Malliratkaisu:</b> \\(24-4\\cdot10=24-40=-16\\).</div><div class="box"><b>Malliratkaisu:</b> \\(20-(15-20\\cdot2)=20-(15-40)=20-(-25)=45\\).</div>':page==='mul'?'<div class="box">Sama etumerkki → positiivinen tulo. Eri etumerkit → negatiivinen tulo.</div>':page==='div'?'<div class="box">Sama etumerkki → positiivinen osamäärä. Eri etumerkit → negatiivinen osamäärä.</div><div class="box"><b>Nollalla ei voi jakaa.</b> Esim. 5 : 0 ei ole määritelty. Kirjoita vastaukseksi <b>ei määritelty</b>.</div>':page==='sub'?'<div class="box">Kun vähennät negatiivisen luvun, vähennys muuttuu yhteenlaskuksi: 8 − (−3) = 11.</div>':'';
+ $('#theory').innerHTML=page==='order'?'<div class="box"><b>Laskujärjestys:</b> laske ensin sulkeiden sisällä, sitten kerto- ja jakolaskut ja lopuksi yhteen- ja vähennyslaskut.</div>':page==='mul'?'<div class="box">Sama etumerkki → positiivinen tulo. Eri etumerkit → negatiivinen tulo.</div>':page==='div'?'<div class="box">Sama etumerkki → positiivinen osamäärä. Eri etumerkit → negatiivinen osamäärä.</div><div class="box"><b>Nollalla ei voi jakaa.</b> Esim. 5 : 0 ei ole määritelty. Kirjoita vastaukseksi <b>ei määritelty</b>.</div>':page==='sub'?'<div class="box">Kun vähennät negatiivisen luvun, vähennys muuttuu yhteenlaskuksi: 8 − (−3) = 11.</div>':'';
  $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${i+1}.</span><span>${t[0]} =</span><input id="a${i}"></div><div class="correct" id="c${i}"></div></div>`).join('');$('#score').textContent='';if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory')]);}
 }
-function check(){let p=0;tasks.forEach((t,i)=>{let z=$('#a'+i).value.trim(),ok=t[1]==='undef'?/ei\s*määritelty|määrittelemätön/i.test(z):EQ(z,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t[1]==='undef'?'ei määritelty':String(t[1]).replace('.',','));if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
+const orderSolutions=[
+ '\\(24-4\\cdot10=24-40=-16\\)',
+ '\\(-50+50:2=-50+25=-25\\)',
+ '\\(20-(15-20\\cdot2)=20-(15-40)=20-(-25)=45\\)',
+ '\\(9\\cdot(-8)+4:(-2)=-72-2=-74\\)',
+ '\\((-3-4:(-2-2)):(-1)=(-3-4:(-4)):(-1)=(-3+1):(-1)=2\\)',
+ '\\(-5\\cdot0{,}5-5=-2{,}5-5=-7{,}5\\)',
+ '\\(-100:(-0{,}5)=200\\)',
+ '\\(50-20\\cdot(-6)=50-(-120)=170\\)'
+];
+function check(){let p=0;tasks.forEach((t,i)=>{let z=$('#a'+i).value.trim(),ok=t[1]==='undef'?/ei\s*määritelty|määrittelemätön/i.test(z):EQ(z,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');let ans=t[1]==='undef'?'ei määritelty':String(t[1]).replace('.',',');$('#c'+i).innerHTML=ok?'✓ Oikein':'Oikea vastaus: '+ans;if(page==='order')$('#c'+i).innerHTML+=(ok?'':'<br>')+'<b>Malliratkaisu:</b> '+orderSolutions[i];if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#grid')]);}}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;render()});$('#check').onclick=check;$('#new').onclick=render;render();
 </script></body></html>

@@ -34,9 +34,17 @@ function render(){
  tasks=page==='meaning'?meaning:page==='value'?values:page==='sign'?signs:order;
  $('#title').textContent=page==='meaning'?'Potenssimerkintä':page==='value'?'Potenssin arvo':page==='sign'?'Sulkeet ja miinusmerkki':'Potenssit laskulausekkeessa';
  $('#intro').textContent=page==='meaning'?'Kirjoita tulo potenssina. Syötä potenssi merkillä ^, esimerkiksi 3^4.':'Laske.';
- $('#theory').innerHTML=page==='meaning'?'<div class="box"><b>Potenssi:</b> \\(3^4=3\\cdot3\\cdot3\\cdot3\\). Kantaluku on 3 ja eksponentti 4.</div><div class="box"><b>Syöttäminen:</b> kirjoita 3^4. Merkki <b>^</b> tarkoittaa eksponenttia.</div>':page==='sign'?'<div class="box">\\((-3)^2=9\\), mutta \\(-3^2=-9\\). Sulkeet kertovat, kuuluuko miinus kantalukuun.</div>':page==='order'?'<div class="box"><b>Malliratkaisu:</b> \\(2^4:8=16:8=2\\).</div><div class="box"><b>Malliratkaisu:</b> \\(2^3-3^2=8-9=-1\\). Potenssit lasketaan ennen yhteen- ja vähennyslaskua.</div>':'';
+ $('#theory').innerHTML=page==='meaning'?'<div class="box"><b>Potenssi:</b> \\(3^4=3\\cdot3\\cdot3\\cdot3\\). Kantaluku on 3 ja eksponentti 4.</div><div class="box"><b>Syöttäminen:</b> kirjoita 3^4. Merkki <b>^</b> tarkoittaa eksponenttia.</div>':page==='sign'?'<div class="box">\\((-3)^2=9\\), mutta \\(-3^2=-9\\). Sulkeet kertovat, kuuluuko miinus kantalukuun.</div>':page==='order'?'<div class="box"><b>Laskujärjestys:</b> laske potenssit ennen muita laskutoimituksia.</div>':'';
  $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${i+1}.</span><span>${t[0]}</span><span>=</span><input id="a${i}" ></div><div class="correct" id="c${i}"></div></div>`).join('');$('#score').textContent='';typeset();
 }
-function check(){let p=0;tasks.forEach((t,i)=>{let ok=page==='meaning'?normPower($('#a'+i).value)===normPower(t[1]):EQ($('#a'+i).value,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+t[1];if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
+const orderSolutions=[
+ '\\(2^4:8=16:8=2\\)',
+ '\\(27:3^2=27:9=3\\)',
+ '\\(3^3+3=27+3=30\\)',
+ '\\(2^3-3^2=8-9=-1\\)',
+ '\\(49-7^2=49-49=0\\)',
+ '\\(5^2-5^3=25-125=-100\\)'
+];
+function check(){let p=0;tasks.forEach((t,i)=>{let ok=page==='meaning'?normPower($('#a'+i).value)===normPower(t[1]):EQ($('#a'+i).value,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).innerHTML=ok?'✓ Oikein':'Oikea vastaus: '+t[1];if(page==='order')$('#c'+i).innerHTML+=(ok?'':'<br>')+'<b>Malliratkaisu:</b> '+orderSolutions[i];if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;typeset();}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;render()});$('#check').onclick=check;$('#new').onclick=render;render();
 </script></body></html>
