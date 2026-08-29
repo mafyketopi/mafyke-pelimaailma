@@ -21,6 +21,20 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 .slots{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:14px}.slot{min-height:56px;border:2px dashed #b9c4ce;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff;font-size:1.05rem}
 .tokens{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.token{background:#e9eef3;color:#17212b}.token.used{opacity:.35}
 @media(max-width:620px){.wrap{padding:16px 12px 36px}.card{padding:17px}.math{font-size:1.26rem}.slots{gap:4px}.slot{min-height:52px;font-size:.9rem}}
+
+.backlink{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:8px 11px;border:1px solid var(--line,#d9e0e6);border-radius:9px;background:#fff;color:var(--ink,#17212b);text-decoration:none;font-size:.9rem;font-weight:700}
+.backlink:hover{background:var(--soft,#eef3f8)}
+.batch{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;margin:12px 0 2px}
+.taskblock{border:1px solid var(--line,#d9e0e6);border-radius:12px;padding:13px;background:#fbfcfe;min-width:0}
+.taskblock .task{margin:0 0 6px;font-size:1rem}
+.taskblock .math{margin:8px 0 11px;font-size:1.2rem;min-height:28px}
+.taskblock .inputs{display:grid;gap:9px}
+.taskblock .feedback{margin-top:9px}
+.taskblock .solutionbox{margin-top:9px;background:var(--soft,#eef3f8);padding:10px 11px;border-radius:9px;line-height:1.45}
+.taskblock .svgbox{margin:8px 0;max-height:260px;overflow:auto}
+.batch.batch-two{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+@media(max-width:620px){.batch,.batch.batch-two{grid-template-columns:1fr}.taskblock{padding:12px}}
+
 </style>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};
@@ -49,27 +63,53 @@ function typesetPreview(inp, prev){
  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([prev]);
 }
 function basicGame(tasks){
- let i=0,score=0;
+ const pageSize = (document.body && document.body.dataset.pageSize) ? Number(document.body.dataset.pageSize) : 3;
+ let start=0,score=0; const credited=new Set();
  const q=document.querySelector('#question'),m=document.querySelector('#math'),f=document.querySelector('#fields'),fb=document.querySelector('#feedback'),p=document.querySelector('#prog'),c=document.querySelector('#count');
- function render(){
-  const t=tasks[i]; fb.className='feedback';fb.innerHTML='';let sol=document.querySelector('#solution');if(sol){sol.style.display='none';sol.innerHTML='';}c.textContent=`${i+1} / ${tasks.length}`;p.style.width=`${(i/tasks.length)*100}%`;
-  q.innerHTML=t.prompt||''; if(t.latex){m.style.display='block';setMath(m,t.latex)}else{m.style.display='none';m.innerHTML=''}
-  f.innerHTML='';
-  (t.fields||[{name:'a',label:'Vastaus'}]).forEach(x=>{
-    const d=document.createElement('div');d.className='field';
-    d.innerHTML=`<label>${x.label||'Vastaus'}</label><input name="${x.name}" autocomplete="off"><div class="preview"></div>`;
-    f.appendChild(d); const inp=d.querySelector('input'),pr=d.querySelector('.preview');inp.addEventListener('input',()=>typesetPreview(inp,pr));
-  });
-  document.querySelector('#next').textContent=i===tasks.length-1?'Valmis':'Seuraava';
+ if(m)m.style.display='none'; if(f)f.style.display='none'; if(fb)fb.style.display='none';
+ const oldSol=document.querySelector('#solution'); if(oldSol)oldSol.style.display='none';
+ q.classList.remove('task'); q.classList.add('batch');
+ function makeBlock(t,idx){
+   const block=document.createElement('section'); block.className='taskblock'; block.dataset.idx=idx;
+   const prompt=document.createElement('div'); prompt.className='task'; prompt.innerHTML=`<b>${idx+1}.</b> ${t.prompt||''}`; block.appendChild(prompt);
+   if(t.latex){const mm=document.createElement('div');mm.className='math';block.appendChild(mm);setMath(mm,t.latex)}
+   const fields=document.createElement('div');fields.className='inputs';block.appendChild(fields);
+   (t.fields||[{name:'a',label:'Vastaus'}]).forEach(x=>{
+     const d=document.createElement('div');d.className='field';
+     d.innerHTML=`<label>${x.label||'Vastaus'}</label><input name="${x.name}" autocomplete="off"><div class="preview"></div>`;
+     fields.appendChild(d); const inp=d.querySelector('input'),pr=d.querySelector('.preview');inp.addEventListener('input',()=>typesetPreview(inp,pr));
+   });
+   const feed=document.createElement('div');feed.className='feedback';block.appendChild(feed);
+   const sol=document.createElement('div');sol.className='solutionbox';sol.style.display='none';block.appendChild(sol);
+   return block;
  }
- function vals(){return Object.fromEntries([...f.querySelectorAll('input')].map(x=>[x.name,x.value]))}
- document.querySelector('#check').onclick=()=>{const r=tasks[i].check(vals());fb.className='feedback '+(r.ok?'ok':'bad');fb.innerHTML=r.msg|| (r.ok?'Oikein!':'Ei vielä.');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb]);if(r.ok)score++;let sol=document.querySelector('#solution');if(sol){sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:8px">'+(tasks[i].solution||'Ratkaisu etenee käyttämällä tehtävässä harjoiteltavaa sääntöä ja sieventämällä vaiheittain.')+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([sol]);}}
- document.querySelector('#next').onclick=()=>{if(i<tasks.length-1){i++;render()}else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button></div>`}}
+ function render(){
+   q.innerHTML=''; const end=Math.min(start+pageSize,tasks.length);
+   c.textContent=`${start+1}–${end} / ${tasks.length}`; p.style.width=`${100*start/tasks.length}%`;
+   for(let idx=start;idx<end;idx++) q.appendChild(makeBlock(tasks[idx],idx));
+   document.querySelector('#check').textContent='Tarkista sivu';
+   document.querySelector('#next').textContent=end===tasks.length?'Valmis':'Seuraavat tehtävät';
+ }
+ function blockVals(block){return Object.fromEntries([...block.querySelectorAll('input')].map(x=>[x.name,x.value]))}
+ document.querySelector('#check').onclick=()=>{
+   [...q.querySelectorAll('.taskblock')].forEach(block=>{
+     const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
+     const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
+     if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
+     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Malliratkaisu</b><div style="margin-top:6px">'+(t.solution||'')+'</div>';
+     if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
+   });
+ };
+ document.querySelector('#next').onclick=()=>{
+   const end=Math.min(start+pageSize,tasks.length);
+   if(end<tasks.length){start=end;render();window.scrollTo({top:0,behavior:'smooth'})}
+   else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}
+ };
  render();
 }
 function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
 </script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script></head>
-<body><main class="wrap"><div class="top"><span></span><span class="badge" id="count"></span></div>
+<body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
 <div class="card"><h1>T6 – Kymmenpotenssimuoto</h1><p class="lead">Muunna suuria ja pieniä lukuja molempiin suuntiin ja käytä kymmenpotenssimuotoa laskuissa.</p><div class="intro"><b>Malli tavallisesta luvusta kymmenpotenssimuotoon:</b>
 \(\;5\,700\,000=5{,}7\cdot10^6\).<br>
 <b>Malli kymmenpotenssimuodosta tavalliseksi luvuksi:</b>
