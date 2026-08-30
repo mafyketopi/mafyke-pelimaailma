@@ -71,6 +71,17 @@ function decimals(){return unique(()=>{const b=pick([2,4,5,10]),ans=pick([0.4,0.
 function finalChallenge(){return unique(()=>{const b=pick([6,7,8,9,12,15,20,25]),ans=pick([12,14,15,16,18,20,24,25,30,32,36,40,45,48,50,60,64,72,75,80,90,96,100]);return {a:b*ans,b,ans}})}
 function format(n){return String(n).replace('.',',')}
 function context(){if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+let finalSongPrimed=false;
+function primeFinalSong(){
+  context();
+  if(finalSongPrimed)return;
+  finalSongPrimed=true;
+  finalSong.volume=0;
+  const p=finalSong.play();
+  if(p&&p.then)p.then(()=>{finalSong.pause();finalSong.currentTime=0;finalSong.volume=.96}).catch(()=>{finalSongPrimed=false;finalSong.volume=.96});
+}
+document.addEventListener('pointerdown',primeFinalSong,{once:true});
+document.addEventListener('keydown',primeFinalSong,{once:true});
 function tone(f,d=.11,type='sine',gain=.045,delay=0){const c=context(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime+delay;o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(gain,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(c.destination);o.start(t);o.stop(t+d+.03)}
 function ding(){tone(660,.11,'sine',.038);tone(990,.16,'sine',.03,.05)}function oops(){tone(210,.13,'triangle',.035);tone(175,.18,'triangle',.03,.13)}
 function senderWhistle(){tone(1850,.16,'sine',.052);tone(2350,.18,'sine',.042,.11)}
@@ -80,7 +91,47 @@ problems.forEach((p,i)=>{const slot=document.createElement('div');slot.className
 function focusCurrent(){const x=slotStack.querySelector(`.slot[data-index="${index}"] input`);if(x){x.disabled=false;x.focus()}}
 function answer(inp,p,i,enter=false){if(locked||i!==index)return;let raw=inp.value.replace(',','.').replace(/[^0-9.\-]/g,'');if(raw!==inp.value.replace(',','.'))inp.value=raw.replace('.',',');if(raw===''||raw==='-'||raw==='.')return;const val=Number(raw);if(Math.abs(val-p.ans)<1e-9){const slot=inp.closest('.slot');slot.classList.remove('active','bad');slot.classList.add('correct');inp.value=format(p.ans);inp.disabled=true;ding();index++;scoreBadge.textContent=`${index} / ${TASKS_PER_LEVEL}`;if(index===TASKS_PER_LEVEL){locked=true;setTimeout(prepareLaunch,380)}else{const next=slotStack.querySelector(`.slot[data-index="${index}"]`);next.classList.add('active');const nextInput=next.querySelector('input');nextInput.disabled=false;setTimeout(focusCurrent,80)}}else if(enter){const slot=inp.closest('.slot');slot.classList.remove('bad');void slot.offsetWidth;slot.classList.add('bad');oops();inp.select()}}
 function prepareLaunch(){status.textContent='Kaikki oikein — lähtölupa!';status.className='status ok';game.classList.add('departing');rocketWrap.classList.add('shake','ignited');bubble.textContent=level===10?'Jakolaskumestari, matkaan!':'Lähtölupa myönnetty!';senderWhistle();setTimeout(rocketSound,180);setTimeout(()=>{rocketWrap.classList.remove('shake');rocketWrap.classList.add('launch')},1100);setTimeout(finishFlight,4700)}
-function finishFlight(){if(level<10){message.querySelector('strong').textContent=`KENTTÄ ${level} SUORITETTU!`;message.querySelector('span').textContent='Seuraava raketti valmistellaan…';message.classList.add('show');setTimeout(()=>{level++;buildLevel()},1450)}else{game.classList.add('finale');message.querySelector('strong').textContent='JAKOLASKUMESTARI';message.querySelector('span').textContent='10 kenttää ja 80 laskua suoritettu — huikea lento!';message.classList.add('show');finalSong.currentTime=0;finalSong.volume=.96;finalSong.play().catch(()=>{})}}
+function playLevelSong(){
+  finalSong.pause();
+  finalSong.currentTime=0;
+  finalSong.volume=.96;
+  const songPlay=finalSong.play();
+  if(songPlay&&songPlay.catch){
+    songPlay.catch(()=>{
+      status.textContent='Napauta ruutua kuullaksesi laulun.';
+      status.className='status ok';
+      const startSong=()=>{
+        finalSong.currentTime=0;
+        finalSong.volume=.96;
+        finalSong.play().catch(()=>{});
+      };
+      document.addEventListener('pointerdown',startSong,{once:true});
+    });
+  }
+}
+
+function finishFlight(){
+  playLevelSong();
+
+  if(level<10){
+    message.querySelector('strong').textContent=`KENTTÄ ${level} SUORITETTU!`;
+    message.querySelector('span').textContent='Seuraava raketti valmistellaan…';
+    message.classList.add('show');
+
+    // Annetaan 7,8 s palkintolaulun soida ennen seuraavaa kenttää.
+    setTimeout(()=>{
+      finalSong.pause();
+      finalSong.currentTime=0;
+      level++;
+      buildLevel();
+    },8200);
+  }else{
+    game.classList.add('finale');
+    message.querySelector('strong').textContent='JAKOLASKUMESTARI';
+    message.querySelector('span').textContent='10 kenttää ja 80 laskua suoritettu — huikea lento!';
+    message.classList.add('show');
+  }
+}
 document.querySelector('#restart').addEventListener('click',()=>{level=1;finalSong.pause();finalSong.currentTime=0;buildLevel()});buildLevel();
 </script>
 </div></body></html>
