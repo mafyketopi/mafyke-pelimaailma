@@ -10,10 +10,11 @@
         inlineMath: [['\\(','\\)']],
         displayMath: [['\\[','\\]']]
       },
-      svg: { fontCache: 'global' }
+      svg: { fontCache: 'global' },
+      startup: { typeset: false }
     };
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" defer></script>
   <style>
     :root{
       --bg:#f5f7fb;
@@ -349,12 +350,20 @@ document.querySelectorAll('.tab').forEach(btn => {
   });
 });
 
-function queueMathJax() {
-  if (window.MathJax && MathJax.typesetPromise) {
-    MathJax.typesetPromise();
-  } else {
-    setTimeout(queueMathJax, 120);
-  }
+let mathJaxQueue = Promise.resolve();
+function queueMathJax(targets=[modelBox,questionText,liveLatex,answerFeedback,answerFeedback2]) {
+  const els = targets.filter(Boolean);
+  mathJaxQueue = mathJaxQueue.then(async () => {
+    while (!(window.MathJax && MathJax.typesetPromise)) {
+      await new Promise(resolve => setTimeout(resolve, 60));
+    }
+    if (MathJax.startup && MathJax.startup.promise) await MathJax.startup.promise;
+    if (MathJax.typesetClear) {
+      try { MathJax.typesetClear(els); } catch (_) {}
+    }
+    await MathJax.typesetPromise(els);
+  }).catch(err => console.error('MathJax:', err));
+  return mathJaxQueue;
 }
 
 function current() {
@@ -454,7 +463,7 @@ function loadQuestion() {
   }
 
   updateLivePreview();
-  queueMathJax();
+  queueMathJax([modelBox,questionText,liveLatex]);
   setTimeout(()=>expressionInput.focus(),0);
 }
 
@@ -579,7 +588,7 @@ function updateLivePreview() {
   let latex = inputToLatex(expressionInput.value);
   latex = highlightInsertedValue(latex, q);
   liveLatex.innerHTML = `\\[${latex}\\]`;
-  queueMathJax();
+  queueMathJax([liveLatex]);
 }
 
 expressionInput.addEventListener('input', updateLivePreview);
@@ -699,7 +708,7 @@ nextBtn.addEventListener('click', () => {
     const target=mode==='challenge'?answerFeedback2:answerFeedback;
     target.className='feedback ok'; target.innerHTML=solutionText();
     if(mode==='value'||mode==='variable') answerSection.classList.remove('hidden'); else secondAnswerSection.classList.remove('hidden');
-    nextBtn.textContent='Jatka seuraavaan'; queueMathJax(); return;
+    nextBtn.textContent='Jatka seuraavaan'; queueMathJax([target]); return;
   }
   if (index < datasets[mode].length - 1) { index++; loadQuestion(); }
   else finishMode();

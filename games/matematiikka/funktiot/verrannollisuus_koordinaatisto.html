@@ -49,17 +49,42 @@ const tasks = [
  {type:'mix', title:'7. Hyperbeli ja suora', xLabel:'x', yLabel:'y', text:'Piirrä samaan koordinaatistoon käyrä \\(y=\\frac{12}{x}\\) ja suora \\(y=x+1\\). Määritä leikkauspiste piirtämällä.', xs:[1,2,3,4,6], ys:[12,6,4,3,2], xMax:8,yMax:14,xStep:1,yStep:1,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',3],['Leikkauspisteen y-koordinaatti?',4]], equation:'y=12/x'},
  {type:'mix', title:'8. Haaste', xLabel:'x', yLabel:'y', text:'Piirrä käyrä \\(y=\\frac{20}{x}\\) ja suora \\(y=x+1\\). Määritä leikkauspiste piirtämällä.', xs:[1,2,4,5,10], ys:[20,10,5,4,2], xMax:10,yMax:22,xStep:1,yStep:2,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',4],['Leikkauspisteen y-koordinaatti?',5]], equation:'y=20/x'}
 ];
-let idx=0, score=0, checked=false;
+let idx=0, score=0, checked=false, hyperbolaDrawn=false, lineDrawn=false;
 function fmt(n){return Number.isInteger(n)?String(n):String(n).replace('.',',')}
-function render(){checked=false; const t=tasks[idx]; document.getElementById('taskNum').textContent=idx+1; document.getElementById('score').textContent=score; document.getElementById('prog').style.width=((idx)/tasks.length*100)+'%';
+function render(){
+ checked=false; hyperbolaDrawn=false; lineDrawn=false;
+ const t=tasks[idx];
+ document.getElementById('taskNum').textContent=idx+1;
+ document.getElementById('score').textContent=score;
+ document.getElementById('prog').style.width=((idx)/tasks.length*100)+'%';
  let tables='';
  if(t.type==='spa'){
    tables += tableHtml('Ilman jäsenyyttä / kertakäynneillä',t.xs,t.yA,'a');
    tables += tableHtml('Jäsenyys / kausikortti',t.xs,t.yB,'b');
- } else tables += tableHtml(t.type==='inverse'?'Nopeus ja aika':'Taulukko',t.xs,t.ys,'a');
- let qs=t.q.map((q,i)=>`<div class="answerRow"><label>${q[0]}</label><input type="text" inputmode="decimal" id="q${i}"></div>`).join(''); if(t.equation) qs+=`<div class="answerRow"><label>Kirjoita kuvaajan yhtälö.</label><input type="text" id="eqAnswer" placeholder="esim. y=7x"></div>`;
- document.getElementById('game').innerHTML=`<h2>${t.title}</h2><p class="lead">${t.text}</p>${t.type==='inverse'?'<div class="hint">Muista: kun matka on vakio, aika saadaan kaavalla <strong>aika = matka / nopeus</strong>.</div>':''}<div class="taskgrid"><div>${tables}<div class="answers">${qs}</div>${t.eqHtml?`<p class="small">Kun taulukko on oikein, kuvaaja paljastaa myös yhteyden ${t.eqHtml}.</p>`:''}<div class="btns"><button class="primary" id="checkBtn" onclick="checkTask()">Tarkista ja piirrä</button><button class="secondary" onclick="resetTask()">Tyhjennä</button><button class="secondary" id="nextBtn" onclick="nextTask()">Seuraava</button></div><div class="feedback" id="fb"></div></div><div><div class="small" style="font-weight:700;margin-bottom:6px">${t.xLabel==='x'&&t.yLabel==='y' ? 'Vaaka-akseli: x &nbsp; • &nbsp; pystyakseli: y' : `Vaaka-akseli: ${t.xLabel} &nbsp; • &nbsp; pystyakseli: ${t.yLabel}`}</div><div class="canvasWrap"><canvas id="graph" width="620" height="620"></canvas></div><div class="legend">${legendHtml(t)}</div></div></div>`;
- drawAxes(t); if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.getElementById('game')]); setTimeout(()=>document.querySelector('#game input')?.focus(),0);
+ } else {
+   tables += tableHtml(t.type==='inverse'?'Nopeus ja aika':'Taulukko',t.xs,t.ys,'a');
+ }
+ if(t.type==='mix'){
+   tables += `<div class="tablePurpose">Taulukko suoran piirtämistä varten</div>
+   <div class="tablewrap"><table>
+     <tr><th>x</th><td><input type="text" inputmode="decimal" id="lx0" aria-label="suoran ensimmäisen pisteen x-arvo"></td><td><input type="text" inputmode="decimal" id="lx1" aria-label="suoran toisen pisteen x-arvo"></td></tr>
+     <tr><th>y</th><td><input type="text" inputmode="decimal" id="ly0" aria-label="suoran ensimmäisen pisteen y-arvo"></td><td><input type="text" inputmode="decimal" id="ly1" aria-label="suoran toisen pisteen y-arvo"></td></tr>
+   </table></div>`;
+ }
+ let qs=t.q.map((q,i)=>`<div class="answerRow"><label>${q[0]}</label><input type="text" inputmode="decimal" id="q${i}"></div>`).join('');
+ if(t.equation) qs+=`<div class="answerRow"><label>Kirjoita kuvaajan yhtälö.</label><input type="text" id="eqAnswer" placeholder="esim. y=7x"></div>`;
+ let buttons='';
+ if(t.type==='mix'){
+   buttons=`<button class="primary" id="hyperBtn" onclick="drawHyperbolaFromTable()">Tarkista taulukko ja piirrä hyperbeli</button>
+   <button class="primary" id="lineBtn" onclick="drawLineFromPoints()">Tarkista pisteet ja piirrä suora</button>
+   <button class="secondary" id="answersBtn" onclick="checkMixAnswers()">Tarkista vastaukset</button>`;
+ } else {
+   buttons=`<button class="primary" id="checkBtn" onclick="checkTask()">Tarkista ja piirrä</button>`;
+ }
+ document.getElementById('game').innerHTML=`<h2>${t.title}</h2><p class="lead">${t.text}</p>${t.type==='inverse'?'<div class="hint">Muista: kun matka on vakio, aika saadaan kaavalla <strong>aika = matka / nopeus</strong>.</div>':''}<div class="taskgrid"><div>${tables}<div class="answers">${qs}</div>${t.eqHtml?`<p class="small">Kun taulukko on oikein, kuvaaja paljastaa myös yhteyden ${t.eqHtml}.</p>`:''}<div class="btns">${buttons}<button class="secondary" onclick="resetTask()">Tyhjennä</button><button class="secondary" id="nextBtn" onclick="nextTask()">Seuraava</button></div><div class="feedback" id="fb"></div></div><div><div class="small" style="font-weight:700;margin-bottom:6px">${t.xLabel==='x'&&t.yLabel==='y' ? 'Vaaka-akseli: x &nbsp; • &nbsp; pystyakseli: y' : `Vaaka-akseli: ${t.xLabel} &nbsp; • &nbsp; pystyakseli: ${t.yLabel}`}</div><div class="canvasWrap"><canvas id="graph" width="620" height="620"></canvas></div><div class="legend">${legendHtml(t)}</div></div></div>`;
+ drawAxes(t);
+ if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.getElementById('game')]);
+ setTimeout(()=>document.querySelector('#game input')?.focus(),0);
 }
 function tableHtml(title,xs,ys,prefix){
  const t=tasks[idx];
@@ -71,7 +96,47 @@ function tableHtml(title,xs,ys,prefix){
 function legendHtml(t){if(t.type==='spa') return '<span><i class="dot a"></i>kertakäynnit</span><span><i class="dot b"></i>jäsenyys / kausikortti</span>'; if(t.type==='mix') return '<span><i class="dot a"></i>hyperbeli</span><span><i class="dot b"></i>suora</span>'; return '<span><i class="dot a"></i>kuvaaja</span>'}
 function parseVal(s){return Number(String(s).trim().replace(',','.'))}
 function nearly(a,b){return Math.abs(a-b)<0.06}
-function checkTask(){if(checked)return; const t=tasks[idx]; let ok=true;
+function validateHyperbolaTable(t){
+ const xs=t.fixedX?t.xs:t.xs.map((_,i)=>parseVal(document.getElementById('ax'+i)?.value));
+ let ok=!(xs.some(v=>!Number.isFinite(v))||new Set(xs).size<xs.length);
+ const d=t.xs[0]*t.ys[0];
+ xs.forEach((x,i)=>{const el=document.getElementById('a'+i);const good=Number.isFinite(x)&&x!==0&&nearly(parseVal(el.value),d/x);mark(el,good);ok=ok&&good;});
+ return ok;
+}
+function drawHyperbolaFromTable(){
+ const t=tasks[idx]; if(t.type!=='mix')return;
+ const ok=validateHyperbolaTable(t);
+ if(ok){hyperbolaDrawn=true; redrawMix(t); document.getElementById('fb').innerHTML='<span class="ok">Hyperbeli piirretty. Piirrä seuraavaksi suora kahden pisteen avulla.</span>'; document.getElementById('lx0')?.focus();}
+ else document.getElementById('fb').innerHTML='<span class="bad">Tarkista hyperbelin taulukon arvot.</span>';
+}
+function drawLineFromPoints(){
+ const t=tasks[idx]; if(t.type!=='mix')return;
+ const x1=parseVal(document.getElementById('lx0').value), y1=parseVal(document.getElementById('ly0').value);
+ const x2=parseVal(document.getElementById('lx1').value), y2=parseVal(document.getElementById('ly1').value);
+ const good1=Number.isFinite(x1)&&Number.isFinite(y1)&&nearly(y1,t.line(x1));
+ const good2=Number.isFinite(x2)&&Number.isFinite(y2)&&nearly(y2,t.line(x2));
+ const distinct=Number.isFinite(x1)&&Number.isFinite(x2)&&Math.abs(x1-x2)>.05;
+ mark(document.getElementById('lx0'),good1&&distinct); mark(document.getElementById('ly0'),good1&&distinct);
+ mark(document.getElementById('lx1'),good2&&distinct); mark(document.getElementById('ly1'),good2&&distinct);
+ if(good1&&good2&&distinct){lineDrawn=true; redrawMix(t); document.getElementById('fb').innerHTML='<span class="ok">Suora piirretty kahden pisteesi kautta. Määritä nyt leikkauspiste.</span>'; document.getElementById('q0')?.focus();}
+ else document.getElementById('fb').innerHTML='<span class="bad">Anna kaksi eri pistettä, jotka kuuluvat annettuun suoraan.</span>';
+}
+function checkMixAnswers(){
+ const t=tasks[idx]; if(t.type!=='mix')return;
+ let ok=true;
+ t.q.forEach((q,i)=>{const el=document.getElementById('q'+i);const good=nearly(parseVal(el.value),q[1]);mark(el,good);ok=ok&&good;});
+ if(t.equation){const el=document.getElementById('eqAnswer');const raw=String(el.value).toLowerCase().replace(/\s/g,'').replace(/,/g,'.');const good=raw===t.equation.replace(/\s/g,'');mark(el,good);ok=ok&&good;}
+ if(ok&&hyperbolaDrawn&&lineDrawn&&!checked){checked=true;score++;document.getElementById('score').textContent=score;}
+ document.getElementById('fb').innerHTML=ok?(hyperbolaDrawn&&lineDrawn?'<span class="ok">Oikein!</span>':'<span class="ok">Vastaukset oikein. Piirrä vielä molemmat kuvaajat.</span>'):'<span class="bad">Tarkista leikkauspiste ja yhtälö.</span>';
+}
+function redrawMix(t){
+ drawAxes(t); const c=document.getElementById('graph'),ctx=c.getContext('2d'),W=c.width,H=c.height,g=geom(t,W,H),X=g.X,Y=g.Y;
+ function curve(fn,color,start,end,step=.04){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();let begun=false;for(let x=start;x<=end;x+=step){const y=fn(x);if(!isFinite(y)||y<0||y>t.yMax*1.2){begun=false;continue}if(!begun){ctx.moveTo(X(x),Y(y));begun=true}else ctx.lineTo(X(x),Y(y))}ctx.stroke();}
+ if(hyperbolaDrawn){const d=t.xs[0]*t.ys[0];curve(x=>d/x,'#3559e0',.3,t.xMax,.03);ctx.fillStyle='#3559e0';t.xs.forEach((x,i)=>{ctx.beginPath();ctx.arc(X(x),Y(t.ys[i]),4.5,0,2*Math.PI);ctx.fill();});}
+ if(lineDrawn){curve(t.line,'#e07a35',0,t.xMax,.03);const xs=[parseVal(document.getElementById('lx0').value),parseVal(document.getElementById('lx1').value)];ctx.fillStyle='#e07a35';xs.forEach(x=>{const y=t.line(x);ctx.beginPath();ctx.arc(X(x),Y(y),5,0,2*Math.PI);ctx.fill();});}
+ if(hyperbolaDrawn&&lineDrawn){const x=t.q[0][1],y=t.q[1][1];ctx.strokeStyle='#198754';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(X(x),Y(y),8,0,2*Math.PI);ctx.stroke();}
+}
+function checkTask(){if(checked)return; const t=tasks[idx]; if(t.type==='mix')return; let ok=true;
  const xs=t.fixedX?t.xs:t.xs.map((_,i)=>parseVal(document.getElementById('ax'+i)?.value));
  if(!t.fixedX && (xs.some(v=>!Number.isFinite(v))||new Set(xs).size<xs.length)){ok=false;}
  if(t.type==='spa'){
@@ -105,17 +170,23 @@ function drawSolution(t){drawAxes(t); const c=document.getElementById('graph'),c
  if(t.type==='direct'){curve(x=>t.ys[1]/t.xs[1]*x,'#3559e0',0,t.xMax);points(t.xs,t.ys,'#3559e0')}
  if(t.type==='spa'){let kA=t.yA[1]/t.xs[1]; let kB=(t.yB[1]-t.yB[0])/t.xs[1]; curve(x=>kA*x,'#3559e0',0,t.xMax);curve(x=>t.yB[0]+kB*x,'#e07a35',0,t.xMax);points(t.xs,t.yA,'#3559e0');points(t.xs,t.yB,'#e07a35'); let ix=t.q[0][1],iy=t.q[1][1]; highlight(ix,iy)}
  if(t.type==='inverse'){let d=t.xs[0]*t.ys[0];curve(x=>d/x,'#3559e0',Math.max(.5,t.xStep/4),t.xMax);points(t.xs,t.ys,'#3559e0')}
- if(t.type==='mix'){let d=t.xs[0]*t.ys[0];curve(x=>d/x,'#3559e0',.3,t.xMax);curve(t.line,'#e07a35',0,t.xMax);points(t.xs,t.ys,'#3559e0');highlight(t.q[0][1],t.q[1][1])}
+ if(t.type==='mix'){redrawMix(t)}
  function highlight(x,y){ctx.strokeStyle='#198754';ctx.fillStyle='#198754';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(X(x),Y(y),8,0,2*Math.PI);ctx.stroke();ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(X(x),Y(y));ctx.lineTo(X(x),Y(0));ctx.moveTo(X(x),Y(y));ctx.lineTo(X(0),Y(y));ctx.stroke();ctx.setLineDash([])}
 }
 document.addEventListener('keydown',e=>{
  if(!e.target.matches('input'))return;
+ const t=tasks[idx];
  const a=[...document.querySelectorAll('#game input')],i=a.indexOf(e.target);
+ if(e.key==='ArrowUp'){e.preventDefault();(a[i-1]||e.target).focus();return;}
  if(e.key==='Enter'||e.key==='ArrowDown'){
    e.preventDefault();
-   (a[i+1]||document.getElementById('checkBtn')||document.getElementById('nextBtn')).focus();
+   if(t.type==='mix'){
+     if(e.target.id==='a'+(t.xs.length-1)){document.getElementById('hyperBtn')?.focus();return;}
+     if(e.target.id==='ly1'){document.getElementById('lineBtn')?.focus();return;}
+     if(e.target.id==='eqAnswer'){document.getElementById('answersBtn')?.focus();return;}
+   }
+   (a[i+1]||document.getElementById('checkBtn')||document.getElementById('answersBtn')||document.getElementById('nextBtn')).focus();
  }
- if(e.key==='ArrowUp'){e.preventDefault();(a[i-1]||e.target).focus();}
 });
 render();
 </script>
