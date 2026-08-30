@@ -57,9 +57,23 @@ canvas{display:block;width:100%;height:auto;background:white;border-radius:12px;
   .graph-card{position:static}
   .left{min-height:0}
 }
+
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  header{padding-top:10px!important;padding-bottom:10px!important}
+  main{padding-top:12px!important;padding-bottom:20px!important}
+  .left{min-height:0!important}
+  .eqpair{margin-top:4px!important;margin-bottom:8px!important;padding-top:8px!important;padding-bottom:8px!important}
+}
+
 </style>
 </head>
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Yhtälöparit – graafinen ratkaisutapa</h1>
   <p>Laske pisteet taulukoihin, tutki kuvaajia ja päättele ratkaisu.</p>
@@ -161,15 +175,16 @@ function renderTask(){
   taskCard.querySelectorAll('.cell').forEach(input=>input.addEventListener('input',()=>{updateLiveTable(1,t);updateLiveTable(2,t)}));
   if(t.transform){
     document.getElementById('checkTransform').onclick=()=>{
-      state.attempted=true;const raw=document.getElementById('transformInput').value.replace(/\s/g,'').replace('−','-').replace(/^y=/,'');
-      const ok=raw.toLowerCase()===t.transformAnswer;
+      state.attempted=true;const raw=document.getElementById('transformInput').value;
+      const parseExpr=(expr,x)=>{let z=String(expr).toLowerCase().replace(/\s/g,'').replace(/,/g,'.').replace(/−/g,'-').replace(/^y=/,'');z=z.replace(/(\d|\))x/g,'$1*x').replace(/x(?=\d|\()/g,'x*');if(!/^[0-9x+\-*/().]+$/.test(z))return NaN;try{return Function('x',`"use strict";return (${z})`)(x)}catch{return NaN}};
+      const ok=[-3,-1,0,2,5].every(x=>Math.abs(parseExpr(raw,x)-t.f1(x))<1e-9);
       const fb=document.getElementById('transformFb');
       if(ok){ fb.textContent='Oikein! Nyt voit täyttää taulukot.'; fb.className='feedback good'; document.getElementById('tablesWrap').style=''; }
       else { fb.innerHTML=`Ratkaistu muoto on <b>y = ${t.transformAnswer}</b>. Taulukot on nyt avattu.`; fb.className='feedback bad'; document.getElementById('tablesWrap').style=''; }
     };
   }
   document.getElementById('prevBtn').onclick=()=>{if(taskIndex>0){taskIndex--;resetState();renderTask();}};
-  document.getElementById('nextBtn').onclick=()=>{if(!state.attempted){const f=document.getElementById('fbT1');f.textContent='Tarkista tehtävää ennen jatkamista.';f.className='feedback bad';return}if(taskIndex<tasks.length-1){taskIndex++;resetState();renderTask()}else{taskCard.innerHTML=`<h2>Valmis!</h2><p>Olet tehnyt kaikki ${tasks.length} graafista yhtälöparitehtävää.</p><button id="again">Aloita alusta</button>`;document.getElementById('again').onclick=()=>{taskIndex=0;totalScore=0;resetState();renderTask()}}};
+  document.getElementById('nextBtn').onclick=()=>{if(taskIndex<tasks.length-1){taskIndex++;resetState();renderTask()}else{taskCard.innerHTML=`<h2>Valmis!</h2><p>Olet tehnyt kaikki ${tasks.length} graafista yhtälöparitehtävää.</p><button id="again">Aloita alusta</button>`;document.getElementById('again').onclick=()=>{taskIndex=0;totalScore=0;resetState();renderTask()}}};
   drawGraph();
   if(window.MathJax?.typesetPromise)MathJax.typesetPromise([taskCard]);
 }
@@ -248,14 +263,14 @@ function showSolution(t){
 function checkPoint(sol){
   const x=parseFi(document.getElementById('sx').value), y=parseFi(document.getElementById('sy').value);
   const fb=document.getElementById('solFb');
-  if(x===sol[0]&&y===sol[1]) finish(`Oikein! Yhtälöparin ratkaisu on (${fmt(sol[0])}, ${fmt(sol[1])}).`);
+  if(x===sol[0]&&y===sol[1]) finish(`Oikein! Yhtälöparin ratkaisu on x = ${fmt(sol[0])} ja y = ${fmt(sol[1])}.`);
   else {fb.textContent='Ei vielä. Etsi kohta, jossa kuvaajat leikkaavat.';fb.className='feedback bad';}
 }
 function checkTwoPoints(sols){
   const p1=[parseFi(document.getElementById('x1').value),parseFi(document.getElementById('y1').value)];
   const p2=[parseFi(document.getElementById('x2').value),parseFi(document.getElementById('y2').value)];
   const same=(a,b)=>a[0]===b[0]&&a[1]===b[1];
-  if((same(p1,sols[0])&&same(p2,sols[1]))||(same(p1,sols[1])&&same(p2,sols[0]))) finish(`Oikein! Ratkaisut ovat (${fmt(sols[0][0])}, ${fmt(sols[0][1])}) ja (${fmt(sols[1][0])}, ${fmt(sols[1][1])}).`);
+  if((same(p1,sols[0])&&same(p2,sols[1]))||(same(p1,sols[1])&&same(p2,sols[0]))) finish(`Oikein! Ratkaisut ovat x = ${fmt(sols[0][0])}, y = ${fmt(sols[0][1])} sekä x = ${fmt(sols[1][0])}, y = ${fmt(sols[1][1])}.`);
   else {const fb=document.getElementById('solFb');fb.textContent='Ei vielä. Kuvaajilla on kaksi eri leikkauspistettä.';fb.className='feedback bad';}
 }
 function finish(msg){
@@ -300,6 +315,16 @@ function drawFunction(f,type,color,xs,R,xToPx,yToPx){
   ctx.stroke();
   xs.forEach(x=>{const y=f(x);ctx.beginPath();ctx.arc(xToPx(x),yToPx(y),5,0,Math.PI*2);ctx.fill();});
 }
+document.addEventListener('keydown',e=>{
+ if(!e.target.matches('input'))return;
+ const a=[...document.querySelectorAll('input')].filter(x=>x.offsetParent!==null),i=a.indexOf(e.target);
+ if(e.key==='Enter'||e.key==='ArrowDown'){
+   e.preventDefault();
+   const fallback=[...document.querySelectorAll('#taskCard button')].find(b=>b.offsetParent!==null&&!b.disabled&&/Tarkista/.test(b.textContent)) || document.getElementById('nextBtn');
+   (a[i+1]||fallback||e.target).focus();
+ }
+ if(e.key==='ArrowUp'){e.preventDefault();(a[i-1]||e.target).focus();}
+});
 resetState();renderTask();
 </script>
 </body>

@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Verrannollisuus ja koordinaatisto</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 <style>
   :root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#617087;--line:#dce3ed;--accent:#3559e0;--ok:#198754;--bad:#c0392b;--soft:#eef2ff;}
   *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
@@ -11,15 +12,27 @@
   main{max-width:1100px;margin:auto;padding:28px 5% 48px}.topbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}.pill{background:white;border:1px solid var(--line);border-radius:999px;padding:8px 14px}.score{font-weight:700}
   .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(30,50,80,.05)}
   h2{margin-top:0}.lead{font-size:1.05rem}.taskgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}.taskgrid>div{min-width:0}@media(max-width:1050px){.taskgrid{grid-template-columns:1fr}}
-  .tablewrap{margin:16px 0;max-width:100%;overflow-x:auto} table{border-collapse:collapse;width:100%;max-width:100%;background:white;table-layout:fixed} th,td{border:1px solid var(--line);padding:10px;text-align:center} th{background:#f2f5fa} input[type=number],input[type=text]{width:100%;max-width:88px;min-width:0;padding:8px;border:1px solid #bfc9d8;border-radius:8px;font-size:1rem;text-align:center}
+  .tablePurpose{font-weight:700;margin:12px 0 6px;color:var(--ink)}.tablewrap{margin:16px 0;max-width:100%;overflow-x:auto} table{border-collapse:collapse;width:100%;max-width:100%;background:white;table-layout:fixed} th,td{border:1px solid var(--line);padding:10px;text-align:center} th{background:#f2f5fa} input[type=number],input[type=text]{width:100%;max-width:88px;min-width:0;padding:8px;border:1px solid #bfc9d8;border-radius:8px;font-size:1rem;text-align:center}
   .answers{display:grid;gap:10px;margin-top:14px}.answerRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.answerRow label{min-width:180px}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}button.primary{background:var(--accent);color:white}button.secondary{background:#e9edf5;color:#1e293b}button:disabled{opacity:.45;cursor:not-allowed}
   .feedback{min-height:30px;margin-top:14px;font-weight:700}.ok{color:var(--ok)}.bad{color:var(--bad)}
   .canvasWrap{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;overflow:hidden;max-width:100%}.canvasWrap canvas{display:block;width:100%;height:auto;max-width:520px;margin:0 auto}.hint{background:var(--soft);border-radius:12px;padding:12px 14px;color:#344268;margin:14px 0}.small{font-size:.92rem;color:var(--muted)}
   .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;color:#4e5a6b;margin-top:8px}.dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}.dot.a{background:#3559e0}.dot.b{background:#e07a35}.dot.c{background:#198754}
   .math{font-family:Cambria Math,STIX Two Math,Times New Roman,serif;font-size:1.08em;white-space:nowrap}.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1}.frac .top{border-bottom:1.4px solid currentColor;padding:0 .18em .08em}.frac .bottom{padding:.08em .18em 0}.progress{height:10px;background:#e8edf5;border-radius:99px;overflow:hidden;flex:1;min-width:180px}.progress>div{height:100%;background:var(--accent);width:0%}
+
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  header{padding-top:12px!important;padding-bottom:12px!important}
+  main{padding-top:14px!important;padding-bottom:24px!important}
+}
+
 </style>
 </head>
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header><h1>Verrannollisuus ja koordinaatisto</h1><p>Ratkaise sanalliset tehtävät taulukon ja kuvaajan avulla.</p></header>
 <main>
   <div class="topbar"><span class="pill">Tehtävä <strong id="taskNum">1</strong>/8</span><span class="pill score">Pisteet: <span id="score">0</span></span><div class="progress"><div id="prog"></div></div></div>
@@ -27,14 +40,14 @@
 </main>
 <script>
 const tasks = [
- {type:'direct', title:'1. Tuntipalkka', text:'Aino saa palkkaa 12 € tunnilta. Täydennä taulukko ja piirrä palkan kuvaaja.', xs:[0,2,4,6], ys:[0,24,48,72], xMax:8,yMax:100,xStep:1,yStep:10, q:[['Paljonko Aino saa 5 tunnista?',60],['Kuinka monta tuntia pitää työskennellä saadakseen 96 €?',8]], eqHtml:'<span class="math"><i>y</i> = 12<i>x</i></span>'},
- {type:'direct', title:'2. Pyörän vuokraus', text:'Polkupyörän vuokra maksaa 7 € tunnilta. Täydennä taulukko ja piirrä kuvaaja.', xs:[0,1,3,5], ys:[0,7,21,35], xMax:7,yMax:50,xStep:1,yStep:5, q:[['Paljonko 6 tunnin vuokra maksaa?',42],['Kuinka monta tuntia saa 28 eurolla?',4]], eqHtml:'<span class="math"><i>y</i> = 7<i>x</i></span>'},
- {type:'spa', title:'3. Kylpylä: jäsen vai ei?', text:'Ilman jäsenyyttä kylpyläkäynti maksaa 14 €. Jäsenenä maksat ensin 30 € jäsenmaksun ja lisäksi 8 € jokaisesta käynnistä. Täydennä molemmat taulukot ja vertaa kuvaajia.', xs:[0,2,5,8], yA:[0,28,70,112], yB:[30,46,70,94], xMax:10,yMax:140,xStep:1,yStep:10, q:[['Kuinka monella käynnillä hinnat ovat samat?',5],['Paljonko silloin on maksettu?',70]], compare:true},
- {type:'spa', title:'4. Liikuntakeskus', text:'Kertakäynti maksaa 18 €. Kausikortin perusmaksu on 36 € ja sen jälkeen jokainen käynti maksaa 12 €. Milloin kausikortti alkaa kannattaa?', xs:[0,2,6,10], yA:[0,36,108,180], yB:[36,60,108,156], xMax:12,yMax:220,xStep:1,yStep:20, q:[['Kuinka monella käynnillä hinnat ovat samat?',6],['Paljonko silloin on maksettu?',108]], compare:true},
- {type:'inverse', title:'5. 100 km matka', text:'Autolla kuljetaan 100 km. Täydennä taulukkoon matka-aika eri keskinopeuksilla ja piirrä pisteet. Yhdistä pisteet tasaiseksi käyräksi.', xs:[20,25,40,50,100], ys:[5,4,2.5,2,1], xMax:120,yMax:6,xStep:20,yStep:1,q:[['Arvioi kuvaajasta aika nopeudella 50 km/h.',2],['Mikä nopeus tarvitaan, jos aikaa on 2,5 h?',40]], eqHtml:'<span class="math"><i>t</i> = <span class="frac"><span class="top">100</span><span class="bottom"><i>v</i></span></span></span>'},
- {type:'inverse', title:'6. 120 km matka', text:'Matkan pituus on 120 km. Täydennä taulukko ja piirrä ajan kuvaaja nopeuden funktiona.', xs:[20,30,40,60,120], ys:[6,4,3,2,1], xMax:140,yMax:7,xStep:20,yStep:1,q:[['Kuinka kauan matka kestää nopeudella 60 km/h?',2],['Mikä nopeus tarvitaan, jos aikaa on 3 h?',40]], eqHtml:'<span class="math"><i>t</i> = <span class="frac"><span class="top">120</span><span class="bottom"><i>v</i></span></span></span>'},
- {type:'mix', title:'7. Hyperbeli ja suora', text:'Piirrä samaan koordinaatistoon käyrä <strong>y = 12/x</strong> ja suora <strong>y = x + 1</strong>. Etsi positiivisen koordinaatiston leikkauspiste.', xs:[1,2,3,4,6], ys:[12,6,4,3,2], xMax:8,yMax:14,xStep:1,yStep:1,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',3],['Leikkauspisteen y-koordinaatti?',4]]},
- {type:'mix', title:'8. Haaste', text:'Piirrä käyrä <strong>y = 20/x</strong> ja suora <strong>y = x + 1</strong>. Etsi positiivisen koordinaatiston leikkauspiste kuvaajasta.', xs:[1,2,4,5,10], ys:[20,10,5,4,2], xMax:10,yMax:22,xStep:1,yStep:2,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',4],['Leikkauspisteen y-koordinaatti?',5]]}
+ {type:'direct', title:'1. Tuntipalkka', xLabel:'aika (h)', yLabel:'palkka (€)', fixedX:true, text:'Aino saa palkkaa 12 € tunnilta. Täydennä taulukko ja piirrä palkan kuvaaja.', xs:[0,2,4,6], ys:[0,24,48,72], xMax:8,yMax:100,xStep:1,yStep:10, q:[['Paljonko Aino saa 5 tunnista?',60],['Kuinka monta tuntia pitää työskennellä saadakseen 96 €?',8]], eqHtml:'<span class="math"><i>y</i> = 12<i>x</i></span>'},
+ {type:'direct', title:'2. Pyörän vuokraus', xLabel:'aika (h)', yLabel:'hinta (€)', text:'Polkupyörän vuokra maksaa 7 € tunnilta. Täydennä taulukko ja piirrä kuvaaja.', xs:[0,1,3,5], ys:[0,7,21,35], xMax:7,yMax:50,xStep:1,yStep:5, q:[['Paljonko 6 tunnin vuokra maksaa?',42],['Kuinka monta tuntia saa 28 eurolla?',4]], equation:'y=7x', eqHtml:'<span class="math"><i>y</i> = 7<i>x</i></span>'},
+ {type:'spa', title:'3. Kylpylä: jäsen vai ei?', xLabel:'käyntien määrä', yLabel:'kokonaishinta (€)', text:'Ilman jäsenyyttä kylpyläkäynti maksaa 14 €. Jäsenenä maksat ensin 30 € jäsenmaksun ja lisäksi 8 € jokaisesta käynnistä. Täydennä molemmat taulukot ja vertaa kuvaajia.', xs:[0,2,5,8], yA:[0,28,70,112], yB:[30,46,70,94], xMax:10,yMax:140,xStep:1,yStep:10, q:[['Kuinka monella käynnillä hinnat ovat samat?',5],['Paljonko silloin on maksettu?',70]], compare:true},
+ {type:'spa', title:'4. Liikuntakeskus', xLabel:'käyntien määrä', yLabel:'kokonaishinta (€)', text:'Kertakäynti maksaa 18 €. Kausikortin perusmaksu on 36 € ja sen jälkeen jokainen käynti maksaa 12 €. Milloin kausikortti alkaa kannattaa?', xs:[0,2,6,10], yA:[0,36,108,180], yB:[36,60,108,156], xMax:12,yMax:220,xStep:1,yStep:20, q:[['Kuinka monella käynnillä hinnat ovat samat?',6],['Paljonko silloin on maksettu?',108]], compare:true},
+ {type:'inverse', title:'5. 100 km matka', xLabel:'nopeus (km/h)', yLabel:'aika (h)', fixedX:true, text:'Autolla kuljetaan 100 km. Täydennä taulukkoon matka-aika eri keskinopeuksilla ja piirrä pisteet. Yhdistä pisteet tasaiseksi käyräksi.', xs:[20,25,40,50,100], ys:[5,4,2.5,2,1], xMax:120,yMax:6,xStep:20,yStep:1,q:[['Arvioi kuvaajasta aika nopeudella 50 km/h.',2],['Mikä nopeus tarvitaan, jos aikaa on 2,5 h?',40]], eqHtml:'<span class="math"><i>t</i> = <span class="frac"><span class="top">100</span><span class="bottom"><i>v</i></span></span></span>'},
+ {type:'inverse', title:'6. 120 km matka', xLabel:'nopeus (km/h)', yLabel:'aika (h)', text:'Matkan pituus on 120 km. Täydennä taulukko ja piirrä ajan kuvaaja nopeuden funktiona.', xs:[20,30,40,60,120], ys:[6,4,3,2,1], xMax:140,yMax:7,xStep:20,yStep:1,q:[['Kuinka kauan matka kestää nopeudella 60 km/h?',2],['Mikä nopeus tarvitaan, jos aikaa on 3 h?',40]], equation:'t=120/v', eqHtml:'<span class="math"><i>t</i> = <span class="frac"><span class="top">120</span><span class="bottom"><i>v</i></span></span></span>'},
+ {type:'mix', title:'7. Hyperbeli ja suora', xLabel:'x', yLabel:'y', text:'Piirrä samaan koordinaatistoon käyrä \\(y=\\frac{12}{x}\\) ja suora \\(y=x+1\\). Määritä leikkauspiste piirtämällä.', xs:[1,2,3,4,6], ys:[12,6,4,3,2], xMax:8,yMax:14,xStep:1,yStep:1,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',3],['Leikkauspisteen y-koordinaatti?',4]], equation:'y=12/x'},
+ {type:'mix', title:'8. Haaste', xLabel:'x', yLabel:'y', text:'Piirrä käyrä \\(y=\\frac{20}{x}\\) ja suora \\(y=x+1\\). Määritä leikkauspiste piirtämällä.', xs:[1,2,4,5,10], ys:[20,10,5,4,2], xMax:10,yMax:22,xStep:1,yStep:2,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',4],['Leikkauspisteen y-koordinaatti?',5]], equation:'y=20/x'}
 ];
 let idx=0, score=0, checked=false;
 function fmt(n){return Number.isInteger(n)?String(n):String(n).replace('.',',')}
@@ -44,22 +57,35 @@ function render(){checked=false; const t=tasks[idx]; document.getElementById('ta
    tables += tableHtml('Ilman jäsenyyttä / kertakäynneillä',t.xs,t.yA,'a');
    tables += tableHtml('Jäsenyys / kausikortti',t.xs,t.yB,'b');
  } else tables += tableHtml(t.type==='inverse'?'Nopeus ja aika':'Taulukko',t.xs,t.ys,'a');
- let qs=t.q.map((q,i)=>`<div class="answerRow"><label>${q[0]}</label><input type="text" inputmode="decimal" id="q${i}"></div>`).join('');
- document.getElementById('game').innerHTML=`<h2>${t.title}</h2><p class="lead">${t.text}</p>${t.type==='inverse'?'<div class="hint">Muista: kun matka on vakio, aika saadaan kaavalla <strong>aika = matka / nopeus</strong>.</div>':''}<div class="taskgrid"><div>${tables}<div class="answers">${qs}</div>${t.eqHtml?`<p class="small">Kun taulukko on oikein, kuvaaja paljastaa myös yhteyden ${t.eqHtml}.</p>`:''}<div class="btns"><button class="primary" onclick="checkTask()">Tarkista ja piirrä</button><button class="secondary" onclick="resetTask()">Tyhjennä</button><button class="secondary" id="nextBtn" onclick="nextTask()" disabled>Seuraava</button></div><div class="feedback" id="fb"></div></div><div><div class="canvasWrap"><canvas id="graph" width="560" height="560"></canvas></div><div class="legend">${legendHtml(t)}</div></div></div>`;
- drawAxes(t);
+ let qs=t.q.map((q,i)=>`<div class="answerRow"><label>${q[0]}</label><input type="text" inputmode="decimal" id="q${i}"></div>`).join(''); if(t.equation) qs+=`<div class="answerRow"><label>Kirjoita kuvaajan yhtälö.</label><input type="text" id="eqAnswer" placeholder="esim. y=7x"></div>`;
+ document.getElementById('game').innerHTML=`<h2>${t.title}</h2><p class="lead">${t.text}</p>${t.type==='inverse'?'<div class="hint">Muista: kun matka on vakio, aika saadaan kaavalla <strong>aika = matka / nopeus</strong>.</div>':''}<div class="taskgrid"><div>${tables}<div class="answers">${qs}</div>${t.eqHtml?`<p class="small">Kun taulukko on oikein, kuvaaja paljastaa myös yhteyden ${t.eqHtml}.</p>`:''}<div class="btns"><button class="primary" id="checkBtn" onclick="checkTask()">Tarkista ja piirrä</button><button class="secondary" onclick="resetTask()">Tyhjennä</button><button class="secondary" id="nextBtn" onclick="nextTask()">Seuraava</button></div><div class="feedback" id="fb"></div></div><div><div class="small" style="font-weight:700;margin-bottom:6px">${t.xLabel==='x'&&t.yLabel==='y' ? 'Vaaka-akseli: x &nbsp; • &nbsp; pystyakseli: y' : `Vaaka-akseli: ${t.xLabel} &nbsp; • &nbsp; pystyakseli: ${t.yLabel}`}</div><div class="canvasWrap"><canvas id="graph" width="620" height="620"></canvas></div><div class="legend">${legendHtml(t)}</div></div></div>`;
+ drawAxes(t); if(window.MathJax?.typesetPromise)MathJax.typesetPromise([document.getElementById('game')]); setTimeout(()=>document.querySelector('#game input')?.focus(),0);
 }
-function tableHtml(title,xs,ys,prefix){return `<div class="tablewrap"><strong>${title}</strong><table><tr><th>${tasks[idx].type==='inverse'?'Nopeus':'x'}</th>${xs.map(x=>`<th>${fmt(x)}</th>`).join('')}</tr><tr><th>${tasks[idx].type==='inverse'?'Aika':'y'}</th>${ys.map((y,i)=>`<td><input type="text" inputmode="decimal" id="${prefix}${i}" aria-label="taulukon arvo"></td>`).join('')}</tr></table></div>`}
+function tableHtml(title,xs,ys,prefix){
+ const t=tasks[idx];
+ const purpose=t.type==='mix'
+   ? '<div class="tablePurpose">Taulukko hyperbelin piirtämistä varten</div>'
+   : (t.type==='inverse' ? '<div class="tablePurpose">Taulukko kuvaajan piirtämistä varten</div>' : '');
+ return `${purpose}<div class="tablewrap"><strong>${title}</strong><table><tr><th>${t.xLabel}</th>${xs.map((x,i)=>t.fixedX?`<th>${fmt(x)}</th>`:`<th><input type="text" inputmode="decimal" id="${prefix}x${i}" aria-label="x-arvo"></th>`).join('')}</tr><tr><th>${t.yLabel}</th>${ys.map((y,i)=>`<td><input type="text" inputmode="decimal" id="${prefix}${i}" aria-label="y-arvo"></td>`).join('')}</tr></table></div>`;
+}
 function legendHtml(t){if(t.type==='spa') return '<span><i class="dot a"></i>kertakäynnit</span><span><i class="dot b"></i>jäsenyys / kausikortti</span>'; if(t.type==='mix') return '<span><i class="dot a"></i>hyperbeli</span><span><i class="dot b"></i>suora</span>'; return '<span><i class="dot a"></i>kuvaaja</span>'}
 function parseVal(s){return Number(String(s).trim().replace(',','.'))}
 function nearly(a,b){return Math.abs(a-b)<0.06}
 function checkTask(){if(checked)return; const t=tasks[idx]; let ok=true;
+ const xs=t.fixedX?t.xs:t.xs.map((_,i)=>parseVal(document.getElementById('ax'+i)?.value));
+ if(!t.fixedX && (xs.some(v=>!Number.isFinite(v))||new Set(xs).size<xs.length)){ok=false;}
  if(t.type==='spa'){
-   t.yA.forEach((y,i)=>{let el=document.getElementById('a'+i); let good=nearly(parseVal(el.value),y); mark(el,good); ok &= good});
-   t.yB.forEach((y,i)=>{let el=document.getElementById('b'+i); let good=nearly(parseVal(el.value),y); mark(el,good); ok &= good});
+   const xb=t.fixedX?t.xs:t.xs.map((_,i)=>parseVal(document.getElementById('bx'+i)?.value));
+   const kA=(t.yA[1]-t.yA[0])/(t.xs[1]-t.xs[0]), bA=t.yA[0]-kA*t.xs[0];
+   const kB=(t.yB[1]-t.yB[0])/(t.xs[1]-t.xs[0]), bB=t.yB[0]-kB*t.xs[0];
+   xs.forEach((x,i)=>{let el=document.getElementById('a'+i),y=kA*x+bA,good=nearly(parseVal(el.value),y);mark(el,good);ok &= good});
+   xb.forEach((x,i)=>{let el=document.getElementById('b'+i),y=kB*x+bB,good=nearly(parseVal(el.value),y);mark(el,good);ok &= good});
  } else {
-   t.ys.forEach((y,i)=>{let el=document.getElementById('a'+i); let good=nearly(parseVal(el.value),y); mark(el,good); ok &= good});
+   const nonzero=t.xs.findIndex(x=>x!==0), k=t.type==='direct'?t.ys[nonzero]/t.xs[nonzero]:null, d=(t.type==='inverse'||t.type==='mix')?t.xs[0]*t.ys[0]:null;
+   xs.forEach((x,i)=>{let el=document.getElementById('a'+i);let y=t.type==='direct'?k*x:d/x;let good=nearly(parseVal(el.value),y);mark(el,good);ok &= good});
  }
  t.q.forEach((q,i)=>{let el=document.getElementById('q'+i); let good=nearly(parseVal(el.value),q[1]); mark(el,good); ok &= good});
+ if(t.equation){const el=document.getElementById('eqAnswer'),raw=String(el.value).toLowerCase().replace(/\s/g,'').replace(/,/g,'.');const expected=t.equation.replace(/\s/g,'');const aliases=expected.startsWith('t=')?[expected,'y='+expected.slice(2).replace(/v/g,'x')]:[expected];const good=aliases.includes(raw);mark(el,good);ok &= good;}
  checked=!!ok;document.getElementById('nextBtn').disabled=false;drawSolution(t);
  if(ok){score++; document.getElementById('score').textContent=score; document.getElementById('fb').innerHTML='<span class="ok">Oikein! Kuvaaja on piirretty koordinaatistoon.</span>'} else document.getElementById('fb').innerHTML='<span class="bad">Jokin arvo ei vielä täsmää. Oikea kuvaaja on piirretty, ja voit jatkaa seuraavaan tehtävään.</span>';
 }
@@ -71,7 +97,7 @@ function drawAxes(t){const c=document.getElementById('graph'),ctx=c.getContext('
  const xMax=t.xMax,yMax=t.yMax; const X=g.X,Y=g.Y;
  for(let x=0;x<=xMax+1e-9;x+=t.xStep){ctx.beginPath();ctx.moveTo(X(x),g.t);ctx.lineTo(X(x),g.b);ctx.stroke();ctx.fillStyle='#4b5769';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText(fmt(x),X(x),g.b+18)}
  for(let y=0;y<=yMax+1e-9;y+=t.yStep){ctx.beginPath();ctx.moveTo(g.l,Y(y));ctx.lineTo(g.r,Y(y));ctx.stroke();ctx.fillStyle='#4b5769';ctx.textAlign='right';ctx.fillText(fmt(y),g.l-7,Y(y)+4)}
- ctx.strokeStyle='#263244';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(g.l,g.t);ctx.lineTo(g.l,g.b);ctx.lineTo(g.r,g.b);ctx.stroke();ctx.fillStyle='#263244';ctx.beginPath();ctx.moveTo(g.r,g.b);ctx.lineTo(g.r-14,g.b-7);ctx.lineTo(g.r-14,g.b+7);ctx.fill();ctx.beginPath();ctx.moveTo(g.l,g.t);ctx.lineTo(g.l-7,g.t+14);ctx.lineTo(g.l+7,g.t+14);ctx.fill();ctx.font='italic 18px Georgia,serif';ctx.textAlign='center';ctx.fillText(t.type==='inverse'?'v':'x',g.r-10,g.b+32);ctx.fillText(t.type==='inverse'?'t':'y',g.l+14,g.t+18);
+ ctx.strokeStyle='#263244';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(g.l,g.t);ctx.lineTo(g.l,g.b);ctx.lineTo(g.r,g.b);ctx.stroke();ctx.fillStyle='#263244';ctx.beginPath();ctx.moveTo(g.r,g.b);ctx.lineTo(g.r-14,g.b-7);ctx.lineTo(g.r-14,g.b+7);ctx.fill();ctx.beginPath();ctx.moveTo(g.l,g.t);ctx.lineTo(g.l-7,g.t+14);ctx.lineTo(g.l+7,g.t+14);ctx.fill();ctx.font='italic 18px Georgia,serif';ctx.textAlign='center';ctx.font='bold 14px system-ui';ctx.fillText(t.xLabel,g.r-50,g.b+34);ctx.save();ctx.translate(g.l-42,g.t+58);ctx.rotate(-Math.PI/2);ctx.fillText(t.yLabel,0,0);ctx.restore();
 }
 function drawSolution(t){drawAxes(t); const c=document.getElementById('graph'),ctx=c.getContext('2d'),W=c.width,H=c.height,g=geom(t,W,H); const X=g.X,Y=g.Y;
  function curve(fn,color,start=0,end=t.xMax,step=.05){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();let begun=false;for(let x=start;x<=end;x+=step){let y=fn(x);if(!isFinite(y)||y<0||y>t.yMax*1.2){begun=false;continue}if(!begun){ctx.moveTo(X(x),Y(y));begun=true}else ctx.lineTo(X(x),Y(y))}ctx.stroke()}
@@ -82,6 +108,15 @@ function drawSolution(t){drawAxes(t); const c=document.getElementById('graph'),c
  if(t.type==='mix'){let d=t.xs[0]*t.ys[0];curve(x=>d/x,'#3559e0',.3,t.xMax);curve(t.line,'#e07a35',0,t.xMax);points(t.xs,t.ys,'#3559e0');highlight(t.q[0][1],t.q[1][1])}
  function highlight(x,y){ctx.strokeStyle='#198754';ctx.fillStyle='#198754';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(X(x),Y(y),8,0,2*Math.PI);ctx.stroke();ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(X(x),Y(y));ctx.lineTo(X(x),Y(0));ctx.moveTo(X(x),Y(y));ctx.lineTo(X(0),Y(y));ctx.stroke();ctx.setLineDash([])}
 }
+document.addEventListener('keydown',e=>{
+ if(!e.target.matches('input'))return;
+ const a=[...document.querySelectorAll('#game input')],i=a.indexOf(e.target);
+ if(e.key==='Enter'||e.key==='ArrowDown'){
+   e.preventDefault();
+   (a[i+1]||document.getElementById('checkBtn')||document.getElementById('nextBtn')).focus();
+ }
+ if(e.key==='ArrowUp'){e.preventDefault();(a[i-1]||e.target).focus();}
+});
 render();
 </script>
 </body>

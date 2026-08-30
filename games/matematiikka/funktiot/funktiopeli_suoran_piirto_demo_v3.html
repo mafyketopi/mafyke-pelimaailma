@@ -45,9 +45,24 @@
   .hidden { display:none; }
   .smallbtn { width:100%; }
   @media (max-width:830px){ .workarea{grid-template-columns:1fr;} .side{max-width:640px;} }
+
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  .wrap{padding-top:10px!important;padding-bottom:14px!important}
+  .card{padding-top:16px!important;padding-bottom:16px!important}
+  .lead{margin-bottom:8px!important}
+  .modebar{margin-bottom:10px!important}
+  .status{margin-top:10px!important;margin-bottom:6px!important}
+}
+
 </style>
 </head>
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <div class="wrap">
   <div class="card">
     <h1>Funktiopeli: piirrä suora</h1>
@@ -68,7 +83,7 @@
 
       <div class="side" id="tablePanel">
         <h2>Arvotaulukko</h2>
-        <p>Valitse itse kolme x-arvoa ja laske niitä vastaavat y-arvot. Näytä ensin pisteet koordinaatistossa.</p>
+        <p>Valitse x-arvot ja laske niitä vastaavat y-arvot. Sen jälkeen valitse "Näytä pisteet" ja "Piirrä suora"</p>
         <table>
           <thead><tr><th>x</th><th>y</th></tr></thead>
           <tbody id="valueTable"></tbody>
@@ -126,7 +141,7 @@ let taskIndices={table:-1,click:-1};
 
 // a = kulmakerroin osoittaja/nimittäjä. Näin murtoluvut pysyvät tarkkoina.
 const tableTasks=[
-  {an:1,ad:1,b:2,presetXs:[-2,0,2]}, {an:-1,ad:1,b:3,presetXs:[-1,1,3]},
+  {an:1,ad:1,b:2}, {an:-1,ad:1,b:3},
   {an:2,ad:1,b:-1}, {an:-2,ad:1,b:4}, {an:3,ad:1,b:-2}, {an:1,ad:2,b:1},
   {an:-1,ad:2,b:2}, {an:2,ad:3,b:-1}, {an:-2,ad:3,b:3}, {an:1,ad:1,b:-4},
   {an:2,ad:1,b:-3}, {an:-3,ad:1,b:1}
@@ -350,7 +365,6 @@ function setMode(newMode){
 }
 
 function newTask(force=false){
-  if(current && !answered&&!force){statusEl.textContent='Tarkista nykyinen tehtävä ensin.';return;}
   const list=activeTasks();taskIndices[mode]=(taskIndices[mode]+1)%list.length;taskIndex=taskIndices[mode];current=list[taskIndex];taskCounterEl.textContent=`Tehtävä ${taskIndex+1}/${list.length}`;
   renderEquation(); points=[]; answered=false; tableValidated=false; tableLineVisible=false; showPointsBtn.disabled=false; drawTableBtn.disabled=true;
   if(mode==='table'){ buildTable(); statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.'; }
@@ -368,6 +382,14 @@ canvas.addEventListener('pointerdown',e=>{
   if(points.length===1) statusEl.textContent=`Ensimmäinen piste: (${x}, ${y}). Valitse toinen piste.`;
   redraw();
   if(points.length===2) checkClickAnswer();
+});
+
+
+document.addEventListener('keydown',e=>{
+  if(!e.target.matches('input.coord')) return;
+  const inputs=[...document.querySelectorAll('input.coord')]; const i=inputs.indexOf(e.target);
+  if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();(inputs[i+1]||showPointsBtn).focus();}
+  if(e.key==='ArrowUp'){e.preventDefault();(inputs[i-1]||e.target).focus();}
 });
 
 tableModeBtn.addEventListener('click',()=>setMode('table'));

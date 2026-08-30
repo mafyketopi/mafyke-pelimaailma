@@ -23,7 +23,7 @@ main{max-width:1100px;margin:auto;padding:28px 5% 60px}
 .tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(30,50,80,.05)}
 .hidden{display:none!important}
-.layout{display:grid;grid-template-columns:minmax(320px,1.1fr) minmax(280px,.9fr);gap:24px;align-items:start}
+.layout{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(420px,1.15fr);gap:24px;align-items:start}
 @media(max-width:820px){.layout{grid-template-columns:1fr}}
 h2{margin-top:0}.task{font-size:1.1rem;line-height:1.5;margin:0 0 18px}
 .eq{font-family:"Cambria Math","STIX Two Math",serif;font-size:1.15em}
@@ -49,9 +49,22 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 .bigChoice{padding:13px 18px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:800;cursor:pointer}
 .bigChoice:hover{border-color:#9fb5e9}
 .note{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:#455267}
+
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  header{padding-top:12px!important;padding-bottom:12px!important}
+  main{padding-top:14px!important;padding-bottom:24px!important}
+  .card{padding-top:16px!important;padding-bottom:16px!important}
+}
+
 </style>
 </head>
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Suoran yhtälön määritys</h1>
   <p>Harjoittele vakiotermiä, kulmakerrointa ja suoran yhtälöä.</p>
@@ -93,7 +106,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
       </div>
 
       <div>
-        <div class="canvasWrap"><canvas id="basicCanvas" width="520" height="520"></canvas></div>
+        <div class="canvasWrap"><canvas id="basicCanvas" width="620" height="620"></canvas></div>
         <div class="hint">Kun vakiotermi on oikein, y-akselin leikkauspiste korostuu. Kun kulmakerroin on oikein, kuvaajaan ilmestyy kulmakerrointa havainnollistava apukolmio.</div>
       </div>
     </div>
@@ -101,7 +114,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 
   <section id="parallel" class="card hidden">
     <div id="parallelIntro" class="layout">
-      <div><h2>Yhdensuuntaiset suorat</h2><p class="task">Yhdensuuntaiset suorat nousevat tai laskevat yhtä jyrkästi. Siksi niillä on sama kulmakerroin.</p><div class="note">Esimerkin suorilla \(y=x+1\) ja \(y=x-2\) on molemmilla kulmakerroin \(k=1\). Vakiotermit ovat erilaiset, joten suorat eivät ole sama suora.</div><button class="next" onclick="startParallel()">Aloita harjoitukset</button></div>
+      <div><h2>Yhdensuuntaiset suorat</h2><p class="task">Yhdensuuntaiset suorat nousevat tai laskevat yhtä jyrkästi. Niillä on siis sama kulmakerroin.</p><div class="note">Esimerkin suorilla \(y=x+1\) ja \(y=x-2\) on molemmilla kulmakerroin \(k=1\). Vakiotermit ovat erilaiset, joten suorat eivät ole sama suora.</div><button class="next" onclick="startParallel()">Aloita harjoitukset</button></div>
       <div><div class="canvasWrap"><canvas id="parallelIntroCanvas" width="520" height="520"></canvas></div><div class="hint">Samanlaiset apukolmiot näyttävät samat kulmakertoimet.</div></div>
     </div>
     <div id="parallelWork" class="layout hidden">
@@ -121,7 +134,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
       </div>
 
       <div>
-        <div class="canvasWrap"><canvas id="drawCanvas" width="520" height="520"></canvas></div>
+        <div class="canvasWrap"><canvas id="drawCanvas" width="620" height="620"></canvas></div>
         <div id="drawStatus" class="drawStatus">Valitse ensimmäinen piste.</div>
         <button class="resetDraw" onclick="resetDrawing()">Tyhjennä piirros</button>
         <div class="hint">Yhdensuuntaisilla suorilla on sama kulmakerroin. Jos annettu piste ei ole y-akselilla, määritä vakiotermi sijoittamalla piste yhtälöön <span class="eq">y = kx + b</span>.</div>
@@ -306,10 +319,9 @@ function checkBasic(kind){
     if(ok && !basicState.eq){basicState.eq=true;bs++;renderBasic()}
   }
   fb.className='feedback '+(ok?'ok':'bad');
-  fb.textContent=ok?'Oikein!':'Ei aivan. Tarkista kuvaaja ja yritä uudelleen.';
+  fb.innerHTML=ok?'Oikein!':(t.vertical!==undefined?`Ratkaisu: <b>x = ${fmt(t.vertical)}</b>. Voit jatkaa.`:`Ratkaisu: <b>${eqText(t.k,t.b)}</b>, kulmakerroin ${fmt(t.k)}, vakiotermi ${fmt(t.b)}. Voit jatkaa.`);
 }
 function nextBasic(){
-  if(!basicAttempted){document.getElementById('basicFeedback').className='feedback bad';document.getElementById('basicFeedback').textContent='Tarkista ainakin yksi vastaus ennen jatkamista.';return}
   bi=(bi+1)%basicTasks.length; basicState={b:false,k:false,eq:false};
   basicAttempted=false;
   ['bInput','kInput','eqInput'].forEach(id=>document.getElementById(id).value='');
@@ -329,8 +341,6 @@ function drawParallelIntro(){const base=setupCanvas(document.getElementById('par
 function renderDraw(showAnswer=false){
   const t=parallelTasks[pi], base=setupCanvas(document.getElementById('drawCanvas'));
   const {ctx,X,Y}=base;
-  // given point
-  ctx.fillStyle='#d84a4a';ctx.beginPath();ctx.arc(X(t.px),Y(t.py),7,0,Math.PI*2);ctx.fill();
   if(drawPoints.length){
     ctx.fillStyle='#172033';
     drawPoints.forEach(p=>{ctx.beginPath();ctx.arc(X(p.x),Y(p.y),7,0,Math.PI*2);ctx.fill()});
@@ -375,17 +385,17 @@ function resetDrawing(){drawPoints=[];document.getElementById('drawStatus').text
 function checkParallel(){
   parallelAttempted=true;
   const t=parallelTasks[pi], b=t.py-t.k*t.px, e=evalLinearEqInput(document.getElementById('parallelEq').value);
-  const ok=e&&approx(e.k,t.k)&&approx(e.b,b);
+  const pointsOK=drawPoints.length===2 && drawPoints.every(p=>approx(p.y,t.k*p.x+b)) && drawPoints.some(p=>approx(p.x,t.px)&&approx(p.y,t.py));
+  const ok=e&&approx(e.k,t.k)&&approx(e.b,b)&&pointsOK;
   const fb=document.getElementById('parallelFeedback');
   fb.className='feedback '+(ok?'ok':'bad');
   if(ok){
     if(!fb.dataset.done){ps++;fb.dataset.done='1'}
     fb.innerHTML=`Oikein! Kulmakerroin on <span class="eq">${fmt(t.k)}</span> ja suoran yhtälö on <span class="eq">${eqText(t.k,b)}</span>.`;
     renderParallel(); renderDraw(true);
-  }else fb.textContent='Ei aivan. Yhdensuuntaisen suoran kulmakerroin on sama kuin annetulla suoralla.';
+  }else {fb.innerHTML=`Ratkaisu: <b>${eqText(t.k,b)}</b>. Merkitse itse kaksi pistettä; toisen pitää olla annettu piste (${fmt(t.px)}, ${fmt(t.py)}).`; renderDraw(true);}
 }
 function nextParallel(){
-  if(!parallelAttempted){document.getElementById('parallelFeedback').className='feedback bad';document.getElementById('parallelFeedback').textContent='Tarkista vastaus ennen jatkamista.';return}
   pi=(pi+1)%parallelTasks.length; drawPoints=[];
   parallelAttempted=false;
   document.getElementById('parallelEq').value='';
@@ -413,13 +423,17 @@ function checkChallenge(){
   } else fb.innerHTML=`Tarkista lasku. Oikea ratkaistu muoto on <b>${eqText(k,b)}</b>, joten voit jatkaa seuraavaan tehtävään.`;
 }
 function nextChallenge(){
-  if(!challengeAttempted){document.getElementById('challengeFeedback').className='feedback bad';document.getElementById('challengeFeedback').textContent='Tarkista vastaus ennen jatkamista.';return}
   ci=(ci+1)%challengeTasks.length;
   challengeAttempted=false;
   ['challengeEq','challengeK','challengeB'].forEach(id=>document.getElementById(id).value='');
   const fb=document.getElementById('challengeFeedback');fb.textContent='';delete fb.dataset.done;renderChallenge();
 }
 
+document.addEventListener('keydown',e=>{
+  if(!e.target.matches('input')) return; const inputs=[...document.querySelectorAll('input:not(.hidden input)')].filter(x=>x.offsetParent!==null); const i=inputs.indexOf(e.target);
+  if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();(inputs[i+1]||e.target).focus();}
+  if(e.key==='ArrowUp'){e.preventDefault();(inputs[i-1]||e.target).focus();}
+});
 renderBasic(); renderParallel(); renderChallenge(); drawParallelIntro();
 </script>
 </body>

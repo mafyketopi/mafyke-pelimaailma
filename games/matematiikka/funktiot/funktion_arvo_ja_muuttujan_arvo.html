@@ -205,9 +205,22 @@
       font-size:1.8rem;
       margin-bottom:8px;
     }
-  </style>
+  
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  header{padding-top:12px!important;padding-bottom:12px!important}
+  main{padding-top:14px!important;padding-bottom:22px!important}
+  .card{padding-top:16px!important;padding-bottom:16px!important}
+}
+
+</style>
 </head>
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
   <main class="wrap">
     <h1>Funktion arvo ja muuttujan arvo</h1>
     <div class="lead">Valitse harjoitus. Ratkaisu etenee vaiheittain, ja peli tarkistaa ensin muodostamasi lausekkeen tai yhtälön.</div>
@@ -298,6 +311,7 @@ const datasets = {
 };
 
 let mode = 'value';
+let taskSolved=false, solutionShown=false;
 let index = 0;
 let score = 0;
 let expressionPassed = false;
@@ -409,7 +423,7 @@ function loadQuestion() {
   hideFeedback(answerFeedback2);
   answerSection.classList.add('hidden');
   secondAnswerSection.classList.add('hidden');
-  nextBtn.classList.add('hidden');
+  taskSolved=false; solutionShown=false; nextBtn.classList.remove('hidden'); nextBtn.textContent='Näytä ratkaisu / seuraava';
 
   modelBox.innerHTML = modelHTML();
   const q = current();
@@ -441,6 +455,7 @@ function loadQuestion() {
 
   updateLivePreview();
   queueMathJax();
+  setTimeout(()=>expressionInput.focus(),0);
 }
 
 function normalize(s) {
@@ -630,7 +645,7 @@ el('checkAnswer').addEventListener('click', () => {
     showFeedback(answerFeedback, true, 'Oikein!');
     score++;
     scoreText.textContent = `Pisteet ${score}`;
-    nextBtn.classList.remove('hidden');
+    taskSolved=true; nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
   } else {
     showFeedback(answerFeedback, false, 'Tarkista lasku ja yritä uudelleen.');
   }
@@ -666,20 +681,39 @@ el('checkAnswer2').addEventListener('click', () => {
     showFeedback(answerFeedback2, true, 'Oikein. Löysit molemmat muuttujan arvot!');
     score++;
     scoreText.textContent = `Pisteet ${score}`;
-    nextBtn.classList.remove('hidden');
+    taskSolved=true; nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
   } else {
     showFeedback(answerFeedback2, false, 'Tarvitaan kaksi muuttujan arvoa, esimerkiksi 2 tai -2. Tarkista yhtälön ratkaisut.');
   }
 });
 
+function solutionText(){
+  const q=current();
+  if(mode==='value') return `Ratkaisu: \\(f(${q.x})=${inputToLatex(q.expected)}=${q.answer}\\).`;
+  if(mode==='variable') return `Ratkaisu: \\(${inputToLatex(q.equation)}\\), joten \\(x=${q.answers[0]}\\).`;
+  return `Ratkaisu: \\(${inputToLatex(q.equation)}\\), joten \\(x=${q.answers[0]}\\) tai \\(x=${q.answers[1]}\\).`;
+}
 nextBtn.addEventListener('click', () => {
-  if (index < datasets[mode].length - 1) {
-    index++;
-    loadQuestion();
-  } else {
-    finishMode();
+  if(!taskSolved && !solutionShown){
+    solutionShown=true;
+    const target=mode==='challenge'?answerFeedback2:answerFeedback;
+    target.className='feedback ok'; target.innerHTML=solutionText();
+    if(mode==='value'||mode==='variable') answerSection.classList.remove('hidden'); else secondAnswerSection.classList.remove('hidden');
+    nextBtn.textContent='Jatka seuraavaan'; queueMathJax(); return;
   }
+  if (index < datasets[mode].length - 1) { index++; loadQuestion(); }
+  else finishMode();
 });
+
+[expressionInput,answerInput,answerInput2].forEach((inp,i)=>inp.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();
+    if(inp===expressionInput) el('checkExpression').click();
+    else if(inp===answerInput) el('checkAnswer').click();
+    else el('checkAnswer2').click();
+  }
+  if(e.key==='ArrowDown'){e.preventDefault(); if(inp===expressionInput){(mode==='challenge'?answerInput2:answerInput).focus()} else nextBtn.focus();}
+  if(e.key==='ArrowUp'){e.preventDefault(); if(inp!==expressionInput)expressionInput.focus();}
+}));
 
 function finishMode() {
   gameArea.classList.add('hidden');

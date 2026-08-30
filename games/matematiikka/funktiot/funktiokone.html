@@ -191,7 +191,19 @@
     }
 
     @media (max-width:760px){.workspace{grid-template-columns:1fr}.graph-wrap{order:2}.wrap{padding-top:8px}.lead{font-size:1rem}.answer{width:82px}}
-  </style>
+  
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  .wrap{padding-top:10px!important;padding-bottom:16px!important}
+  .card{padding-top:16px!important;padding-bottom:16px!important}
+  .buttons{margin-top:10px!important}
+}
+
+</style>
 
   <script>
     window.MathJax = {
@@ -203,6 +215,7 @@
 </head>
 
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
   <main class="wrap">
     <section class="card">
       <h1>Funktiokone</h1>
@@ -330,9 +343,20 @@ function renderTask(){
       input.dataset.answer = String(ys[i]);
       input.setAttribute('aria-label', `Funktion arvo lähtöarvolle ${x}`);
       input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') checkAnswers();
+        const inputs=[...document.querySelectorAll('.answer'), ruleInput];
+        const pos=inputs.indexOf(input);
+        if(e.key==='Enter' || e.key==='ArrowDown'){e.preventDefault();(inputs[pos+1]||ruleInput).focus();}
+        if(e.key==='ArrowUp'){e.preventDefault();(inputs[pos-1]||input).focus();}
       });
-      input.addEventListener('input', updateLivePoints);
+      input.addEventListener('input', ()=>{
+        updateLivePoints();
+        const got=parseNumber(input.value), expected=Number(input.dataset.answer);
+        if(input.value.trim()!=='' && Number.isFinite(got) && Math.abs(got-expected)<1e-8){
+          input.classList.add('correct'); input.classList.remove('wrong');
+          const inputs=[...document.querySelectorAll('.answer')]; const pos=inputs.indexOf(input);
+          if(pos>=0 && pos<inputs.length-1) inputs[pos+1].focus(); else ruleInput.focus();
+        }
+      });
       right.appendChild(input);
     }
 
@@ -344,6 +368,7 @@ function renderTask(){
     MathJax.typesetPromise([machine]);
   }
   drawGraph();
+  setTimeout(()=>document.querySelector('.answer')?.focus(),0);
 }
 
 function updateLivePoints(){
@@ -504,7 +529,6 @@ function checkAnswers(){
 checkBtn.addEventListener('click', checkAnswers);
 nextBtn.addEventListener('click', () => {
   if (!solved) {
-    if(attempts===0){feedback.className='feedback bad';feedback.textContent='Tarkista tehtävä ensin.';return;}
     const ys=currentTask.xs.map(x=>currentTask.a*x+currentTask.b);
     document.querySelectorAll('.answer').forEach((input,i)=>{input.value=niceNumber(ys[i+3]);input.className='answer correct'});
     ruleInput.value=ruleLatex(currentTask.a,currentTask.b).replace(/\\frac\{(\d+)\}\{(\d+)\}/g,'$1/$2');
@@ -525,7 +549,8 @@ nextBtn.addEventListener('click', () => {
   }
 });
 ruleInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkAnswers();
+  if (e.key === 'Enter') { e.preventDefault(); checkAnswers(); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); [...document.querySelectorAll('.answer')].at(-1)?.focus(); }
 });
 
 chooseTask();

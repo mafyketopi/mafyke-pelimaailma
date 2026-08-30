@@ -179,9 +179,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
   background:#eef6ff;
   border:1px solid #cfe1ff;
 }
+
+.package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
+@media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
+
+/* Käytettävyyskierros */
+
+@media (min-width:900px){
+  header{padding-top:12px!important;padding-bottom:12px!important}
+  main{padding-top:14px!important;padding-bottom:24px!important}
+}
+
 </style>
 </head>
 <body>
+<a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Suora-analyysi</h1>
   <p>Tutki kuvaajaa ja päättele suoran ominaisuudet.</p>
@@ -261,7 +273,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
         <div class="buttons">
           <button class="primary" id="checkBtn">Tarkista</button>
-          <button class="secondary" id="nextBtn" disabled>Seuraava</button>
+          <button class="secondary" id="nextBtn">Seuraava</button>
         </div>
 
         <div class="feedback" id="feedback"></div>
@@ -489,7 +501,7 @@ function clearInputs(){
   $("solution").style.display="none";
   $("solution").innerHTML="";
   $("checkBtn").disabled=false;
-  $("nextBtn").disabled=true;
+  $("nextBtn").disabled=false;
   checked=false;
   slopeRevealed=false;
   constantRevealed=false;
@@ -614,6 +626,7 @@ function check(){
 }
 
 function next(){
+  if(!document.getElementById('solution').innerHTML){ check(); return; }
   if(!checked) return;
   if(taskIndex<tasks.length-1){
     taskIndex++;
@@ -642,6 +655,7 @@ $("checkBtn").addEventListener("click",check);
 $("nextBtn").addEventListener("click",next);
 $("slope").addEventListener("input",liveVisualCheck);
 $("constant").addEventListener("input",liveVisualCheck);
+["direction","slope","constant","xIntercept","yIntercept"].forEach((id,i)=>{const el=$(id);el?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key==="ArrowDown"){e.preventDefault();const ids=["direction","slope","constant","xIntercept","yIntercept"];($(ids[i+1])||$("checkBtn")).focus()}if(e.key==="ArrowUp"){e.preventDefault();const ids=["direction","slope","constant","xIntercept","yIntercept"];($(ids[i-1])||el).focus()}})});
 
 // Example graph: y = x + 1, with both visual annotations.
 drawBase($("graph"),{m:1,b:1});
