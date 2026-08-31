@@ -1,12 +1,12 @@
 <!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Virta–jännite-kuvaajat</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#eef1f4;color:#17212b;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:22px 20px 32px}h1{margin:0;font-size:clamp(2rem,4vw,2.8rem)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.progress{font-weight:800}.task{background:#fff;border:1px solid #cfd7df;border-radius:16px;padding:16px 18px}.task h2{margin:0 0 7px}.tasklead{line-height:1.45;color:#46535f}.layout{display:grid;grid-template-columns:280px 1fr;gap:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #c7d0d8;padding:7px;text-align:center}th{background:#e9eef2}.graphbox{border:1px solid #c7d0d8;border-radius:12px;padding:8px}canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}.tools,.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer}.mode,.clear,.nav button{background:#e7ecf1}.mode.active,.check{background:#235e98;color:#fff}.nav{justify-content:space-between}.answers{margin-top:12px;border-top:1px solid #ddd;padding-top:10px}.resrow{display:grid;grid-template-columns:1fr 95px auto;gap:7px;align-items:center;margin:8px 0}input{width:95px;padding:9px;border:1px solid #aab5bf;border-radius:8px;font-size:1rem}input.liveok{background:#edf8f1;border-color:#2e8b57}.feedback{display:none;margin-top:10px;padding:11px;border-radius:9px;font-weight:650}.ok{display:block;background:#e8f6ec;color:#1d6b36}.bad{display:block;background:#fff0f0;color:#9d2b2b}.info{font-size:.92rem;color:#64717d}.intro{background:#fff;border:1px solid #cfd7df;border-radius:16px;padding:20px 22px}
-.intro h2{margin:0 0 6px;font-size:1.55rem}.introlead{margin:0 0 18px;color:#52606c}
-.introgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.introcard{min-width:0;border:1px solid #d6dde3;border-radius:14px;padding:12px;background:#fafbfc}
-.introcard h3{margin:2px 0 10px;font-size:1.15rem;text-align:center}
-.introcard img{display:block;width:100%;height:auto;border-radius:9px;background:#fff}
-.introhint{margin:16px 0 0;padding:12px 14px;border-radius:10px;background:#f1f5f8;color:#40505e;line-height:1.45}
-@media(max-width:850px){.layout,.introgrid{grid-template-columns:1fr}}</style></head><body>
+<style>*{box-sizing:border-box}body{margin:0;background:#eef1f4;color:#17212b;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}.wrap{max-width:1180px;margin:auto;padding:22px 20px 32px}h1{margin:0;font-size:clamp(2rem,4vw,2.8rem)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.progress{font-weight:800}.task{background:#fff;border:1px solid #cfd7df;border-radius:16px;padding:16px 18px}.task h2{margin:0 0 7px}.tasklead{line-height:1.45;color:#46535f}.layout{display:grid;grid-template-columns:280px 1fr;gap:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #c7d0d8;padding:7px;text-align:center}th{background:#e9eef2}.graphbox{border:1px solid #c7d0d8;border-radius:12px;padding:8px}canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}.tools,.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{border:0;border-radius:9px;padding:10px 14px;font-weight:750;cursor:pointer}.mode,.clear,.nav button{background:#e7ecf1}.mode.active,.check{background:#235e98;color:#fff}.nav{justify-content:space-between}.answers{margin-top:12px;border-top:1px solid #ddd;padding-top:10px}.resrow{display:grid;grid-template-columns:1fr 95px auto;gap:7px;align-items:center;margin:8px 0}input{width:95px;padding:9px;border:1px solid #aab5bf;border-radius:8px;font-size:1rem}input.liveok{background:#edf8f1;border-color:#2e8b57}.feedback{display:none;margin-top:10px;padding:11px;border-radius:9px;font-weight:650}.ok{display:block;background:#e8f6ec;color:#1d6b36}.bad{display:block;background:#fff0f0;color:#9d2b2b}.info{font-size:.92rem;color:#64717d}.experiment{background:#fff;border:1px solid #cfd7df;border-radius:16px;padding:20px 22px}
+.experiment h2{margin:0 0 8px;font-size:1.55rem}
+.experiment p{color:#52606c;line-height:1.5}
+.experiment img{display:block;width:min(1200px,100%);height:auto;margin:14px auto 18px;border-radius:12px;background:#fff}
+.expactions{display:flex;justify-content:flex-end;margin-top:12px}
+.expactions button{font-size:1rem;padding:10px 16px;border-radius:10px;border:1px solid #94a3b8;background:#0f4c81;color:#fff;cursor:pointer}
+.expactions button:hover{filter:brightness(.96)}
+@media(max-width:850px){.layout{grid-template-columns:1fr}}</style></head><body>
 <div class="wrap"><div class="topbar"><h1>Virta–jännite-kuvaajat</h1><div id="progress" class="progress"></div></div><div id="host"></div><div class="nav"><button id="prev">← Edellinen</button><button id="next">Seuraava →</button></div></div>
 <script>
 const desc="Vastuslangalle saatiin taulukon mukaiset mittaustulokset.";
@@ -17,7 +17,7 @@ const T=[
 {title:"Tehtävä 2",type:"line",desc,data:[[.05,.9],[.10,2.2],[.15,2.8],[.20,4.3],[.25,4.8],[.30,6.2],[.35,6.7],[.40,8.3],[.45,8.8],[.50,10.2]],xm:.55,ym:11,dx:.05,dy:1},
 {title:"Tehtävä 3",type:"line",desc,data:[[.04,1.3],[.08,2.2],[.12,3.8],[.16,4.6],[.20,6.2],[.24,7.0],[.28,8.6],[.32,9.4],[.36,11.0],[.40,11.8]],xm:.44,ym:13,dx:.04,dy:1},
 {title:"Tehtävä 4 – hehkulamppu",type:"curve",desc:"Hehkulampulle saatiin taulukon mukaiset mittaustulokset.",data:[[.05,.3],[.10,.7],[.15,1.2],[.20,1.8],[.25,2.6],[.30,3.5],[.35,4.6],[.40,5.8],[.45,7.1],[.50,8.6]],xm:.55,ym:10,dx:.05,dy:1,checks:[[.10,.7],[.45,7.1]]}];
-let cur=-1,S=T.map(()=>({mode:"points",pts:[],curve:[],drawing:false,R:"",r1:"",r2:"",fit:null,tri:false}));
+let cur=0,stage="experiment",S=T.map(()=>({mode:"points",pts:[],curve:[],drawing:false,R:"",r1:"",r2:"",fit:null,tri:false}));
 const val=s=>Number(String(s).replace(",",".").trim()), sig=x=>Number(x.toPrecision(2));
 function ok2(g,e){if(!Number.isFinite(g))return false;let q=sig(e),ex=Math.floor(Math.log10(Math.abs(q)||1)),step=Math.pow(10,ex-1);return Math.abs(g-q)<=step*.51}
 function G(c){return{L:88,R:c.width-36,T:34,B:c.height-74}} function P(c,t,I,U){let g=G(c);return[g.L+I/t.xm*(g.R-g.L),g.B-U/t.ym*(g.B-g.T)]}
@@ -33,35 +33,40 @@ x.fillStyle="#245f9b";s.pts.forEach(p=>{x.beginPath();x.arc(p.x,p.y,5.5,0,7);x.f
 if(t.type==="line"&&s.fit!==null){let m=s.fit,e=Math.min(t.xm,t.ym/m),a=P(c,t,0,0),b=P(c,t,e,m*e);x.strokeStyle="#b3261e";x.lineWidth=4;x.beginPath();x.moveTo(...a);x.lineTo(...b);x.stroke();if(s.tri){let h=helper(t,m),o=P(c,t,0,0),bx=P(c,t,h.I,0),q=P(c,t,h.I,h.U);x.strokeStyle="#2f6f3e";x.lineWidth=3;x.setLineDash([8,5]);x.beginPath();x.moveTo(...o);x.lineTo(...bx);x.lineTo(...q);x.stroke();x.setLineDash([]);x.fillStyle="#183b24";x.font="bold 16px system-ui";x.textAlign="center";x.fillText("ΔI = "+fmt(h.I)+" A",(o[0]+bx[0])/2,o[1]-10);x.save();x.translate(bx[0]+22,(bx[1]+q[1])/2);x.rotate(-Math.PI/2);x.fillText("ΔU = "+fmt(h.U)+" V",0,0);x.restore()}}
 if(s.curve.length>1){x.strokeStyle="#b3261e";x.lineWidth=5;x.beginPath();x.moveTo(s.curve[0].x,s.curve[0].y);for(let i=1;i<s.curve.length;i++)x.lineTo(s.curve[i].x,s.curve[i].y);x.stroke()}}
 function render(){
- if(cur===-1){
-   progress.textContent="Johdanto";
-   host.innerHTML=`<section class="intro">
-     <h2>Tutustu koejärjestelyihin</h2>
-     <p class="introlead">Seuraavissa tehtävissä muodostetaan virta–jännite-kuvaajia näillä koejärjestelyillä saaduista mittaustuloksista.</p>
-     <div class="introgrid">
-       <div class="introcard">
-         <h3>Vastuslangan resistanssin mittaaminen</h3>
-         <img src="${WIRE_IMG}" alt="Vastuslangan koejärjestely: virtamittari sarjassa ja jännitemittari vastuslangan rinnalla.">
-       </div>
-       <div class="introcard">
-         <h3>Hehkulampun resistanssin tutkiminen</h3>
-         <img src="${LAMP_IMG}" alt="Hehkulampun koejärjestely: virtamittari sarjassa ja jännitemittari lampun rinnalla.">
-       </div>
-     </div>
-     <p class="introhint"><strong>Huomaa:</strong> virtamittari on kytketty sarjaan tutkittavan komponentin kanssa, kun taas jännitemittari on kytketty sen rinnalle. Siirry seuraavaksi mittaustulosten käsittelyyn.</p>
+ let t=T[cur],s=S[cur];
+
+ if(stage==="experiment" && (cur===0 || cur===3)){
+   progress.textContent=`Tehtävä ${cur+1} / ${T.length}`;
+   const wire=cur===0;
+   const img=wire?WIRE_IMG:LAMP_IMG;
+   const title=wire?"Vastuslangan resistanssin mittaaminen":"Hehkulampun resistanssin tutkiminen";
+   const text=wire
+     ?"Tutustu ensin koejärjestelyyn. Virtamittari on kytketty sarjaan vastuslangan kanssa ja jännitemittari vastuslangan rinnalle. Mittaustulokset löydät kunkin tehtävän kohdalta."
+     :"Tutustu ensin koejärjestelyyn. Virtamittari on kytketty sarjaan hehkulampun kanssa ja jännitemittari hehkulampun rinnalle. Mittaustulokset löydät kunkin tehtävän kohdalta.";
+   host.innerHTML=`<section class="experiment">
+     <h2>${title}</h2>
+     <p>${text}</p>
+     <img src="${img}" alt="${title}">
+     <div class="expactions"><button id="toData">Siirry mittaustuloksiin →</button></div>
    </section>`;
-   prev.disabled=true;
-   next.disabled=false;
-   next.textContent="Aloita tehtävät →";
+   document.getElementById("toData").onclick=()=>{stage="task";render()};
+   prev.disabled=cur===0;
+   next.disabled=true;
+   next.textContent="Seuraava →";
    return;
  }
- let t=T[cur],s=S[cur];
+
  progress.textContent=`Tehtävä ${cur+1} / ${T.length}`;
  let rows=t.data.map(([i,u])=>`<tr><td>${i.toFixed(2).replace(".",",")}</td><td>${u.toFixed(1).replace(".",",")}</td></tr>`).join("");
  let a=t.type==="line"
  ?`<div class="answers"><div class="resrow"><b>Resistanssi:</b><input id="ri" value="${s.R}"><span>Ω</span></div><div class="info">Määritä resistanssi sovitesuoran kulmakertoimesta. Vastaus kahden merkitsevän numeron tarkkuudella.</div></div>`
  :`<div class="answers"><b>Laske lampun resistanssi kahdessa kohdassa.</b><div class="resrow"><span>Kun I = 0,10 A:</span><input id="r1" value="${s.r1}"><span>Ω</span></div><div class="resrow"><span>Kun I = 0,45 A:</span><input id="r2" value="${s.r2}"><span>Ω</span></div><div class="info">Käytä R = U/I. Vastaukset kahden merkitsevän numeron tarkkuudella.</div></div>`;
- host.innerHTML=`<section class="task"><h2>${t.title}</h2><p class="tasklead">${t.desc}</p><div class="layout"><div><table><tr><th>I (A)</th><th>U (V)</th></tr>${rows}</table>${a}</div><div class="graphbox"><canvas id="graph" width="820" height="570"></canvas><div class="tools"><button class="mode active" data-m="points">Merkitse pisteitä</button>${t.type==="curve"?'<button class="mode" data-m="curve">Piirrä käyrä</button>':'<button class="mode" id="tri">Näytä apukolmio</button>'}<button class="clear" id="clear">Tyhjennä piirros</button><button class="check" id="check">Tarkista</button></div><div id="fb" class="feedback"></div></div></div></section>`;
+
+ let lead=t.desc;
+ if(cur===1) lead="Samalla koejärjestelyllä tutkittiin toista vastuslankaa. Mittaustulokset ovat taulukossa.";
+ if(cur===2) lead="Samalla koejärjestelyllä tutkittiin kolmatta vastuslankaa. Mittaustulokset ovat taulukossa.";
+
+ host.innerHTML=`<section class="task"><h2>${t.title}</h2><p class="tasklead">${lead}</p><div class="layout"><div><table><tr><th>I (A)</th><th>U (V)</th></tr>${rows}</table>${a}</div><div class="graphbox"><canvas id="graph" width="820" height="570"></canvas><div class="tools"><button class="mode active" data-m="points">Merkitse pisteitä</button>${t.type==="curve"?'<button class="mode" data-m="curve">Piirrä käyrä</button>':'<button class="mode" id="tri">Näytä apukolmio</button>'}<button class="clear" id="clear">Tyhjennä piirros</button><button class="check" id="check">Tarkista</button></div><div id="fb" class="feedback"></div></div></div></section>`;
  setup();
  prev.disabled=false;
  next.disabled=cur===T.length-1;
@@ -72,5 +77,16 @@ c.onpointerdown=e=>{let p=pos(e),g=G(c);if(p.x<g.L||p.x>g.R||p.y<g.T||p.y>g.B)re
 document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{s.mode=b.dataset.m;document.querySelectorAll("[data-m]").forEach(z=>z.classList.toggle("active",z===b))});if(t.type==="line"){tri.onclick=()=>{if(s.fit===null){fb.className="feedback bad";fb.textContent="Merkitse ensin kaikki mittauspisteet.";return}s.tri=!s.tri;tri.textContent=s.tri?"Piilota apukolmio":"Näytä apukolmio";draw(c,t,s)};ri.oninput=()=>{s.R=ri.value;ri.classList.toggle("liveok",s.fit!==null&&ok2(val(s.R),s.fit))}}else{let target=t.checks.map(z=>z[1]/z[0]);let live=()=>{s.r1=r1.value;s.r2=r2.value;r1.classList.toggle("liveok",ok2(val(s.r1),target[0]));r2.classList.toggle("liveok",ok2(val(s.r2),target[1]))};r1.oninput=live;r2.oninput=live;live()}
 clear.onclick=()=>{s.pts=[];s.curve=[];s.fit=null;s.tri=false;draw(c,t,s);fb.className="feedback"};check.onclick=()=>checkTask(c,t,s)}
 function checkTask(c,t,s){let n=hits(c,t,s);if(t.type==="line"){update(c,t,s);let a=n===t.data.length,b=s.fit!==null&&ok2(val(s.R),s.fit);fb.className="feedback "+(a&&b?"ok":"bad");fb.textContent=a&&b?"Oikein. Mittauspisteet ja resistanssi ovat kunnossa.":(!a?`Pisteistä ${n}/${t.data.length} on riittävän lähellä oikeaa kohtaa. `:"")+"Tarkista resistanssi sovitesuoran kulmakertoimesta ja kahden merkitsevän numeron tarkkuus."}else{let ch=0;if(s.curve.length>5)t.data.forEach(([I,U])=>{let q=P(c,t,I,U),d=Math.min(...s.curve.map(p=>Math.hypot(p.x-q[0],p.y-q[1])));if(d<=28)ch++});let tg=t.checks.map(z=>z[1]/z[0]),good=n>=8&&ch>=7&&ok2(val(s.r1),tg[0])&&ok2(val(s.r2),tg[1]);fb.className="feedback "+(good?"ok":"bad");fb.textContent=good?"Oikein. Kuvaaja kaartuu ja resistanssi muuttuu virran kasvaessa.":"Tarkista mittauspisteet, käyrä sekä molemmat resistanssit kahden merkitsevän numeron tarkkuudella."}}
-prev.onclick=()=>{if(cur>=0){cur--;render()}};next.onclick=()=>{if(cur<T.length-1){cur++;render()}};render();
+prev.onclick=()=>{
+  if(stage==="task" && (cur===0 || cur===3)){stage="experiment";render();return;}
+  if(cur>0){cur--;stage=(cur===0 || cur===3)?"experiment":"task";render();}
+};
+next.onclick=()=>{
+  if(stage==="task" && cur<T.length-1){
+    cur++;
+    stage=(cur===0 || cur===3)?"experiment":"task";
+    render();
+  }
+};
+render();
 </script></body></html>
