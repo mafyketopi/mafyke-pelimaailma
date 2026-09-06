@@ -84,7 +84,6 @@
       margin-top: 10px;
     }
 
-
     .game {
       display: block;
       text-decoration: none;
@@ -111,22 +110,37 @@
       line-height: 1.28;
     }
 
-    /* Opettajille */
-    .teacher-callout {
+    /* Koepankki + blogi */
+    .bottom-cards {
       grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
       margin-top: 1px;
+    }
+
+    .feature-callout {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
-      padding: 14px 20px;
-      background: #eef3f8;
-      border: 1px solid #cbd6e3;
+      gap: 18px;
+      padding: 14px 18px;
       border-radius: 14px;
       box-shadow: 0 2px 10px #2230440a;
+      min-width: 0;
     }
 
-    .teacher-label {
+    .teacher-callout {
+      background: #eef3f8;
+      border: 1px solid #cbd6e3;
+    }
+
+    .blog-callout {
+      background: #f8f4eb;
+      border: 1px solid #dfd2b8;
+    }
+
+    .feature-label {
       margin-bottom: 2px;
       color: #66758a;
       font-size: .74rem;
@@ -135,20 +149,20 @@
       text-transform: uppercase;
     }
 
-    .teacher-callout h2 {
+    .feature-callout h2 {
       margin: 0 0 3px;
     }
 
-    .teacher-callout p {
+    .feature-callout p {
       margin: 0;
       color: #526071;
       line-height: 1.35;
     }
 
-    .teacher-button {
+    .feature-button {
       flex: 0 0 auto;
       display: inline-block;
-      padding: 10px 16px;
+      padding: 10px 15px;
       border-radius: 10px;
       background: #172033;
       color: white;
@@ -157,7 +171,7 @@
       white-space: nowrap;
     }
 
-    .teacher-button:hover {
+    .feature-button:hover {
       background: #2c3a50;
     }
 
@@ -182,6 +196,10 @@
     @media (max-width: 900px) {
       .subjects {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .bottom-cards {
+        grid-template-columns: 1fr;
       }
 
       main {
@@ -209,14 +227,14 @@
         padding: 15px;
       }
 
-      .teacher-callout {
+      .feature-callout {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
         padding: 15px;
       }
 
-      .teacher-button {
+      .feature-button {
         text-align: center;
       }
     }
@@ -300,19 +318,38 @@
       </div>
     </section>
 
-    <section class="teacher-callout">
-      <div>
-        <div class="teacher-label">Opettajille</div>
-        <h2>Koepankki</h2>
-        <p>
-          Luo erilaisia matematiikan ja fysiikan kokeita valmiista tehtäväpankista.
-        </p>
-      </div>
+    <!-- Koepankki ja blogi -->
+    <div class="bottom-cards">
 
-      <a class="teacher-button" href="Koepankkidemo%20(12).html">
-        Testaa demoversiota →
-      </a>
-    </section>
+      <section class="feature-callout teacher-callout">
+        <div>
+          <div class="feature-label">Opettajille</div>
+          <h2>Koepankki</h2>
+          <p>
+            Luo erilaisia matematiikan ja fysiikan kokeita valmiista tehtäväpankista.
+          </p>
+        </div>
+
+        <a class="feature-button" href="Koepankkidemo%20(12).html">
+          Testaa demoversiota →
+        </a>
+      </section>
+
+      <section class="feature-callout blog-callout">
+        <div>
+          <div class="feature-label">Ajatuksia opetuksesta</div>
+          <h2>MAFYKETOPIn blogi</h2>
+          <p>
+            Kirjoituksia opetuksesta, oppimateriaaleista ja MAFYKETOPIn rakentamisesta.
+          </p>
+        </div>
+
+        <a class="feature-button" href="blogi/">
+          Lue blogia →
+        </a>
+      </section>
+
+    </div>
 
   </div>
 
