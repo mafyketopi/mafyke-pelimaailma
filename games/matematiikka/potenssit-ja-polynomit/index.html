@@ -1,29 +1,248 @@
 <!doctype html>
-<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Potenssit ja polynomit – Mafyke-pelimaailma</title>
+
 <style>
-:root{--bg:#f5f7fa;--card:#fff;--ink:#172033;--muted:#526071;--line:#dde3ea;--accent:#274c77}
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink)}
-header{background:#fff;border-bottom:1px solid var(--line);padding:28px 6%}main{max-width:1050px;margin:auto;padding:36px 6% 60px}h1{margin:0 0 8px;font-size:clamp(2rem,5vw,3.1rem)}h2{margin-top:32px}.lead{color:var(--muted);font-size:1.08rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}.card{display:block;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:inherit;box-shadow:0 2px 7px rgba(0,0,0,.035)}.card:hover{border-color:#aebdca;transform:translateY(-1px)}.card b{display:block;margin-bottom:5px}.card span{color:var(--muted);font-size:.94rem}.test{border-width:2px}.backlink{display:inline-flex;align-items:center;gap:6px;margin-bottom:18px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);text-decoration:none;font-weight:700}.backlink:hover{background:#eef3f8}
-</style></head><body><header><h1>Potenssit ja polynomit</h1><div class="lead">Harjoittele vaiheittain ja testaa lopuksi osaamisesi.</div></header><main><a class="backlink" href="../../../index.html">← Paluu etusivulle</a>
-<h2>Potenssit</h2><div class="grid">
-<a class="card" href="t1.html"><b>1. Potenssin arvo</b><span>Potenssimerkintä, tulomuoto ja etumerkit.</span></a>
-<a class="card" href="t2.html"><b>2. Neliö, kuutio ja laskujärjestys</b><span>Potenssit osana laskulausekkeita.</span></a>
-<a class="card" href="t3.html"><b>3. Potenssisäännöt I</b><span>Tulo, tulon potenssi ja potenssin potenssi.</span></a>
-<a class="card" href="t4.html"><b>4. Potenssisäännöt II</b><span>Osamäärä ja sääntöjen yhdistäminen.</span></a>
-<a class="card" href="t5.html"><b>5. Nolla ja negatiivinen eksponentti</b><span>Nollas potenssi, käänteisluku ja murtoluvut.</span></a>
-<a class="card" href="t6.html"><b>6. Kymmenpotenssimuoto</b><span>Suuret ja pienet luvut kymmenpotenssimuodossa.</span></a>
-<a class="card" href="t7.html"><b>7. Neliöjuuri</b><span>Neliöjuuren perusteet ja soveltaminen.</span></a>
-<a class="card test" href="potenssit_monivalinta30.html"><b>Potenssit – 30 kysymyksen testi</b><span>Kertaa koko potenssiosuus.</span></a>
-  <a class="card" href="haastepeli/">
-  <h3>Laskuhaaste</h3><p>Potenssit, sieventäminen ja neliöjuuret.</p>
+:root{
+  --bg:#f5f7fa;
+  --card:#fff;
+  --ink:#172033;
+  --muted:#526071;
+  --line:#dde3ea;
+}
+
+*{box-sizing:border-box}
+
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+header{
+  background:#fff;
+  border-bottom:1px solid var(--line);
+  padding:15px 5%;
+}
+
+header > *{
+  max-width:1200px;
+}
+
+h1{
+  margin:0 0 3px;
+  font-size:clamp(1.8rem,4vw,2.7rem);
+  line-height:1.05;
+}
+
+.lead{
+  color:var(--muted);
+  font-size:1rem;
+  line-height:1.3;
+}
+
+main{
+  max-width:1200px;
+  margin:auto;
+  padding:13px 5% 24px;
+}
+
+.backlink{
+  display:inline-flex;
+  align-items:center;
+  margin-bottom:8px;
+  padding:6px 9px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  color:var(--ink);
+  text-decoration:none;
+  font-weight:700;
+  font-size:.9rem;
+}
+
+.backlink:hover{
+  background:#eef3f8;
+}
+
+h2{
+  margin:9px 0 7px;
+  font-size:1.25rem;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:9px;
+}
+
+.card{
+  display:block;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 13px;
+  text-decoration:none;
+  color:inherit;
+  box-shadow:0 2px 6px rgba(0,0,0,.03);
+  min-height:78px;
+  transition:.15s ease;
+}
+
+.card:hover{
+  border-color:#aebdca;
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
+
+.card b{
+  display:block;
+  margin-bottom:3px;
+  line-height:1.2;
+  font-size:.97rem;
+}
+
+.card span{
+  display:block;
+  color:var(--muted);
+  font-size:.86rem;
+  line-height:1.28;
+}
+
+.test{
+  border-width:2px;
+}
+
+/* tabletti */
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+/* puhelin */
+@media(max-width:520px){
+  header{
+    padding:13px 5%;
+  }
+
+  main{
+    padding:10px 5% 20px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+
+  .card{
+    min-height:0;
+    padding:11px 13px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Potenssit ja polynomit</h1>
+  <div class="lead">
+    Harjoittele vaiheittain ja testaa lopuksi osaamisesi.
+  </div>
+</header>
+
+<main>
+
+<a class="backlink" href="../../../index.html">← Paluu etusivulle</a>
+
+<h2>Potenssit</h2>
+
+<div class="grid">
+
+<a class="card" href="t1.html">
+  <b>1. Potenssin arvo</b>
+  <span>Potenssimerkintä, tulomuoto ja etumerkit.</span>
 </a>
+
+<a class="card" href="t2.html">
+  <b>2. Neliö, kuutio ja laskujärjestys</b>
+  <span>Potenssit osana laskulausekkeita.</span>
+</a>
+
+<a class="card" href="t3.html">
+  <b>3. Potenssisäännöt I</b>
+  <span>Tulo, tulon potenssi ja potenssin potenssi.</span>
+</a>
+
+<a class="card" href="t4.html">
+  <b>4. Potenssisäännöt II</b>
+  <span>Osamäärä ja sääntöjen yhdistäminen.</span>
+</a>
+
+<a class="card" href="t5.html">
+  <b>5. Nolla ja negatiivinen eksponentti</b>
+  <span>Nollas potenssi, käänteisluku ja murtoluvut.</span>
+</a>
+
+<a class="card" href="t6.html">
+  <b>6. Kymmenpotenssimuoto</b>
+  <span>Suuret ja pienet luvut kymmenpotenssimuodossa.</span>
+</a>
+
+<a class="card" href="t7.html">
+  <b>7. Neliöjuuri</b>
+  <span>Neliöjuuren perusteet ja soveltaminen.</span>
+</a>
+
+<a class="card test" href="potenssit_monivalinta30.html">
+  <b>Potenssit – 30 kysymyksen testi</b>
+  <span>Kertaa koko potenssiosuus.</span>
+</a>
+
 </div>
-<h2>Polynomit</h2><div class="grid">
-<a class="card" href="t8.html"><b>8. Monomien laskutoimitukset</b><span>Monomien yhteen-, vähennys-, kerto- ja jakolasku.</span></a>
-<a class="card" href="t9.html"><b>9. Polynomeilla laskeminen</b><span>Polynomien yhteen- ja vähennyslasku sekä tulo.</span></a>
-<a class="card" href="t10.html"><b>10. Laskutoimituksen muodostaminen</b><span>Muodosta lauseke ja sievennä.</span></a>
-<a class="card" href="t11.html"><b>11. Polynomin arvon laskeminen</b><span>Sijoita muuttujan arvo polynomiin.</span></a>
-<a class="card" href="t12.html"><b>12. Polynomit geometriassa</b><span>Piiri-, pinta-ala- ja tilavuuslausekkeita.</span></a>
-<a class="card test" href="polynomit_monivalinta30.html"><b>Polynomit – 30 kysymyksen testi</b><span>Kertaa koko polynomiosuus.</span></a>
-</div></main></body></html>
+
+<h2>Polynomit</h2>
+
+<div class="grid">
+
+<a class="card" href="t8.html">
+  <b>8. Monomien laskutoimitukset</b>
+  <span>Monomien yhteen-, vähennys-, kerto- ja jakolasku.</span>
+</a>
+
+<a class="card" href="t9.html">
+  <b>9. Polynomeilla laskeminen</b>
+  <span>Polynomien yhteen- ja vähennyslasku sekä tulo.</span>
+</a>
+
+<a class="card" href="t10.html">
+  <b>10. Laskutoimituksen muodostaminen</b>
+  <span>Muodosta lauseke ja sievennä.</span>
+</a>
+
+<a class="card" href="t11.html">
+  <b>11. Polynomin arvon laskeminen</b>
+  <span>Sijoita muuttujan arvo polynomiin.</span>
+</a>
+
+<a class="card" href="t12.html">
+  <b>12. Polynomit geometriassa</b>
+  <span>Piiri-, pinta-ala- ja tilavuuslausekkeita.</span>
+</a>
+
+<a class="card test" href="polynomit_monivalinta30.html">
+  <b>Polynomit – 30 kysymyksen testi</b>
+  <span>Kertaa koko polynomiosuus.</span>
+</a>
+
+</div>
+
+</main>
+</body>
+</html>
