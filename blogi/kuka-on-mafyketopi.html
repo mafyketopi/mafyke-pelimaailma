@@ -2,19 +2,55 @@
 <html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Kuka on MAFYKETOPI? – MAFYKETOPI</title>
 <style>
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f5f7fa;color:#172033}header{background:#fff;border-bottom:1px solid #dde3ea;padding:24px 6%}header>div,article{max-width:820px;margin:auto}.brand{font-weight:800;letter-spacing:.04em}.crumb{margin-top:10px;color:#667085;font-size:.95rem}.crumb a{color:#315d96;text-decoration:none}article{background:#fff;margin-top:36px;margin-bottom:50px;padding:clamp(24px,5vw,56px);border:1px solid #e0e5eb;border-radius:18px;box-shadow:0 6px 24px rgba(20,35,60,.06)}h1{font-size:clamp(2.2rem,6vw,3.7rem);line-height:1.05;margin:0 0 14px}.intro{font-size:1.16rem;line-height:1.7;color:#3d4a5c}.hero{width:100%;max-height:560px;object-fit:contain;object-position:center 28%;border-radius:14px;margin:24px 0 18px}h2{font-size:1.55rem;margin:38px 0 12px}p{font-size:1.05rem;line-height:1.78;margin:0 0 18px}.sidephoto{width:min(100%,520px);display:block;margin:30px auto;border-radius:14px}.ending{font-size:1.15rem;margin-top:28px}.ending strong{font-weight:850}.back{display:inline-block;margin-top:30px;color:#315d96;text-decoration:none;font-weight:700}@media(max-width:600px){article{margin-top:0;border-radius:0;border-left:0;border-right:0}.hero{max-height:440px}}
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f5f7fa;color:#172033}header{background:#fff;border-bottom:1px solid #dde3ea;padding:24px 6%}header>div,article{max-width:820px;margin:auto}.brand{font-weight:800;letter-spacing:.04em}.crumb{margin-top:10px;color:#667085;font-size:.95rem}.crumb a{color:#315d96;text-decoration:none}article{background:#fff;margin-top:36px;margin-bottom:50px;padding:clamp(24px,5vw,56px);border:1px solid #e0e5eb;border-radius:18px;box-shadow:0 6px 24px rgba(20,35,60,.06)}h1{font-size:clamp(2.2rem,6vw,3.7rem);line-height:1.05;margin:0 0 14px}.intro{font-size:1.16rem;line-height:1.7;color:#3d4a5c}.hero{width:280px;height:auto;float:left;margin:6px 28px 18px 0;border-radius:12px;display:block}h2{font-size:1.55rem;margin:38px 0 12px}p{font-size:1.05rem;line-height:1.78;margin:0 0 18px}.sidephoto{width:100%;height:auto;display:block;border-radius:12px}.ending{font-size:1.15rem;margin-top:28px}.ending strong{font-weight:850}.back{display:inline-block;margin-top:30px;color:#315d96;text-decoration:none;font-weight:700}@media(max-width:600px){article{margin-top:0;border-radius:0;border-left:0;border-right:0}.hero{width:280px;height:auto;float:left;margin:6px 28px 18px 0;border-radius:12px;display:block}}
 
-    /* Blogikuvat: näytä koko kuva ilman kasvojen leikkautumista */
-    .hero img,
-    .article-image img,
-    article img,
-    .post img {
-      width: 100%;
-      height: auto !important;
-      max-height: none !important;
-      object-fit: contain !important;
-      object-position: center !important;
-      display: block;
+    /* Blogikuvat tekstin lomassa */
+    .photo-figure{
+      width:min(100%,430px);
+      margin:26px auto 28px;
+    }
+    .photo-figure img{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius:12px;
+    }
+    .photo-figure figcaption{
+      margin-top:8px;
+      color:#667085;
+      font-size:.88rem;
+      line-height:1.4;
+      font-style:italic;
+      text-align:center;
+    }
+
+    @media (min-width:760px){
+      .photo-figure{
+        float:right;
+        width:360px;
+        margin:8px 0 22px 30px;
+      }
+    }
+
+    
+
+
+  
+    /* Pääkuva tekstin lomassa vasemmalla, mobiilissa omalla rivillään */
+    @media (max-width:759px){
+      .hero{
+        float:none;
+        width:min(100%,360px);
+        height:auto;
+        margin:14px auto 20px;
+      }
+    }
+
+  
+    article::after{
+      content:"";
+      display:block;
+      clear:both;
     }
 
   </style></head><body>
@@ -32,7 +68,10 @@
 <p>Jämijärveltä siirryin täysin erilaiseen ympäristöön, kun minut valittiin syksystä 2015 alkaen Mikkelin ammattikorkeakoulun talousmatematiikan ja tilastotieteen lehtoriksi. Minulla oli tuota tehtävää ajatellen muutama valttikortti taskussani: olin suorittanut yliopistossa tilastotieteen laajat sivuaineopinnot ja pystyin opettamaan oppiaineitani myös englanniksi. Kolmen Mikkelin-vuoden aikana tein valtavat määrät omia materiaaleja ja harjoituksia, kun korkeakoulussa valmista oppimateriaalia on tarjolla vähemmän kuin perusasteella tai lukiossa. Toisaalta luokkahuoneopetusta oli huomattavasti vähemmän kuin Jämijärvellä, joten valmisteluille jäi hyvin aikaa.</p>
 <p>Opetin myös ensimmäistä kertaa verkkokursseja, joita varten opettelin tekemään matematiikan opetusvideoita piirtopöydän ja tallennusohjelman avulla. Ensimmäisen ammattikorkeakoulussa vietetyn vuoden aikana pääsin opettamaan myös iltakursseja, jotka sittemmin väistyivät verkko-opetuksen tieltä. Alkuun 26-vuotiaana lehtorina tunsin itseni melko jännittyneeksi, kun opiskelijat olivat enimmäkseen itseäni huomattavasti vanhempia, mutta nopeasti siihenkin tottui.</p>
 <p>Keväällä 2018 tuli sellainen olo, että kolme vuotta ammattikorkeakoulussa saisi riittää. Olin kehittynyt paljon materiaalien laatijana ja verkko-opettajana, mutta pidin itseäni ennen kaikkea luokkahuoneopettajana. Tämä oli vähenemään päin, kun siirryttiin enemmän ja enemmän verkko-opetuksen suuntaan. Niinpä jäin seuraavan lukuvuoden ajaksi virkavapaalle ja suoritin valmiiksi jo aiemmin töiden ohella aloittamani kemian ja tietotekniikan opettajan opinnot.</p>
-<img class="sidephoto" src="kuvat/topi-hurtig-vapaa-ajalla.jpg" alt="Topi Hurtig">
+<figure class="photo-figure">
+  <img class="sidephoto" src="kuvat/topi-hurtig-vapaa-ajalla.jpg" alt="Topi Hurtig VPS:n paidassa">
+  <figcaption>Vaikka työura on vienyt ympäri Suomea, VPS on pysynyt aina mielessä.</figcaption>
+</figure>
 <h2>Takaisin luokkahuoneeseen</h2>
 <p>Seuraava työpaikka löytyi Kotkasta, jossa opetin koronan katkomat lukuvuodet 2019–20 ja 2020–21 aikuislukiossa perusopetuksen matemaattisia aineita maahanmuuttajille sekä lukion fysiikkaa iltaopiskelijoille. Koronan aikana aiemmin hankkimani etäopettamisen taidot nousivat suureen arvoon, kun etäopiskelujaksot venähtivät pitkiksi. Aikuislukiovuosista jäi mukavat muistot, ja työssä sai keskittyä ajan kanssa perusasioiden tekemiseen rauhalliseen tahtiin. Rehtorin tukemana pääsin pariin otteeseen kokeilemaan ylöspäin eriyttävän tukiopetuksen järjestämistä maahanmuuttajaopiskelijoille ennen kuin koronasulku muutti kuvioita.</p>
 <h2>Turun normaalikouluun kolmannella yrittämällä</h2>
