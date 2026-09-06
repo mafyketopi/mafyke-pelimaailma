@@ -4,8 +4,22 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Blogi – MAFYKETOPI</title>
 <style>
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f5f7fa;color:#172033}header{background:#fff;border-bottom:1px solid #dde3ea;padding:28px 6%}header>div,main{max-width:900px;margin:auto}.brand{font-weight:800;letter-spacing:.04em}.crumb{margin-top:10px;color:#667085;font-size:.95rem}.crumb a{color:#315d96;text-decoration:none}main{padding:42px 6%}h1{font-size:clamp(2.2rem,6vw,3.6rem);margin:0 0 8px}.lead{color:#526071;font-size:1.12rem;margin-bottom:30px}.post{display:grid;grid-template-columns:180px 1fr;gap:24px;background:#fff;border:1px solid #dde3ea;border-radius:16px;padding:20px;text-decoration:none;color:inherit;box-shadow:0 5px 18px rgba(20,35,60,.06)}.post img{width:180px;height:180px;object-fit:cover;border-radius:12px}.post h2{margin:4px 0 10px;font-size:1.55rem}.post p{margin:0;color:#526071;line-height:1.55}.read{display:inline-block;margin-top:15px;color:#315d96;font-weight:700}@media(max-width:600px){.post{grid-template-columns:1fr}.post img{width:100%;height:240px}}
-</style></head><body>
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f5f7fa;color:#172033}header{background:#fff;border-bottom:1px solid #dde3ea;padding:28px 6%}header>div,main{max-width:900px;margin:auto}.brand{font-weight:800;letter-spacing:.04em}.crumb{margin-top:10px;color:#667085;font-size:.95rem}.crumb a{color:#315d96;text-decoration:none}main{padding:42px 6%}h1{font-size:clamp(2.2rem,6vw,3.6rem);margin:0 0 8px}.lead{color:#526071;font-size:1.12rem;margin-bottom:30px}.post{display:grid;grid-template-columns:180px 1fr;gap:24px;background:#fff;border:1px solid #dde3ea;border-radius:16px;padding:20px;text-decoration:none;color:inherit;box-shadow:0 5px 18px rgba(20,35,60,.06)}.post img{width:180px;height:180px;object-fit:contain;border-radius:12px}.post h2{margin:4px 0 10px;font-size:1.55rem}.post p{margin:0;color:#526071;line-height:1.55}.read{display:inline-block;margin-top:15px;color:#315d96;font-weight:700}@media(max-width:600px){.post{grid-template-columns:1fr}.post img{width:100%;height:240px}}
+
+    /* Blogikuvat: näytä koko kuva ilman kasvojen leikkautumista */
+    .hero img,
+    .article-image img,
+    article img,
+    .post img {
+      width: 100%;
+      height: auto !important;
+      max-height: none !important;
+      object-fit: contain !important;
+      object-position: center !important;
+      display: block;
+    }
+
+  </style></head><body>
 <header><div><div class="brand">MAFYKETOPI</div><div class="crumb"><a href="../index.html">Etusivu</a> › Blogi</div></div></header>
 <main><h1>Blogi</h1><p class="lead">Kirjoituksia matematiikan, fysiikan ja kemian opettamisesta, oppimateriaaleista ja MAFYKETOPI-sivuston rakentamisesta.</p>
 <a class="post" href="kuka-on-mafyketopi.html"><img src="kuvat/topi-hurtig.jpg" alt="Topi Hurtig"><div><h2>Kuka on MAFYKETOPI?</h2><p>MAFYKETOPI-sivuston perustaja Topi Hurtig kertoo, miten hänestä tuli matematiikan opettaja ja millaisiin työtehtäviin yli vuosikymmenen mittainen opetusura on vienyt.</p><span class="read">Lue kirjoitus →</span></div></a>
