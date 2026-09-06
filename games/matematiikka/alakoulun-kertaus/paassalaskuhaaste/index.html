@@ -301,7 +301,7 @@ function musicNote(freq,dur=.16){
   o.type='square';o.frequency.value=freq;
   f.type='lowpass';f.frequency.value=1100;
   g.gain.setValueAtTime(.0001,now);
-  g.gain.exponentialRampToValueAtTime(.030,now+.01);
+  g.gain.exponentialRampToValueAtTime(.050,now+.01);
   g.gain.exponentialRampToValueAtTime(.0001,now+dur);
   o.connect(f).connect(g).connect(c.destination);o.start();o.stop(now+dur+.02);
  }catch(e){}
