@@ -10,7 +10,16 @@
     <loc>https://mafyketopi.fi/pelit/</loc>
   </url>
   <url>
-    <loc>https://mafyketopi.fi/games/</loc>
+    <loc>https://mafyketopi.fi/Koepankkidemo%20(12).html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/blogi/</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/blogi/kahoot-kokeiluista-mafyketopi-sivuston-perustajaksi.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/blogi/kuka-on-mafyketopi.html</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/games/matematiikka/</loc>
@@ -61,40 +70,7 @@
     <loc>https://mafyketopi.fi/games/matematiikka/alakoulun-kertaus/kertolaskujuna.html</loc>
   </url>
   <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktiokone.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktion_arvo_ja_muuttujan_arvo.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktion_kuvaajan_tutkiminen_v2.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktiopeli_suoran_piirto_demo_v3.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/paraabelipeli.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/suora-analyysi.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/suoran-piirtaminen.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/suoran_yhtalon_maaritys.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/verrannollisuus_koordinaatisto.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/yhtalopari_graafinen_peli.html</loc>
-  </url>
-  <url>
-    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/yhtaloparin_muodostaminen.html</loc>
+    <loc>https://mafyketopi.fi/games/matematiikka/alakoulun-kertaus/paassalaskuhaaste/</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/games/matematiikka/luvut-ja-laskutoimitukset/</loc>
@@ -136,7 +112,46 @@
     <loc>https://mafyketopi.fi/games/matematiikka/luvut-ja-laskutoimitukset/t12_jaollisuusaiheita.html</loc>
   </url>
   <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktiokone.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktion_arvo_ja_muuttujan_arvo.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktion_kuvaajan_tutkiminen_v2.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/funktiopeli_suoran_piirto_demo_v3.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/paraabelipeli.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/suora-analyysi.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/suoran-piirtaminen.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/suoran_yhtalon_maaritys.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/verrannollisuus_koordinaatisto.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/yhtalopari_graafinen_peli.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/funktiot/yhtaloparin_muodostaminen.html</loc>
+  </url>
+  <url>
     <loc>https://mafyketopi.fi/games/matematiikka/ohjelmointi/</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/ohjelmointi/turtle/</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/games/matematiikka/potenssit-ja-polynomit/</loc>
@@ -184,19 +199,25 @@
     <loc>https://mafyketopi.fi/games/matematiikka/potenssit-ja-polynomit/t12.html</loc>
   </url>
   <url>
+    <loc>https://mafyketopi.fi/games/matematiikka/potenssit-ja-polynomit/haastepeli/</loc>
+  </url>
+  <url>
     <loc>https://mafyketopi.fi/games/fysiikka/</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/</loc>
   </url>
   <url>
-    <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/ohmin-laki-mittarit.html</loc>
+    <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/sahkoopin-perusteet.html</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/sahkoiset-voimanuolet.html</loc>
   </url>
   <url>
-    <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/sahkoopin-perusteet.html</loc>
+    <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/virtapiirit_ja_mittarit_24_basic.html</loc>
+  </url>
+  <url>
+    <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/ohmin-laki-mittarit.html</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/games/fysiikka/sahkooppi/virta-jannite-kuvaaja.html</loc>
@@ -205,18 +226,21 @@
     <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/</loc>
   </url>
   <url>
+    <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/orgaanisen_kemian_perusteet.html</loc>
+  </url>
+  <url>
     <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/nimeamispeli.html</loc>
   </url>
   <url>
-    <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/orgaanisen_kemian_perusteet.html</loc>
+    <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/rakennekaavapeli.html</loc>
   </url>
   <url>
     <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/palamisreaktiopeli.html</loc>
   </url>
   <url>
-    <loc>https://mafyketopi.fi/kemia/orgaaninen-kemia/rakennekaavapeli.html</loc>
+    <loc>https://mafyketopi.fi/pelit/sahkomestarin_haaste_pohja.html</loc>
   </url>
-    <url>
+  <url>
     <loc>https://pythagoras.mafyketopi.fi/</loc>
   </url>
 </urlset>
