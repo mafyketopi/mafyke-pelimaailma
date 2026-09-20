@@ -2,108 +2,204 @@
 <html lang="fi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <title>Luppakorvan kymppiloikka</title>
-  <meta name="description" content="Harjoittele ykkösten lisäämistä ja vähentämistä lukualueella 0–100.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect rx='16' width='64' height='64' fill='%23e83e8c'/%3E%3Cpath d='M17 19c7-9 23-9 30 0v24c-8 10-22 10-30 0z' fill='%23fff'/%3E%3Ccircle cx='25' cy='31' r='3' fill='%23274358'/%3E%3Ccircle cx='39' cy='31' r='3' fill='%23274358'/%3E%3Cpath d='M27 40q5 5 10 0' fill='none' stroke='%23274358' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Alakoulun kertaus</title>
+
   <style>
-    :root{--ink:#17344b;--pink:#e93f8d;--pink2:#ff78b3;--pale:#fff2f8;--green:#28a96b;--red:#e24c5b;--card:rgba(255,255,255,.91);--shadow:0 14px 36px rgba(35,61,84,.16)}
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;min-height:100%;font-family:ui-rounded,"Arial Rounded MT Bold",Nunito,system-ui,sans-serif;color:var(--ink);overflow-x:hidden}
-    body{min-height:100svh;background:#fdf7fb url('assets/unicorn-bg.png') center/cover fixed no-repeat;touch-action:manipulation}
-    button{font:inherit;color:inherit}
-    button:focus-visible{outline:4px solid #218bc7;outline-offset:3px}
-    .app{min-height:100svh;padding:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:center}
-    .shell{width:min(1180px,100%);height:min(790px,calc(100svh - 28px));min-height:560px;position:relative;background:rgba(255,255,255,.66);border:2px solid rgba(255,255,255,.88);border-radius:32px;box-shadow:var(--shadow);backdrop-filter:blur(11px);overflow:hidden}
-    .topbar{height:76px;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid rgba(233,63,141,.13)}
-    .brand{font-size:clamp(1.35rem,2.2vw,2rem);font-weight:900;letter-spacing:-.03em;display:flex;gap:10px;align-items:center}.brand span{color:var(--pink)}
-    .audio-controls{display:flex;gap:8px}.iconbtn{width:50px;height:50px;border:0;border-radius:16px;background:#fff;box-shadow:0 5px 14px #c88da933;font-size:1.35rem;font-weight:900;cursor:pointer}
-    .screen{height:calc(100% - 76px);padding:24px;display:none}.screen.active{display:flex}
-    #menu{flex-direction:column;justify-content:center;gap:18px}.menu-head{text-align:center}.menu-head h1{font-size:clamp(2rem,5vw,4rem);line-height:1;margin:0 0 10px}.menu-head p{margin:0;font-size:clamp(1rem,2vw,1.35rem);font-weight:750}
-    .modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:min(900px,100%);margin:0 auto;position:relative;z-index:2}
-    .mode{min-height:140px;border:0;border-radius:25px;padding:18px 22px;text-align:left;background:linear-gradient(135deg,#fff,#fff0f7);box-shadow:0 9px 0 #e9bfd2,0 15px 26px #8a587522;cursor:pointer;display:grid;grid-template-columns:64px 1fr;align-items:center;gap:16px;transition:.16s transform}.mode:active{transform:translateY(6px);box-shadow:0 3px 0 #e9bfd2}.num{width:58px;height:58px;border-radius:18px;background:var(--pink);color:#fff;display:grid;place-items:center;font-size:1.8rem;font-weight:950}.mode b{display:block;font-size:clamp(1.2rem,2vw,1.55rem);margin-bottom:5px}.mode small{font-size:.96rem;font-weight:700;color:#537083}
-    .menu-dog{position:absolute;width:clamp(150px,18vw,230px);height:clamp(155px,19vw,240px);right:-15px;bottom:-20px;background:url('assets/lapphund-bow-poses.png') left center/300% 100% no-repeat;filter:drop-shadow(0 10px 9px #4c35452c);pointer-events:none;z-index:1}
-    #game{padding:14px 18px 18px;flex-direction:column}.game-head{display:flex;align-items:center;gap:12px;height:54px}.back{border:0;background:#fff;border-radius:15px;padding:10px 16px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px #76485d26}.title{font-weight:900;font-size:1.2rem;white-space:nowrap}.progress{height:16px;flex:1;background:#fff;border-radius:999px;overflow:hidden;border:2px solid #efd2df}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink2),var(--pink));border-radius:999px;transition:.35s}.counter{font-weight:900;min-width:62px;text-align:right}
-    .playgrid{min-height:0;flex:1;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.65fr);gap:18px;padding-top:12px}.stage,.calc{background:var(--card);border-radius:26px;box-shadow:0 10px 26px #704c641e}.stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 190px 16px 26px;overflow:hidden}.instruction{font-size:clamp(1rem,2vw,1.35rem);font-weight:800;color:#587184;text-align:center;min-height:1.5em}.equation{font-size:clamp(3.2rem,8vw,6.4rem);font-weight:950;letter-spacing:-.055em;line-height:1.05;margin:12px 0;text-align:center}.equation .op{color:var(--pink)}
-    .decomp{display:none;align-items:center;justify-content:center;gap:10px;font-size:clamp(1.8rem,4.2vw,3.5rem);font-weight:950;flex-wrap:wrap}.decomp.show{display:flex}.slot{display:inline-grid;place-items:center;min-width:1.25em;height:1.25em;padding:0 .1em;border:4px dashed #e798bb;border-radius:14px;background:#fff;color:var(--pink)}.slot.active{border-style:solid;box-shadow:0 0 0 5px #ffd6e8}.slot.ok{background:#d9f6e7;border-color:var(--green);color:#167849}.answer-boxes{display:flex;align-items:flex-end;gap:12px;margin-top:14px}.place{text-align:center}.place small{font-weight:900;color:#607a8b}.digit{width:clamp(70px,9vw,100px);height:clamp(70px,9vw,100px);display:grid;place-items:center;border:4px solid #eab0cb;border-radius:20px;background:#fff;font-size:clamp(2.4rem,5vw,4rem);font-weight:950}.place.active .digit{border-color:var(--pink);box-shadow:0 0 0 6px #ffd9e9}.digit.ok{background:#d8f7e6;border-color:var(--green);color:#167849}.dog{position:absolute;right:8px;bottom:-6px;width:clamp(170px,20vw,255px);height:clamp(180px,22vw,270px);background:url('assets/lapphund-bow-poses.png') left center/300% 100% no-repeat;filter:drop-shadow(0 9px 8px #2736492c);transform-origin:center bottom}.dog.happy{background-position:center}.dog.sad{background-position:right}.dog.bounce{animation:dogBounce .7s ease}.bubble{position:absolute;right:22px;top:18px;background:white;border:3px solid #ef9dc2;border-radius:20px;padding:10px 16px;font-weight:900;opacity:0;transform:translateY(8px);transition:.2s}.bubble.show{opacity:1;transform:none}
-    .calc{padding:16px;display:flex;flex-direction:column;justify-content:center}.calc h2{text-align:center;margin:0 0 4px;font-size:1.15rem}.calc p{text-align:center;margin:0 0 12px;color:#617a8c;font-weight:800}.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.key{min-height:62px;border:0;border-radius:18px;background:#fff;box-shadow:0 6px 0 #e3bfd0;font-size:1.8rem;font-weight:950;cursor:pointer}.key:active{transform:translateY(4px);box-shadow:0 2px 0 #e3bfd0}.key.zero{grid-column:2}.key.wrong{animation:shake .25s;background:#ffdce1;color:#ad2638}.key.correct{background:#cdf2df;color:#167849;box-shadow:0 6px 0 #86d4ad}
-    #finish{position:absolute;inset:76px 0 0;z-index:10;background:linear-gradient(#fff7fbdd,#fff0f8ef);align-items:center;justify-content:center;text-align:center;flex-direction:column;overflow:hidden}.finish-copy{position:relative;z-index:2;margin-bottom:220px}.finish-copy h2{font-size:clamp(2.6rem,7vw,5.6rem);margin:0;color:var(--pink)}.finish-copy p{font-size:clamp(1.15rem,2.5vw,1.7rem);font-weight:900;margin:10px}.again{border:0;border-radius:18px;padding:15px 25px;background:var(--pink);color:#fff;font-weight:950;font-size:1.2rem;cursor:pointer;box-shadow:0 7px 0 #a52560}.dance-dog{position:absolute;bottom:-15px;width:clamp(270px,38vw,470px);height:clamp(280px,40vw,490px);background:url('assets/lapphund-bow-poses.png') center/300% 100% no-repeat;animation:dance 1.05s infinite ease-in-out;filter:drop-shadow(0 14px 12px #71364d38)}.note{position:absolute;font-size:2.5rem;color:var(--pink);font-weight:950;animation:notes 2s infinite ease-out}.n1{left:22%;bottom:22%;animation-delay:.2s}.n2{right:20%;bottom:28%;animation-delay:.8s}.n3{left:34%;bottom:42%;animation-delay:1.3s}
-    @keyframes dogBounce{50%{transform:translateY(-18px) rotate(3deg)}}@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}@keyframes dance{0%,100%{transform:translateY(0) rotate(-6deg) scale(1)}25%{transform:translateY(-24px) rotate(7deg) scale(1.03)}50%{transform:translateY(0) rotate(-2deg) scale(.97)}75%{transform:translateY(-18px) rotate(8deg) scale(1.04)}}@keyframes notes{0%{opacity:0;transform:translateY(15px) rotate(-10deg)}30%{opacity:1}100%{opacity:0;transform:translateY(-110px) rotate(20deg)}}
-    @media(max-width:760px){.shell{height:calc(100svh - 16px);min-height:620px;border-radius:24px}.app{padding:8px}.topbar{height:64px;padding:8px 10px}.topbar .brand{font-size:clamp(.9rem,4.4vw,1.15rem);gap:5px}.audio-controls{gap:5px}.iconbtn{width:42px;height:42px;border-radius:13px;font-size:1.12rem}.screen{height:calc(100% - 64px)}.screen#menu{padding:12px}.menu-head h1{font-size:2.25rem}.modes{grid-template-columns:1fr;gap:10px}.mode{min-height:91px;padding:10px 14px;grid-template-columns:50px 1fr}.num{width:48px;height:48px}.mode b{font-size:1.12rem}.menu-dog{opacity:.32}.playgrid{grid-template-columns:1fr;grid-template-rows:minmax(300px,1fr) auto;gap:10px}.stage{padding:12px 125px 12px 12px}.dog{width:145px;height:155px}.calc{padding:10px}.calc h2,.calc p{display:none}.keys{grid-template-columns:repeat(5,1fr);gap:7px}.key,.key.zero{grid-column:auto;min-height:55px}.equation{font-size:3.5rem}.decomp{font-size:2rem}.bubble{right:8px;top:8px;font-size:.85rem}.finish-copy{margin-bottom:190px}}
-    @media(max-height:680px) and (orientation:landscape){.shell{height:calc(100svh - 12px);min-height:0}.app{padding:6px}.topbar{height:54px}.screen{height:calc(100% - 54px)}#game{padding:6px 12px 10px}.game-head{height:40px}.playgrid{grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr);grid-template-rows:1fr}.stage{padding-right:155px}.dog{width:180px;height:185px}.keys{grid-template-columns:repeat(5,1fr)}.key,.key.zero{grid-column:auto;min-height:55px}.calc h2,.calc p{display:none}.equation{font-size:4rem}.finish-copy{margin-bottom:150px}}
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+      background:#f4f7fb;
+      color:#172033;
+    }
+
+    header{
+      background:white;
+      border-bottom:1px solid #dfe5ec;
+      padding:20px 5%;
+    }
+
+    header h1{
+      margin:0;
+      font-size:clamp(1.7rem,4vw,2.7rem);
+    }
+
+    header p{
+      margin:.4rem 0 0;
+      color:#5b6677;
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin:auto;
+      padding:22px 5% 40px;
+    }
+
+    .card{
+      background:white;
+      border:1px solid #dce3ec;
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 4px 18px rgba(30,45,70,.05);
+      height:100%;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .cardlink{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    .cardlink .card{
+      transition:.15s ease;
+    }
+
+    .cardlink .card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(30,45,70,.10);
+    }
+
+    h2{
+      margin:0 0 8px;
+      font-size:1.12rem;
+    }
+
+    .card p{
+      margin:0;
+      color:#667085;
+      line-height:1.45;
+    }
+
+    @media(max-width:950px){
+      .cards{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
+    @media(max-width:560px){
+      .cards{
+        grid-template-columns:1fr;
+      }
+
+      .wrap{
+        padding:16px 5% 28px;
+      }
+    }
   </style>
 </head>
+
 <body>
-<main class="app"><section class="shell">
-  <header class="topbar"><div class="brand">Luppakorvan <span>kymppiloikka</span></div><div class="audio-controls"><button class="iconbtn" id="music-toggle" aria-label="Musiikki päällä">♫</button><button class="iconbtn" id="sound" aria-label="Puhe ja tehosteet päällä">🔊</button></div></header>
-  <section class="screen active" id="menu">
-    <div class="menu-head"><h1>Valitse harjoitus</h1><p>Laske rauhassa. Luppakorva auttaa matkalla.</p></div>
-    <div class="modes">
-      <button class="mode" data-mode="add"><span class="num">1</span><span><b>Lisää ykkösiä</b><small>Ei kymmenylitystä</small></span></button>
-      <button class="mode" data-mode="sub"><span class="num">2</span><span><b>Vähennä ykkösiä</b><small>Ei kymmenalitusta</small></span></button>
-      <button class="mode" data-mode="carry"><span class="num">3</span><span><b>Loikkaa seuraavaan kymppiin</b><small>Yhteenlasku kymmenylityksellä</small></span></button>
-      <button class="mode" data-mode="borrow"><span class="num">4</span><span><b>Loikkaa edelliseen kymppiin</b><small>Vähennyslasku kymmenalituksella</small></span></button>
-    </div><div class="menu-dog" aria-hidden="true"></div>
-  </section>
-  <section class="screen" id="game">
-    <div class="game-head"><button class="back">← Valikko</button><div class="title"></div><div class="progress"><i></i></div><div class="counter"></div></div>
-    <div class="playgrid">
-      <section class="stage"><div class="instruction"></div><div class="equation"></div><div class="decomp"></div><div class="answer-boxes"><div class="place tens"><small>kymmenet</small><div class="digit"></div></div><div class="place ones"><small>ykköset</small><div class="digit"></div></div></div><div class="bubble"></div><div class="dog" role="img" aria-label="Suomenlapinkoira pinkissä rusetissa"></div></section>
-      <aside class="calc"><h2>Vastauslaskin</h2><p class="calc-help">Paina ensin kymmeniä, sitten ykkösiä.</p><div class="keys"></div></aside>
-    </div>
-  </section>
-  <section class="screen" id="finish"><div class="finish-copy"><h2>Hienosti tehty!</h2><p>Koko polku tuli valmiiksi!</p><button class="again">Valitse uusi harjoitus</button></div><span class="note n1">♪</span><span class="note n2">♫</span><span class="note n3">♪</span><div class="dance-dog"></div></section>
-</section></main>
-<audio id="music" src="assets/unicorn-garden.mp3" preload="auto" loop></audio><audio id="bark" src="assets/dog-bark.mp3" preload="auto"></audio><audio id="whimper" src="assets/dog-whimper.mp3" preload="auto"></audio>
-<script>
-(()=>{'use strict';
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const menu=$('#menu'),game=$('#game'),finish=$('#finish'),keys=$('.keys'),bark=$('#bark'),whimper=$('#whimper'),music=$('#music');
-const instructions={add:new Audio('assets/instruction-0.mp3'),sub:new Audio('assets/instruction-1.mp3'),carry:new Audio('assets/instruction-2.mp3'),borrow:new Audio('assets/instruction-3.mp3'),finish:new Audio('assets/instruction-4.mp3')};
-let mode='',deck=[],round=0,step=0,task=null,effectsMuted=false,musicMuted=false,barkTimer=null,barkStartTimer=null,currentInstruction=null;
-music.volume=.12;
-for(let n=1;n<=9;n++)keys.insertAdjacentHTML('beforeend',`<button class="key" data-n="${n}">${n}</button>`);keys.insertAdjacentHTML('beforeend','<button class="key zero" data-n="0">0</button>');
-const names={add:'Lisää ykkösiä',sub:'Vähennä ykkösiä',carry:'Kymmenylitys',borrow:'Kymmenalitus'};
-function shuffle(a){for(let i=a.length-1;i;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function makeDeck(m){
- const ranges={
-  add:[[11,29],[20,59],[40,98]],
-  sub:[[16,29],[30,69],[50,99]],
-  carry:[[16,29],[25,59],[60,90]],
-  borrow:[[21,39],[40,69],[70,99]]
- },counts=[3,3,4],used=new Set(),deck=[];
- const rnd=(lo,hi)=>lo+Math.floor(Math.random()*(hi-lo+1));
- for(let level=0;level<3;level++){
-  let tries=0;
-  while(deck.filter(t=>t.level===level).length<counts[level]&&tries++<500){
-   let [lo,hi]=ranges[m][level],a=rnd(lo,hi),b=rnd(1,9);
-   const ones=a%10;
-   const adding=m==='add'||m==='carry';
-   const ans=adding?a+b:a-b;
-   const valid=m==='add'?ones+b<10:
-    m==='sub'?b<=ones:
-    m==='carry'?ones+b>=10:
-    ones>0&&b>ones;
-   if(!valid||ans<=10||ans>99)continue;
-   const key=`${a}:${b}`;
-   if(used.has(key))continue;
-   used.add(key);
-   const x=m==='carry'?10-ones:m==='borrow'?ones:null;
-   deck.push({a,b,ans,x,y:x===null?null:b-x,level});
-  }
- }
- return deck;
-}
-function playInstruction(name){if(currentInstruction){currentInstruction.pause();currentInstruction.currentTime=0}if(effectsMuted)return;currentInstruction=instructions[name];music.volume=.035;currentInstruction.currentTime=0;currentInstruction.play().catch(()=>{music.volume=.12});currentInstruction.onended=()=>{music.volume=.12;currentInstruction=null}}
-function start(m){mode=m;deck=makeDeck(m);round=0;menu.classList.remove('active');finish.classList.remove('active');game.classList.add('active');$('.title').textContent=names[m];if(!musicMuted){music.play().catch(()=>{})}playInstruction(m);showTask()}
-function showTask(){task=deck[round];step=0;$('.dog').className='dog';$('.bubble').classList.remove('show');$('.counter').textContent=`${round+1} / ${deck.length}`;$('.progress i').style.width=`${round/deck.length*100}%`;const op=mode==='add'||mode==='carry'?'+':'−';$('.equation').innerHTML=`${task.a} <span class="op">${op}</span> ${task.b}`;const cross=mode==='carry'||mode==='borrow';$('.decomp').classList.toggle('show',cross);$('.decomp').innerHTML=cross?`${task.a} <span class="op">${op}</span> <span class="slot s1"></span> <span class="op">${op}</span> <span class="slot s2"></span> =`:'';$('.tens .digit').textContent='';$('.ones .digit').textContent='';$$('.digit').forEach(x=>x.classList.remove('ok'));updateFocus()}
-function expected(){if(step===0&&(mode==='carry'||mode==='borrow'))return task.x;if(step===1&&(mode==='carry'||mode==='borrow'))return task.y;const base=(mode==='carry'||mode==='borrow')?2:0;return step===base?Math.floor(task.ans/10):task.ans%10}
-function updateFocus(){$$('.slot,.place').forEach(x=>x.classList.remove('active'));const base=(mode==='carry'||mode==='borrow')?2:0;if(step<base)$(`.s${step+1}`).classList.add('active');else $(step===base?'.tens':'.ones').classList.add('active');$('.instruction').textContent=step<base?(step===0?'Täydennä ensin loikka kymppiin.':'Kuinka paljon jää vielä?'):(step===base?'Paina vastauksen kymmenet.':'Paina vastauksen ykköset.')}
-function press(n,btn){if(n!==expected()){btn.classList.add('wrong');setTimeout(()=>btn.classList.remove('wrong'),350);$('.dog').className='dog sad';$('.bubble').textContent='Kokeile vielä!';$('.bubble').classList.add('show');if(!effectsMuted){whimper.currentTime=0;whimper.play().catch(()=>{})}setTimeout(()=>{$('.dog').className='dog';$('.bubble').classList.remove('show')},700);return}btn.classList.add('correct');setTimeout(()=>btn.classList.remove('correct'),300);const cross=mode==='carry'||mode==='borrow',base=cross?2:0;if(step<base){const s=$(`.s${step+1}`);s.textContent=n;s.classList.add('ok')}else{const d=$(step===base?'.tens .digit':'.ones .digit');d.textContent=n;d.classList.add('ok')}step++;if(step===base+2){$('.dog').className='dog happy bounce';$('.bubble').textContent=['Mahtavaa!','Hienosti!','Oikein!'][round%3];$('.bubble').classList.add('show');if(!effectsMuted){bark.currentTime=0;bark.play().catch(()=>{})}setTimeout(()=>{round++;round<deck.length?showTask():celebrate()},850)}else updateFocus()}
-function celebrate(){game.classList.remove('active');finish.classList.add('active');$('.progress i').style.width='100%';playInstruction('finish');if(!effectsMuted){barkStartTimer=setTimeout(()=>{if(effectsMuted)return;bark.currentTime=0;bark.play().catch(()=>{});barkTimer=setInterval(()=>{bark.currentTime=0;bark.play().catch(()=>{})},1450)},950)}}
-function goMenu(){clearTimeout(barkStartTimer);barkStartTimer=null;clearInterval(barkTimer);barkTimer=null;bark.pause();if(currentInstruction){currentInstruction.pause();currentInstruction.currentTime=0;currentInstruction=null;music.volume=.12}finish.classList.remove('active');game.classList.remove('active');menu.classList.add('active')}
-$$('.mode').forEach(b=>b.addEventListener('click',()=>start(b.dataset.mode)));keys.addEventListener('click',e=>{const b=e.target.closest('.key');if(b)press(+b.dataset.n,b)});$('.back').addEventListener('click',goMenu);$('.again').addEventListener('click',goMenu);
-$('#sound').addEventListener('click',e=>{effectsMuted=!effectsMuted;e.currentTarget.textContent=effectsMuted?'🔇':'🔊';e.currentTarget.setAttribute('aria-label',effectsMuted?'Puhe ja tehosteet pois':'Puhe ja tehosteet päällä');if(effectsMuted){clearTimeout(barkStartTimer);barkStartTimer=null;clearInterval(barkTimer);bark.pause();whimper.pause();if(currentInstruction){currentInstruction.pause();currentInstruction.currentTime=0;currentInstruction=null;music.volume=.12}}});
-$('#music-toggle').addEventListener('click',e=>{musicMuted=!musicMuted;e.currentTarget.textContent=musicMuted?'♩':'♫';e.currentTarget.setAttribute('aria-label',musicMuted?'Musiikki pois':'Musiikki päällä');if(musicMuted)music.pause();else music.play().catch(()=>{})});
-})();
-</script></body></html>
+
+<header>
+  <h1>Alakoulun matematiikan kertaus</h1>
+  <p>Pääpaino 5.–6. luokan osaamisessa. Perustaidosta soveltamiseen.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="cards">
+
+    <a class="cardlink" href="01-kymmenjarjestelma.html">
+      <div class="card">
+        <h2>1. Luvut ja kymmenjärjestelmä</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="02-peruslaskut.html">
+      <div class="card">
+        <h2>2. Peruslaskutoimitukset ja laskustrategiat</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="03-rationaaliluvut.html">
+      <div class="card">
+        <h2>3. Murtoluvut, desimaaliluvut, prosentit ja negatiiviset luvut</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="04-soveltava.html">
+      <div class="card">
+        <h2>4. Lukujen ja laskemisen soveltava kertaus</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="05-lukujonot.html">
+      <div class="card">
+        <h2>5. Lukujonot ja säännönmukaisuus</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="06-yhtalot.html">
+      <div class="card">
+        <h2>6. Tuntematon ja yhtälö</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="07-kuviot.html">
+      <div class="card">
+        <h2>7. Kuviot, kappaleet ja kulmat</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="08-symmetria.html">
+      <div class="card">
+        <h2>8. Symmetria</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="09-koordinaatisto-mittakaava.html">
+      <div class="card">
+        <h2>9. Koordinaatisto ja mittakaava</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="10-mittaaminen.html">
+      <div class="card">
+        <h2>10. Mittaaminen, yksiköt, piiri, pinta-ala ja tilavuus</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="11-tilastot.html">
+      <div class="card">
+        <h2>11. Tilastot ja todennäköisyys</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="12-kertauskoe.html">
+      <div class="card">
+        <h2>12. Alakoulun kertauskoe – 30 tehtävää</h2>
+        <p>Avaa harjoitus →</p>
+      </div>
+    </a>
+
+    <a class="cardlink" href="koodaustehtava/">
+      <div class="card">
+        <h2>13. Graafinen ohjelmointi</h2>
+        <p>Ohjaa robottia komentopalikoilla →</p>
+      </div>
+    </a>
+
+  </div>
+
+</div>
+
+</body>
+</html>
