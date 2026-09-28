@@ -103,6 +103,37 @@
       .game.celebrating .panel{opacity:.08}.game.celebrating .professor-zone{position:fixed;left:50%;bottom:-4px;width:min(42vw,340px);height:88dvh;transform:translateX(-50%);z-index:17}.game.celebrating .professor{width:100%;height:100%;left:0}
       .game.mobile-keyboard .stage{grid-template-columns:1fr}.game.mobile-keyboard .professor-zone{display:none}.game.mobile-keyboard .practice-note{display:none}
     }
+    /* Voitontanssi saa puhelimessa aina koko pelialueen. Tämä sijoitetaan
+       viimeiseksi, jotta lyhyen näytön tiivistyssäännöt eivät voi rajata hahmoa. */
+    @media(max-width:560px){
+      .game[data-mode].celebrating .professor-zone{
+        display:block!important;visibility:visible!important;opacity:1!important;
+        position:fixed!important;inset:58px 0 0 0!important;
+        width:100vw!important;height:calc(100dvh - 58px)!important;
+        min-height:0!important;transform:none!important;overflow:visible!important;
+        z-index:17!important
+      }
+      .game[data-mode].celebrating .professor{
+        position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+        transform:none!important;filter:drop-shadow(0 14px 13px #0009)
+      }
+      .game[data-mode].celebrating .professor img{
+        inset:0!important;width:100%!important;height:100%!important;
+        object-fit:contain!important;object-position:center bottom!important
+      }
+      .game[data-mode].celebrating .floor-shadow{left:24%;right:24%;bottom:1.5%}
+    }
+    @media(max-width:900px) and (max-height:560px) and (orientation:landscape){
+      .game[data-mode].celebrating .professor-zone{
+        display:block!important;visibility:visible!important;opacity:1!important;
+        position:fixed!important;inset:54px 0 0 0!important;
+        width:100vw!important;height:calc(100dvh - 54px)!important;
+        min-height:0!important;transform:none!important;overflow:visible!important;
+        z-index:17!important
+      }
+      .game[data-mode].celebrating .professor{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important}
+      .game[data-mode].celebrating .professor img{inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center bottom!important}
+    }
     @media(prefers-reduced-motion:reduce){.professor,.timer.danger,.confetti{animation:none!important}}
   </style>
 </head>
@@ -458,7 +489,7 @@ function motionLoop(){
   }else{clearFrames(CONDUCTOR_FRAMES);clearFrames(IDLE_FRAMES);clearFrames(SUMMER_IDLE_FRAMES);clearFrames(CLAP_FRAMES)}
   motionRaf=requestAnimationFrame(motionLoop)
 }
-function victory(){lock();$('feedback').textContent='Täydellinen kenttä!';$('feedback').className='feedback good';speakField([10,12,14,16][field.id-1],()=>{professor.className='professor victory';$('game').classList.add('celebrating');startDance();confetti();resultTimer=setTimeout(()=>showResult(true,'won'),30000)})}
+function victory(){lock();if(mobileScreen.matches){input.blur();$('game').classList.remove('mobile-keyboard')}$('feedback').textContent='Täydellinen kenttä!';$('feedback').className='feedback good';speakField([10,12,14,16][field.id-1],()=>{professor.className='professor victory';$('game').classList.add('celebrating');startDance();confetti();resultTimer=setTimeout(()=>showResult(true,'won'),30000)})}
 function confetti(){const layer=$('confettiLayer');layer.innerHTML='<div class="acclaim">15 virheetöntä vastausta!</div>';const colors=['#ffd45f','#ef5b73','#59c7ac','#fff','#8c78db','#ff914e'];for(let i=0;i<(innerWidth<560?75:125);i++){const p=document.createElement('i');p.className='confetti';p.style.setProperty('--x',Math.random()*100+'vw');p.style.setProperty('--w',6+Math.random()*9+'px');p.style.setProperty('--c',colors[i%colors.length]);p.style.setProperty('--d',5+Math.random()*3+'s');p.style.setProperty('--delay',Math.random()*2+'s');p.style.setProperty('--drift',-120+Math.random()*240+'px');p.style.setProperty('--spin',(Math.random()<.5?-1:1)*(500+Math.random()*900)+'deg');layer.appendChild(p)}setTimeout(()=>layer.innerHTML='',11000)}
 function openMenu(){running=false;roundReady=false;cancelAnimationFrame(raf);clearTimeout(nextTimer);clearTimeout(resultTimer);stopVoice();stopDance();music.pause();$('game').classList.remove('celebrating','waiting');$('result').classList.add('hidden');$('menu').classList.remove('hidden');input.disabled=true;$('question').className='question words';$('question').textContent='Valitse kenttä.';$('prompt').textContent='';$('feedback').textContent=''}
 function buildMenu(){const pc=$('practiceCards'),gc=$('gameCards');FIELDS.forEach(f=>{pc.insertAdjacentHTML('beforeend',`<button class="field-card" data-field-number="${f.id}" data-start="${f.id}:practice"><span class="symbol">${f.symbol}</span>${f.id}. ${f.name}<span class="meta">40 tehtävää · ei aikarajaa</span></button>`);gc.insertAdjacentHTML('beforeend',`<button class="field-card game-card" data-field-number="${f.id}" data-start="${f.id}:game"><span class="symbol">${f.symbol}</span>${f.id}. ${f.name}<span class="meta">15 tehtävää · 30 s · lopussa 60 s</span></button>`)})}
