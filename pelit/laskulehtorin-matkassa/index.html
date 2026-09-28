@@ -36,6 +36,73 @@
     @media(max-width:560px){body{overflow:hidden}.game{background-attachment:scroll}.topbar{height:54px;padding:6px 8px;gap:6px}.brand{max-width:118px;font-size:.7rem}.progress{min-width:92px}.progress strong{font-size:.82rem}.progress-track{height:5px;margin-top:3px}.round-btn{height:34px;min-width:34px;padding:0 8px}.stage{height:calc(100dvh - 54px);min-height:0;grid-template-columns:1fr;grid-template-rows:100px minmax(0,1fr);padding:5px;gap:2px}.panel{max-height:calc(100dvh - 161px);padding:10px 7px;border-width:2px;border-radius:16px}.panel:before{inset:5px}.mode-label{font-size:.57rem}.prompt{min-height:22px;padding-top:3px;font-size:.82rem}.question{min-height:69px;padding:2px;font-size:clamp(1.05rem,5.2vw,1.45rem)}.question.words{font-size:clamp(.88rem,4vw,1.1rem)}.temperature{gap:4px;font-size:.7rem}.temp-cell{padding:6px 3px}.temp-cell strong{font-size:.54rem}.practice-note{margin:1px 0 6px;padding:5px;font-size:.62rem}.timer-row{grid-template-columns:42px 1fr;gap:7px;margin:1px 0 6px}.timer{width:42px;height:42px;font-size:.94rem}.time-label{font-size:.62rem}.time-track{height:5px;margin-top:3px}.symbol-options{gap:6px}.symbol-choice{width:64px;height:48px;font-size:1.35rem}.answer-form{grid-template-columns:38px 38px minmax(0,1fr) 76px;gap:4px}.helper{font-size:.92rem}.answer{height:49px;border-width:2px;font-size:1.18rem}.submit{font-size:.7rem;box-shadow:0 3px 0 #4e1829}.feedback{height:21px;margin-top:5px;font-size:.67rem}.professor-zone,.game[data-mode="game"] .professor-zone,.game[data-field="4"] .professor-zone{position:relative;width:100px;height:100px;min-height:0;left:8px;bottom:auto;overflow:visible;align-self:end}.professor,.game[data-mode="game"] .professor,.game[data-field="4"] .professor{width:92px;height:138px;left:0;bottom:-5px}.overlay{align-items:start;padding:7px}.modal{margin:auto;padding:12px 9px;border-radius:18px}.modal h1{font-size:1.55rem}.modal p{font-size:.79rem;line-height:1.3;margin:4px 0}.section-title{margin:10px 0 6px;font-size:.64rem}.field-grid{grid-template-columns:1fr 1fr;gap:5px}.field-card{min-height:91px;padding:7px 4px;border-width:2px;font-size:.68rem}.field-card .symbol{font-size:.93rem;margin-bottom:3px}.field-card .meta{font-size:.56rem;margin-top:3px}.primary,.secondary{padding:9px 17px;font-size:.81rem}.small{font-size:.62rem!important}.game.celebrating .professor-zone{width:290px;height:450px;bottom:-8px}.game.celebrating .professor{width:290px;height:440px;left:0;bottom:0}.acclaim{top:5%;font-size:1.05rem;padding:9px 12px}}
     @media(max-width:560px) and (orientation:landscape){.stage{grid-template-columns:90px minmax(0,1fr);grid-template-rows:1fr}.panel{max-height:calc(100dvh - 62px)}.professor-zone,.game[data-mode="game"] .professor-zone,.game[data-field="4"] .professor-zone{width:90px;height:190px;left:0}.professor,.game[data-mode="game"] .professor,.game[data-field="4"] .professor{width:112px;height:190px;left:-12px;bottom:0}}
     @media(max-width:560px){.menu-modal{padding:11px 8px}.menu-head{grid-template-columns:46px 1fr;gap:9px;margin-bottom:5px}.menu-mark{width:46px;height:46px;border-radius:13px;font-size:1.8rem}.menu-kicker{font-size:.52rem}.menu-modal h1{font-size:1.48rem}.menu-intro{padding:7px 8px;margin-bottom:7px!important}.menu-modal .field-card{min-height:92px;padding:7px 4px}.menu-modal .field-card:before{font-size:2.2rem}.menu-modal .field-card .symbol{min-height:20px}}
+    /* Puhelinnäkymä: tehtävä pysyy luettavana, professori näkyvänä ja
+       näppäimistölle annetaan tarvittaessa lisätilaa. Työpöytätyylit eivät muutu. */
+    @media(max-width:560px){
+      html,body{min-height:100%;overflow-x:hidden}
+      body{overflow-y:auto}
+      .game{min-height:100dvh;height:auto;overflow-x:hidden;overflow-y:auto;background-position:center top}
+      .topbar{height:58px;padding:6px 8px;grid-template-columns:minmax(88px,1fr) auto auto}
+      .brand{max-width:112px;font-size:.72rem;line-height:1.05;white-space:normal}
+      .stage{height:auto;min-height:calc(100dvh - 58px);grid-template-columns:1fr;grid-template-rows:136px auto;align-content:start;align-items:start;padding:4px 6px 10px;gap:0}
+      .professor-zone,.game[data-mode="game"] .professor-zone,.game[data-field="4"] .professor-zone{width:136px;height:136px;min-height:0;left:10px;align-self:end;overflow:visible}
+      .professor,.game[data-mode="game"] .professor,.game[data-field="4"] .professor{width:128px;height:182px;left:0;bottom:-5px}
+      .panel{align-self:start;max-height:none;min-height:0;padding:12px 9px 10px;border-radius:17px;overflow:hidden}
+      .mode-label{font-size:.61rem;line-height:1.2}
+      .prompt{min-height:24px;padding:4px 4px 0;font-size:.88rem;line-height:1.28}
+      .question{min-height:84px;padding:4px 2px;font-size:clamp(1.2rem,5.6vw,1.58rem);line-height:1.22;overflow:hidden}
+      .question.words{font-size:clamp(.98rem,4.4vw,1.18rem);line-height:1.32}
+      .question.compact{font-size:clamp(.98rem,4.25vw,1.24rem)}
+      .question mjx-container{max-width:100%;overflow:visible!important}
+      .question mjx-container[jax="SVG"]>svg{display:block;max-width:100%!important;height:auto!important;margin:auto}
+      .word-task{gap:8px}.word-prompt{font-size:1rem;line-height:1.32}.word-formula{font-size:1.32rem}
+      .numberline{padding:31px 4px 3px}.nl-track{left:6px;right:6px;top:45px}.nl-tick{min-width:18px;font-size:.7rem}.nl-tick i{height:15px}.nl-point{width:25px;height:25px}
+      .temperature{gap:5px;font-size:.75rem}.temp-cell{padding:7px 3px}.temp-cell strong{font-size:.57rem}
+      .multi-line{width:100%}.line-chips{gap:5px;margin-bottom:14px}.line-chip{min-width:54px;padding:7px 8px;font-size:.78rem}.multi-tick{min-width:23px}.multi-tick i{width:27px;height:27px}.line-check{margin-top:13px;padding:9px 22px}
+      .practice-note{margin:2px 0 7px;padding:6px;font-size:.68rem}
+      .timer-row{grid-template-columns:44px 1fr;gap:8px;margin:2px 0 7px}.timer{width:44px;height:44px;font-size:1rem}
+      .answer-form{grid-template-columns:42px 42px minmax(0,1fr) 82px;gap:5px}
+      .helper,.submit,.answer{min-height:50px}.helper{font-size:1.05rem}.answer{height:50px;font-size:1.27rem}.submit{font-size:.76rem;letter-spacing:.01em}
+      .feedback{height:23px;margin-top:6px;font-size:.72rem}
+      .symbol-options{margin:2px 0 8px}.symbol-choice{width:68px;height:50px}
+      .game.celebrating{overflow:hidden}.game.celebrating .panel{opacity:.08}
+      .game.celebrating .professor-zone{width:min(88vw,330px);height:min(74dvh,500px);bottom:-4px}
+      .game.celebrating .professor{width:100%;height:100%;left:0;bottom:0}
+      .acclaim{top:max(5%,env(safe-area-inset-top));width:92vw}
+      .game.mobile-keyboard .stage{min-height:calc(100dvh - 58px);grid-template-rows:0 auto;padding-top:4px}
+      .game.mobile-keyboard .professor-zone{visibility:hidden;opacity:0;height:0}
+      .game.mobile-keyboard .panel{margin:0;max-height:none}
+      .game.mobile-keyboard .question{min-height:64px}
+      .game.mobile-keyboard .practice-note{display:none}
+    }
+    @media(max-width:560px) and (max-height:700px) and (orientation:portrait){
+      .stage{grid-template-rows:106px auto}
+      .professor-zone,.game[data-mode="game"] .professor-zone,.game[data-field="4"] .professor-zone{width:112px;height:106px;left:8px}
+      .professor,.game[data-mode="game"] .professor,.game[data-field="4"] .professor{width:108px;height:150px}
+      .panel{padding-top:9px}.question{min-height:70px}.prompt{min-height:20px}
+    }
+    @media(max-width:560px) and (orientation:landscape){
+      body{overflow:hidden}.game{overflow:hidden}
+      .stage{height:calc(100dvh - 58px);min-height:0;grid-template-columns:116px minmax(0,1fr);grid-template-rows:1fr;gap:4px;padding:4px 6px}
+      .professor-zone,.game[data-mode="game"] .professor-zone,.game[data-field="4"] .professor-zone{width:112px;height:100%;left:0;align-self:end}
+      .professor,.game[data-mode="game"] .professor,.game[data-field="4"] .professor{width:124px;height:100%;left:-8px;bottom:0}
+      .panel{max-height:100%;align-self:center;padding:8px 9px}
+      .question{min-height:54px}.prompt{min-height:18px}.practice-note{margin-bottom:4px;padding:4px}.timer-row{margin-bottom:4px}.feedback{margin-top:3px}
+      .game.mobile-keyboard .stage{height:auto;min-height:calc(100dvh - 58px);grid-template-columns:1fr;grid-template-rows:auto}
+    }
+    @media(max-width:900px) and (max-height:560px) and (orientation:landscape){
+      body{overflow:hidden}.game{overflow:hidden;background-attachment:scroll}
+      .topbar{height:54px;padding:5px 8px}.brand{font-size:.72rem}.score-note{display:none}.round-btn{height:34px;min-width:34px;padding:0 8px}
+      .stage{height:calc(100dvh - 54px);min-height:0;grid-template-columns:122px minmax(0,1fr);grid-template-rows:1fr;gap:5px;padding:4px 7px;align-items:center}
+      .professor-zone,.game[data-mode="game"] .professor-zone,.game[data-field="4"] .professor-zone{position:relative;width:118px;height:100%;min-height:0;left:0;bottom:auto;align-self:end;overflow:visible}
+      .professor,.game[data-mode="game"] .professor,.game[data-field="4"] .professor{width:128px;height:100%;left:-8px;bottom:0}
+      .panel{width:100%;max-height:100%;align-self:center;padding:8px 10px;border-width:2px;border-radius:16px;overflow:hidden}
+      .mode-label{font-size:.58rem}.prompt{min-height:18px;padding-top:2px;font-size:.78rem}.question{min-height:52px;padding:2px;font-size:1.25rem}.question.words{font-size:.94rem}.question.compact{font-size:1rem}
+      .practice-note{margin:1px 0 4px;padding:4px;font-size:.62rem}.timer-row{grid-template-columns:40px 1fr;margin:1px 0 4px}.timer{width:40px;height:40px;font-size:.9rem}
+      .answer-form{grid-template-columns:38px 38px minmax(0,1fr) 78px;gap:4px}.helper,.submit,.answer{min-height:43px}.answer{height:43px;font-size:1.1rem}.submit{font-size:.7rem}.feedback{height:18px;margin-top:2px;font-size:.65rem}
+      .game.celebrating .panel{opacity:.08}.game.celebrating .professor-zone{position:fixed;left:50%;bottom:-4px;width:min(42vw,340px);height:88dvh;transform:translateX(-50%);z-index:17}.game.celebrating .professor{width:100%;height:100%;left:0}
+      .game.mobile-keyboard .stage{grid-template-columns:1fr}.game.mobile-keyboard .professor-zone{display:none}.game.mobile-keyboard .practice-note{display:none}
+    }
     @media(prefers-reduced-motion:reduce){.professor,.timer.danger,.confetti{animation:none!important}}
   </style>
 </head>
@@ -396,6 +463,21 @@ function confetti(){const layer=$('confettiLayer');layer.innerHTML='<div class="
 function openMenu(){running=false;roundReady=false;cancelAnimationFrame(raf);clearTimeout(nextTimer);clearTimeout(resultTimer);stopVoice();stopDance();music.pause();$('game').classList.remove('celebrating','waiting');$('result').classList.add('hidden');$('menu').classList.remove('hidden');input.disabled=true;$('question').className='question words';$('question').textContent='Valitse kenttä.';$('prompt').textContent='';$('feedback').textContent=''}
 function buildMenu(){const pc=$('practiceCards'),gc=$('gameCards');FIELDS.forEach(f=>{pc.insertAdjacentHTML('beforeend',`<button class="field-card" data-field-number="${f.id}" data-start="${f.id}:practice"><span class="symbol">${f.symbol}</span>${f.id}. ${f.name}<span class="meta">40 tehtävää · ei aikarajaa</span></button>`);gc.insertAdjacentHTML('beforeend',`<button class="field-card game-card" data-field-number="${f.id}" data-start="${f.id}:game"><span class="symbol">${f.symbol}</span>${f.id}. ${f.name}<span class="meta">15 tehtävää · 30 s · lopussa 60 s</span></button>`)})}
 buildMenu();requestAnimationFrame(motionLoop);document.addEventListener('click',e=>{const b=e.target.closest('[data-start]');if(b){const [f,m]=b.dataset.start.split(':');start(Number(f),m)}const s=e.target.closest('[data-symbol]');if(s&&running){input.value={lt:'<',eq:'=',gt:'>'}[s.dataset.symbol];answer()}const item=e.target.closest('[data-line-item]');if(item)chooseLineItem(Number(item.dataset.lineItem));const tick=e.target.closest('[data-line-tick]');if(tick)placeLine(tick);if(e.target.closest('[data-line-check]'))checkLine()});$('answerForm').addEventListener('submit',e=>{e.preventDefault();answer()});$('signBtn').addEventListener('click',()=>{if(!running)return;input.value=input.value.trim().startsWith('-')?input.value.trim().slice(1):'-'+input.value.trim();input.focus()});$('slashBtn').addEventListener('click',()=>{if(!running)return;input.setRangeText('/',input.selectionStart??input.value.length,input.selectionEnd??input.value.length,'end');input.focus()});$('soundBtn').addEventListener('click',toggleSound);$('homeBtn').addEventListener('click',openMenu);$('menuBtn').addEventListener('click',openMenu);$('retryBtn').addEventListener('click',()=>start(field.id,mode));document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&mode==='game')deadline+=30000});
+
+// Puhelimen virtuaalinäppäimistö voi viedä yli puolet näytöstä. Luokka
+// aktivoituu vain kapealla näytöllä ja vain silloin, kun näkymä todella kutistuu.
+const mobileScreen=window.matchMedia('(max-width:560px), (max-width:900px) and (max-height:560px) and (orientation:landscape)'),visualViewportRef=window.visualViewport;
+let mobileViewportBaseline=Math.max(window.innerHeight,visualViewportRef?.height||0);
+function syncMobileKeyboard(){
+ const current=visualViewportRef?.height||window.innerHeight,focused=document.activeElement===input&&!input.disabled;
+ if(!focused)mobileViewportBaseline=Math.max(current,window.innerHeight);
+ const open=mobileScreen.matches&&focused&&current<mobileViewportBaseline*.82;
+ $('game').classList.toggle('mobile-keyboard',open);
+}
+visualViewportRef?.addEventListener('resize',syncMobileKeyboard);
+window.addEventListener('orientationchange',()=>setTimeout(()=>{mobileViewportBaseline=Math.max(window.innerHeight,visualViewportRef?.height||0);syncMobileKeyboard()},250));
+input.addEventListener('focus',()=>setTimeout(syncMobileKeyboard,180));
+input.addEventListener('blur',()=>setTimeout(syncMobileKeyboard,80));
 </script>
 </body>
 </html>
