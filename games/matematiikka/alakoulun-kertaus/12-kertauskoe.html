@@ -25,4 +25,18 @@ function render(){const start=page*PER,root=document.getElementById('questions')
 function isok(q,i){const s=saved[i]||{};if(q.type==='mc')return s.v===q.correct;if(q.type==='input')return equivalent(s.v,q.correct)||(q.alts||[]).some(a=>equivalent(s.v,a));const ex=norm(s.e),allowed=q.expr_answers.map(norm);return allowed.includes(ex)&&equivalent(s.r,q.correct)}
 function finish(){collect();let pts=0;DATA.forEach((q,i)=>{if(isok(q,i))pts++});const root=document.getElementById('questions');root.innerHTML=`<section class="q" style="grid-column:1/-1"><h2>Tulos: ${pts} / ${DATA.length}</h2><p>Alla ovat lyhyet ratkaisut kaikkiin tehtäviin.</p>${DATA.map((q,i)=>`<div class="solution"><b>${i+1}. ${isok(q,i)?'✓':'✗'}</b> ${q.solution}</div>`).join('')}</section>`;document.querySelector('.nav').style.display='none';document.getElementById('finish').style.display='none';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([root])}
 document.getElementById('prev').onclick=()=>{collect();if(page>0){page--;render()}};document.getElementById('next').onclick=()=>{collect();page++;render()};document.getElementById('finish').onclick=finish;render();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

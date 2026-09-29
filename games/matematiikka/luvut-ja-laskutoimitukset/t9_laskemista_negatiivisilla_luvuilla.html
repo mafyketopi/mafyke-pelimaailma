@@ -49,4 +49,18 @@ const orderSolutions=[
 ];
 function check(){let p=0;tasks.forEach((t,i)=>{let z=$('#a'+i).value.trim(),ok=t[1]==='undef'?/ei\s*määritelty|määrittelemätön/i.test(z):EQ(z,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');let ans=t[1]==='undef'?'ei määritelty':String(t[1]).replace('.',',');$('#c'+i).innerHTML=ok?'✓ Oikein':'Oikea vastaus: '+ans;if(page==='order')$('#c'+i).innerHTML+=(ok?'':'<br>')+'<b>Malliratkaisu:</b> '+orderSolutions[i];if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#grid')]);}}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;render()});$('#check').onclick=check;$('#new').onclick=render;render();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

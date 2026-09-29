@@ -106,4 +106,18 @@ $$('.mode').forEach(b=>b.addEventListener('click',()=>start(b.dataset.mode)));ke
 $('#sound').addEventListener('click',e=>{effectsMuted=!effectsMuted;e.currentTarget.textContent=effectsMuted?'🔇':'🔊';e.currentTarget.setAttribute('aria-label',effectsMuted?'Puhe ja tehosteet pois':'Puhe ja tehosteet päällä');if(effectsMuted){clearTimeout(barkStartTimer);barkStartTimer=null;clearInterval(barkTimer);bark.pause();whimper.pause();if(currentInstruction){currentInstruction.pause();currentInstruction.currentTime=0;currentInstruction=null;music.volume=.12}}});
 $('#music-toggle').addEventListener('click',e=>{musicMuted=!musicMuted;e.currentTarget.textContent=musicMuted?'♩':'♫';e.currentTarget.setAttribute('aria-label',musicMuted?'Musiikki pois':'Musiikki päällä');if(musicMuted)music.pause();else music.play().catch(()=>{})});
 })();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

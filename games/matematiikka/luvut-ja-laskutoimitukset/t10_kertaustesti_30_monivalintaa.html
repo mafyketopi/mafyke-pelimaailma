@@ -33,4 +33,18 @@ function texify(s){
 function render(){$('#grid').innerHTML=Q.map((q,i)=>`<div class="item mcitem" id="it${i}"><div><b>${i+1}.</b> ${texify(q[0])}</div>${q[2].map(x=>`<label><input type="radio" name="q${i}" value="${x}"> ${texify(x)}</label>`).join('')}<div class="correct" id="c${i}"></div></div>`).join('');if(window.MathJax?.typesetPromise){MathJax.typesetPromise([$('#grid')]);}}
 function check(){let p=0;Q.forEach((q,i)=>{let z=$(`input[name=q${i}]:checked`),ok=z&&z.value===q[1];let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+q[1];if(ok)p++});$('#score').textContent=`Tulos: ${p} / 30`}
 $('#check').onclick=check;render();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

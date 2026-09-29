@@ -39,4 +39,18 @@ function same(a,b){if(!a||Math.abs(a[0])+Math.abs(a[1])<1e-9)return false;let k=
 function render(){const t=tasks[i];attempted=false;done=false;$('progress').textContent=`Tehtävä ${i+1}/${tasks.length}`;$('score').textContent=`Oikein ${points}`;$('story').textContent=t.story;$('meaning').innerHTML=`\\(x\\) = ${t.x}<br>\\(y\\) = ${t.y}`;['eq1','eq2'].forEach(id=>{$(id).value='';$(id).className=''});$('feedback').textContent='';$('feedback').className='feedback';$('solution').classList.add('hidden');$('solution').innerHTML='';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('meaning')])}
 function check(){attempted=true;const t=tasks[i],a=coeffs($('eq1').value),b=coeffs($('eq2').value);const direct=same(a,t.eqs[0])&&same(b,t.eqs[1]),reverse=same(a,t.eqs[1])&&same(b,t.eqs[0]),ok=direct||reverse;[a,b].forEach((v,j)=>$('eq'+(j+1)).className=v&&(same(v,t.eqs[0])||same(v,t.eqs[1]))?'good':'bad');if(ok){if(!done)points++;done=true;$('score').textContent=`Oikein ${points}`;$('feedback').textContent='Oikein! Molemmat tehtävän tiedot on muutettu yhtälöiksi.';$('feedback').className='feedback ok'}else{$('feedback').textContent='Yhtälöpari ei vielä vastaa molempia tehtävän tietoja. Ratkaisu näkyy alla, ja voit jatkaa seuraavaan tehtävään.';$('feedback').className='feedback bad'}$('solution').innerHTML=`Yksi oikea yhtälöpari on \\(\\begin{cases}${t.show[0]}\\\\${t.show[1]}\\end{cases}\\)`;$('solution').classList.remove('hidden');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('solution')])}
 $('check').onclick=check;$('next').onclick=()=>{i=(i+1)%tasks.length;render()};render();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

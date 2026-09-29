@@ -150,4 +150,18 @@ function check(auto=false){
 function show(r){const f=document.getElementById("feedback");if(r.ok){f.className="feedback ok";f.textContent="Oikein."}else{let m=[];if(!r.iok)m.push("Tarkista virtamittarin asteikko ja mittausalue.");if(!r.uok)m.push("Tarkista jännitemittarin asteikko ja mittausalue.");if(r.iok&&r.uok&&!r.rok)m.push("Tarkista resistanssin laskulauseke, yksiköt ja 2 merkitsevän numeron vastaus.");if(r.iok&&r.uok&&!r.pok)m.push("Tarkista tehon laskulauseke, yksiköt ja 2 merkitsevän numeron vastaus.");f.className="feedback bad";f.textContent=m.join(" ")}}
 function go(d){const v=vals(),old=results[current]||{};results[current]={...old,values:v};const n=current+d;if(n>=0&&n<tasks.length){current=n;render()}}function summary(){if(results.every(r=>r&&r.checked)){const c=results.filter(r=>r.ok).length,s=document.getElementById("summary");s.style.display="block";s.innerHTML=`<strong>${c} / 6 tehtävää oikein.</strong> <button class="secondary" id="newSet">Uusi tehtäväsarja</button>`;newSet.onclick=makeTasks}}
 document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="Enter"){e.preventDefault();check(false);return}if(document.activeElement?.tagName==="INPUT")return;if(e.key==="ArrowLeft"){e.preventDefault();go(-1)}if(e.key==="ArrowRight"){e.preventDefault();go(1)}});makeTasks();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

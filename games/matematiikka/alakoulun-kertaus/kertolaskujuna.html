@@ -140,5 +140,19 @@
     function celebrate(){railWindow.scrollTo({left:0,behavior:'smooth'});game.classList.add('celebrating');message.classList.add('show');fadeBackground(750);setTimeout(()=>{if(soundEnabled)whistle()},800);setTimeout(()=>{game.classList.add('departing');train.classList.add('depart');if(soundEnabled){stationWhistle();playRecordedSong()}},3000)}
     table.addEventListener('change',()=>{build();startBackground()});document.querySelector('#check').addEventListener('click',checkAll);document.querySelector('#reset').addEventListener('click',()=>{build();startBackground()});soundToggle.addEventListener('click',toggleSound);document.addEventListener('pointerdown',e=>{if(e.target!==soundToggle&&!soundToggle.contains(e.target))activateAudio()});document.addEventListener('keydown',activateAudio);window.addEventListener('resize',fitTrain);updateSoundButton();build();
   </script>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
 </body>
 </html>

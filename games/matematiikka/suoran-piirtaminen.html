@@ -63,4 +63,18 @@ function newTask(){let c;do{c=tasks[Math.floor(Math.random()*tasks.length)]}whil
 canvas.addEventListener('pointerdown',e=>{if(mode!=='click'||answered||points.length>=2)return;const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,x=Math.round(pxToX((e.clientX-r.left)*sx)),y=Math.round(pxToY((e.clientY-r.top)*sy));if(x<MIN||x>MAX||y<MIN||y>MAX)return;points.push({x,y});if(points.length===1)setStatus(`Ensimmäinen piste: (${x}, ${y}). Valitse toinen piste.`);redraw();if(points.length===2){drawStudentLine();checkClickAnswer()}});
 tableModeBtn.onclick=()=>setMode('table');clickModeBtn.onclick=()=>setMode('click');showPointsBtn.onclick=showPointsFromTable;drawTableBtn.onclick=drawFromTable;resetBtn.onclick=resetAttempt;nextBtn.onclick=newTask;newTask();
 </script>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
 </body></html>

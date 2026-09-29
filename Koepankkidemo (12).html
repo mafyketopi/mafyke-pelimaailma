@@ -487,4 +487,18 @@ function exportComments(){const saved=readComments(),comments=tasks.filter(t=>(s
 function toggleReview(){reviewMode=!reviewMode;document.body.classList.toggle('review-mode',reviewMode);document.querySelector('#review').textContent=reviewMode?'Palaa koekoneeseen':'Pankin tarkastus';if(reviewMode)renderReview();else generate()}
 document.querySelector('#generate').onclick=generate;const fullBankButton=document.querySelector('#fullBank');if(fullBankButton)fullBankButton.onclick=renderFullBank;const physicsBankButton=document.querySelector('#physicsBank');if(physicsBankButton)physicsBankButton.onclick=renderPhysicsBank;const reviewButton=document.querySelector('#review');if(reviewButton)reviewButton.onclick=toggleReview;document.querySelector('#reroll').onclick=generate;document.querySelector('#print').onclick=()=>window.print();document.querySelector('#count').onchange=()=>generate();document.querySelector('#subject').onchange=()=>generate();document.querySelector('#profile').onchange=()=>generate();document.querySelector('#includeSolutions').onchange=()=>generate();
 generate();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

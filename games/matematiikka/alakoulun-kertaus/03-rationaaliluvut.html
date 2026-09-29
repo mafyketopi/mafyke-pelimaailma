@@ -28,4 +28,18 @@ function render(){const start=PAGE_STARTS[page],end=PAGE_STARTS[page+1],qs=DATA.
 function okAnswer(q,v){return equivalent(v,q.correct)||(q.alts||[]).some(a=>equivalent(v,a))}
 function check(){collect();const start=PAGE_STARTS[page],end=PAGE_STARTS[page+1];DATA.slice(start,end).forEach((q,j)=>{const i=start+j,fb=document.getElementById('fb'+i);let ok=false;if(q.type==='mc'){const x=document.querySelector(`input[name=q${i}]:checked`);ok=!!x&&x.value===q.correct}else if(q.type==='input'){ok=okAnswer(q,document.getElementById('in'+i).value)}else if(q.type==='expr'){const ex=norm(document.getElementById('ex'+i).value),res=document.getElementById('res'+i).value;const allowed=q.expr_answers.map(norm);ok=allowed.includes(ex)&&okAnswer(q,res)}else if(q.type==='coordpoint'){const pt=(saved[i]||{}).pt;ok=!!pt&&pt[0]===q.correct[0]&&pt[1]===q.correct[1]}else if(q.type==='angle'){ok=Math.abs(((saved[i]||{}).a??-999)-q.correct)<=1}fb.innerHTML=(ok?'<span class="ok">Oikein!</span>':'<span class="bad">Tarkista vastaus.</span>')+`<div class="solution"><b>Ratkaisu:</b> ${q.solution}</div>`;if(window.MathJax?.typesetPromise)MathJax.typesetPromise([fb])})}
 document.getElementById('check').onclick=check;document.getElementById('prev').onclick=()=>{collect();if(page>0){page--;render()}};document.getElementById('next').onclick=()=>{collect();if(page<TOTAL_PAGES-1){page++;render()}};render();
-</script></body></html>
+</script><!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>
