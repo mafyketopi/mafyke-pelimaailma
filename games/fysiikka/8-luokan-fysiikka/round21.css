@@ -1,0 +1,49 @@
+/* Shared, restrained final styling. Native MathML keeps its own internal layout. */
+math{font-family:Cambria Math,STIX Two Math,serif;vertical-align:middle}
+.model math,.math-preview math,.model-lines math{display:math;max-width:100%}
+.model>div,.model-lines>div{margin:12px 0;overflow-x:auto;padding:3px 0}
+.formulas{display:flex;gap:28px;flex-wrap:wrap;align-items:center}
+.formula-bank .formulas>button{padding:10px 18px;background:#f5f8f6;color:#195f58;border:1px solid #b9cdc5;box-shadow:none}
+.formula-bank{border:1px solid #bdcfc7;background:white;border-radius:9px;padding:9px 14px;margin:12px 0}
+.symbol-buttons button{font-weight:750}
+.interval-speeds21{background:#eff4f1;padding:8px 12px;border-radius:7px}
+.interval-speeds21 p{margin:5px 0}
+.acceleration-formula21{margin:13px 0}
+.measurement-calculations[open]>summary{margin-bottom:10px}
+.apparatus19{background:#fafbf7}
+.force-intro13{line-height:1.55}
+.energy20 .activity-tabs21{display:flex;gap:9px;margin-bottom:12px}
+.energy20 .activity-tabs21 button[aria-pressed=true]{background:#195f58;color:white}
+.energy20 .choice{border:1px solid #d4dfd9;border-radius:8px;padding:8px 10px;margin:10px 0}
+.energy20 .choice legend{font-size:.9rem;font-weight:650;padding:0 4px}
+.energy20 .energy-options21{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.energy20 .choice label{font-size:.83rem;line-height:1.3;margin:0;padding:6px}
+.energy20 .scene-wrap svg{height:390px;max-height:390px}
+.energy20 .formulas{gap:38px;padding:12px 15px}
+.energy20 .guide-choice21{display:flex;gap:8px;align-items:center;font-size:.9rem;margin:9px 0}
+.energy20 .guide-choice21 input{width:18px;height:18px}
+.energy20 .model-lines math{display:math}
+.energy20 .model-lines>div{margin:12px 0;padding:5px 0}
+.energy20 .model-lines p{line-height:1.5}
+[hidden]{display:none!important}
+@media(max-width:760px){.formulas{gap:18px}.formula-bank .formulas>button{padding:9px 12px}.measurement-calculations{max-width:100%}}
+
+.energy20 .energy-grid.mc-view21{grid-template-columns:1fr}
+.energy20 .energy-grid.mc-view21>section:first-child{display:none}
+.energy20 #mcContent21{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.energy20 #mcContent21 .choice{margin:0;min-width:0}
+.energy20 #checkMC21{grid-column:1/-1;justify-self:start}
+.model math{font-size:1.15em}
+.model-lines,.calc-example{max-width:100%;overflow-x:auto}
+@media(max-width:500px){math{font-size:.9em}.symbol-buttons{flex-wrap:wrap}}
+@media(max-width:1000px){.energy20 #mcContent21{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.energy20 #mcContent21{grid-template-columns:1fr}.energy20 .energy-options21{grid-template-columns:1fr}}
+
+.energy20 .panel:has(.mc-view21)>h2{display:none}
+.energy20 .mc-view21 .activity-tabs21{margin-bottom:6px}
+.energy20 #mcContent21 .choice label{padding:4px;line-height:1.25}
+
+.midpoint-fields21{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.midpoint-fields21 label{font-size:.9rem}
+.measurement-calculations .ratio-preview{padding:8px 0}
+@media(min-width:900px) and (max-height:800px){.energy20 .mc-view21 .choice legend{line-height:1.15}.energy20 #mcContent21{gap:8px}.energy20 .mc-view21 .answer-status{min-height:.9rem}}
