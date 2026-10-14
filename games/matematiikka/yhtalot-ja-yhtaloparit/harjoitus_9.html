@@ -658,3 +658,17 @@ denominatorMultiplyEvening=function(e,raw){if(!/^[*·×]/.test(raw.trim())||!has
 <script>
 const finalRender9=render9;render9=function(msg=''){finalRender9(msg);if(!['solve','second'].includes(Q9.phase)||Q9.pending9)return;let e=Q9.history.at(-1);if(!e||!has(e.L,'/')&&!has(e.R,'/'))return;let toggle=document.createElement('button');toggle.id='fractionMode9';toggle.type='button';toggle.textContent=opMode9()?'Kirjoita välivaihe':'Kerro tai jaa yhtälö';toggle.onclick=()=>{Q9.fractionOp9=!Q9.fractionOp9;render9()};$('entry89').append(toggle)};
 </script>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->

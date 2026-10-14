@@ -479,4 +479,19 @@ prettyNumberTex=function(value){return plainDecimalTex(value);};
 const originalSpaceExpressionTex=expressionTeX;expressionTeX=function(source){const clean=String(source).replace(/\s/g,'').replace(',','.');return /^-?\d+(\.\d+)?$/.test(clean)?plainDecimalTex(Number(clean)):originalSpaceExpressionTex(source);};
 const originalSpaceCalculation=attachUnitCalculation;attachUnitCalculation=function(input,spec){spec.digits=15;originalSpaceCalculation(input,spec);};
 render();
-</script><style>.strain-layout .sim svg{width:100%;height:auto;min-width:0}.strain-layout .sim{min-width:0}</style><style>.review-optics-layout,.review-calc-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}.review-optics-layout>* ,.review-calc-layout>*{min-width:0}.review-optics-layout .sim svg,.review-calc-layout .sim svg{width:100%;height:auto;min-width:0}.review-optics-layout .figure,.review-calc-layout .figure{margin:4px 0;padding:6px}.review-calc-layout .task,.review-optics-layout .task{margin:8px 0;padding:10px}.unit-calculation-preview small{display:block;font-family:system-ui;margin-top:5px}.expression-preview{padding:8px;margin:6px 0;overflow-x:auto}.calc-entry-help{font-size:14px;line-height:1.45;margin:8px 0}#app h4{margin:10px 0 8px}.calculation-case{padding:0}.calculation-case>p{margin:6px 0 10px}.review-calc-layout .math-typeset{overflow-x:auto}.review-calc-layout table{font-size:14px}.cross input.answer-correct{background:#d8f0dd!important;border-color:#238b48;color:#174f2a}.card{padding:18px}header{padding-top:14px;padding-bottom:14px}.lead{margin:8px 0}@media(max-width:800px){.review-optics-layout,.review-calc-layout{grid-template-columns:minmax(0,1fr);gap:8px}.card{padding:12px}.review-calc-layout .katex{font-size:1em}} </style><style>.task input[id^="spaceReview"]{width:26ch;max-width:100%}.unit-calculation-preview .katex{white-space:nowrap}</style></body></html>
+</script><style>.strain-layout .sim svg{width:100%;height:auto;min-width:0}.strain-layout .sim{min-width:0}</style><style>.review-optics-layout,.review-calc-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}.review-optics-layout>* ,.review-calc-layout>*{min-width:0}.review-optics-layout .sim svg,.review-calc-layout .sim svg{width:100%;height:auto;min-width:0}.review-optics-layout .figure,.review-calc-layout .figure{margin:4px 0;padding:6px}.review-calc-layout .task,.review-optics-layout .task{margin:8px 0;padding:10px}.unit-calculation-preview small{display:block;font-family:system-ui;margin-top:5px}.expression-preview{padding:8px;margin:6px 0;overflow-x:auto}.calc-entry-help{font-size:14px;line-height:1.45;margin:8px 0}#app h4{margin:10px 0 8px}.calculation-case{padding:0}.calculation-case>p{margin:6px 0 10px}.review-calc-layout .math-typeset{overflow-x:auto}.review-calc-layout table{font-size:14px}.cross input.answer-correct{background:#d8f0dd!important;border-color:#238b48;color:#174f2a}.card{padding:18px}header{padding-top:14px;padding-bottom:14px}.lead{margin:8px 0}@media(max-width:800px){.review-optics-layout,.review-calc-layout{grid-template-columns:minmax(0,1fr);gap:8px}.card{padding:12px}.review-calc-layout .katex{font-size:1em}} </style><style>.task input[id^="spaceReview"]{width:26ch;max-width:100%}.unit-calculation-preview .katex{white-space:nowrap}</style>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

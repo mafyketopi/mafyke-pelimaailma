@@ -326,3 +326,17 @@ function denominatorMultiplyEvening(e,raw){
 <style>.exercise-toolbar>label:has(select){display:flex;align-items:center;gap:6px;max-width:100%;flex-wrap:wrap}.exercise-toolbar>label select{max-width:210px!important;width:210px;margin-top:0!important}</style><style>.package-methods .brace89{margin:6px 0}.package-methods .brace89>.brace{font-size:66px}.package-methods .brace89 .row{margin:3px 0;padding:2px}.package-methods .brace89 math{font-size:23px}.package-methods p{font-size:17px}</style></html><script>
 const finalAstMath=astMath;astMath=function(n,sub){if(n.k==='/'){let a=strip(n.l),b=strip(n.r),neg=false;function positive(q){if(q.k==='neg'&&q.sign===-1){neg=!neg;return strip(q.v)}if(q.k==='num'&&q.v<0){neg=!neg;return {...q,v:-q.v}}return q}a=positive(a);b=positive(b);if(neg)return '<mrow><mo>−</mo><mfrac>'+astMath(a,sub)+astMath(b,sub)+'</mfrac></mrow>';}return finalAstMath(n,sub)};
 </script><style>.package-methods{grid-template-columns:1fr 1fr!important}.package-methods button>b{display:block;white-space:nowrap;font-size:clamp(13px,1.55vw,21px)}.package-page{max-width:1180px!important}.pair-model9{display:grid;grid-template-columns:34px minmax(0,600px);gap:12px;align-items:center}.pair-model9 .brace{grid-row:1;font-size:130px;line-height:1}.pair-model9>div{min-width:0}.pair-model9 input{width:100%;box-sizing:border-box}.pair-model9>button{grid-column:2;justify-self:start}.pair-model9 .field-preview{overflow-x:auto}@media(max-width:700px){.package-methods{grid-template-columns:1fr!important}.package-methods button>b{font-size:clamp(12px,3vw,19px)}}</style>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->

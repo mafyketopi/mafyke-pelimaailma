@@ -472,4 +472,19 @@ const conceptPairs=[
  box.innerHTML=conceptPairs.map((p,i)=>`<div class="conceptRow"><b>${i+1}. ${p[0]}</b><select data-a="${i}"><option value="">Valitse selitys…</option>${options}</select></div>`).join('');
 })();
 function checkConceptMatch(){let n=0;document.querySelectorAll('#conceptMatch select').forEach(e=>{const ok=e.value===e.dataset.a;e.style.background=ok?'#e4f3eb':'#f8e7e5';if(ok)n++});const f=document.getElementById('conceptFb');f.textContent=` ${n}/10 oikein.`;f.className='feedback '+(n===10?'correct':'wrong');}
-</script></body></html>
+</script>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

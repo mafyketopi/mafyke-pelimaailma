@@ -458,4 +458,19 @@ const measurementMCBase=mc;mc=function(container,items,group){measurementMCBase(
 const echoStepsBase=ex2b;ex2b=function(){echoStepsBase();const exprTask=$('#echoExpression').closest('.task'),instruction=exprTask.previousElementSibling;const title=document.createElement('h4');title.textContent='Kaiku: laske äänen nopeus';instruction.before(title);const summary=document.createElement('p');summary.id='echoCalculationSummary';title.after(summary);const save=document.createElement('button');save.className='btn';save.id='echoSave';save.textContent='Tallenna mittaus';title.before(save);save.onclick=()=>{const d=+$('#echoDistance').value,time=expression($('#echoClock').textContent.replace(' s','')),p=$('#echoPath'),t=$('#echoTime'),ready=!$('#echoStart').disabled&&time>0,a=ready&&closeNumber(expression(p.value),2*d,1),b=ready&&closeNumber(expression(t.value),time,.015);markAnswer(p,a);markAnswer(t,b);if(a&&b){summary.textContent='Kirjasit koko kulkumatkaksi '+p.value+' m ja äänen kulkuajaksi seinään ja takaisin '+t.value+' s. Laske nopeus näistä lukemista.';note('Mittaus tallennettu. Siirry laskuun Seuraava-painikkeella.');}else note('Lähetä pulssi, odota kaikua ja kirjaa koko kulkumatka sekä kellon aika.',true);};const check=$('#echoCheck').onclick;$('#echoCheck').onclick=()=>{check();const all=['echoPath','echoTime','echoExpression','echoResult'].every(id=>$('#'+id).classList.contains('answer-correct'));if(all)note('4/4 oikein. Laskulausekkeesi yksiköt ovat metrejä ja sekunteja. Pyöristetty tulos perustuu kellolta lukemaasi aikaan.');};};
 
 render();}
-</script><style>.period-preview{margin-top:6px;font-size:.9em}.measurement-warning{color:#915900;font-size:.85em;margin:6px 0}.measurement-warning:empty{display:none}.period-preview .katex{white-space:nowrap}@media(max-width:580px){.period-preview{font-size:.73em}}.strain-layout .sim svg{width:100%;height:auto;min-width:0}.strain-layout .sim{min-width:0}</style></body></html>
+</script><style>.period-preview{margin-top:6px;font-size:.9em}.measurement-warning{color:#915900;font-size:.85em;margin:6px 0}.measurement-warning:empty{display:none}.period-preview .katex{white-space:nowrap}@media(max-width:580px){.period-preview{font-size:.73em}}.strain-layout .sim svg{width:100%;height:auto;min-width:0}.strain-layout .sim{min-width:0}</style>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>

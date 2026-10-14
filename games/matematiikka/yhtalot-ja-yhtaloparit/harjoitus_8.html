@@ -649,3 +649,17 @@ const finalExpected8=eveningExpected;eveningExpected=function(context){if(Q8.pha
 </script><script>function cleanMultiplyInput(n,precedence=0){n=strip(n);if(n.k==='num')return fmt(n.v);if(/^[a-z]$/.test(n.k))return n.k;if(n.k==='sqrt')return 'sqrt('+cleanMultiplyInput(n.v)+')';if(n.k==='pow')return cleanMultiplyInput(n.v,3)+'^'+n.exp;if(n.k==='neg'){let z=(n.sign<0?'-':'+')+cleanMultiplyInput(n.v,3);return precedence>2?'('+z+')':z}let p=['+','-'].includes(n.k)?1:2;let z=cleanMultiplyInput(n.l,p)+n.k+cleanMultiplyInput(n.r,p+(['-','/'].includes(n.k)?1:0));return p<precedence?'('+z+')':z}
 denominatorMultiplyEvening=function(e,raw){if(!/^[*·×]/.test(raw.trim())||!has(e.L,'/')&&!has(e.R,'/'))return null;let k=scalar(raw.trim().slice(1));if(!Number.isFinite(k)||near(k,0))return null;function terms(n,sign=1){n=strip(n);if(n.k==='+')return [...terms(n.l,sign),...terms(n.r,sign)];if(n.k==='-')return [...terms(n.l,sign),...terms(n.r,-sign)];return [{n,sign}]}function side(n){return terms(n).map(({n,sign},i)=>{let body;if(n.k==='/'){let top=cleanMultiplyInput(n.l),bottom=cleanMultiplyInput(n.r);body=(k<0?'('+fmt(k)+')':fmt(k))+'*'+(['+','-'].includes(strip(n.l).k)?'('+top+')':top)+'/'+(['+','-','*','/'].includes(strip(n.r).k)?'('+bottom+')':bottom)}else{let text=cleanMultiplyInput(n);body=(k<0?'('+fmt(k)+')':fmt(k))+'*'+(['+','-'].includes(n.k)?'('+text+')':text)}return (sign<0?'-':i?'+':'')+body}).join('')}let expanded=readRelation(side(e.L)+(e.rel||'=')+side(e.R));expanded.denominatorCleared=true;expanded.multiplyLine={...expanded};return expanded};
 </script>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->

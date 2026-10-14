@@ -474,4 +474,19 @@ $('#springPlot').onclick=e=>{if(!validated){$('#springGraphFeedback').textConten
 const measurementMCBase=mc;mc=function(container,items,group){measurementMCBase(container,items,group);container.querySelectorAll('.opts').forEach(opts=>{const labels=[...opts.children];for(let i=labels.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[labels[i],labels[j]]=[labels[j],labels[i]];}opts.append(...labels);});};
 
 render();}
-</script><style>.strain-layout .sim svg{width:100%;height:auto;min-width:0}.strain-layout .sim{min-width:0}</style><style>.answer-entry{display:inline-flex;align-items:center;gap:.35em;white-space:nowrap;max-width:100%;vertical-align:middle}.answer-entry .field{min-width:0}.answer-entry .math-typeset{white-space:nowrap}.answer-entry:has(.answer-correct){color:inherit}</style></body></html>
+</script><style>.strain-layout .sim svg{width:100%;height:auto;min-width:0}.strain-layout .sim{min-width:0}</style><style>.answer-entry{display:inline-flex;align-items:center;gap:.35em;white-space:nowrap;max-width:100%;vertical-align:middle}.answer-entry .field{min-width:0}.answer-entry .math-typeset{white-space:nowrap}.answer-entry:has(.answer-correct){color:inherit}</style>
+<!-- Cloudflare Web Analytics -->
+<script>
+  if (localStorage.getItem("mafyke_owner") !== "true") {
+    const cfScript = document.createElement("script");
+    cfScript.type = "module";
+    cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    cfScript.setAttribute(
+      "data-cf-beacon",
+      '{"token":"ecd48c960cce4f02844fb6cd1ee5354b"}'
+    );
+    document.body.appendChild(cfScript);
+  }
+</script>
+<!-- End Cloudflare Web Analytics -->
+</body></html>
