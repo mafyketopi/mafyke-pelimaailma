@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="142.571" height="165.765" viewBox="0 0 142.571 165.765">
+<defs>
+<clipPath id="clip-0">
+<path clip-rule="nonzero" d="M 0 0.132812 L 142.144531 0.132812 L 142.144531 165.398438 L 0 165.398438 Z M 0 0.132812 "/>
+</clipPath>
+<clipPath id="clip-1">
+<path clip-rule="nonzero" d="M 7 0.132812 L 86 0.132812 L 86 123 L 7 123 Z M 7 0.132812 "/>
+</clipPath>
+<clipPath id="clip-2">
+<path clip-rule="nonzero" d="M 63 0.132812 L 142.144531 0.132812 L 142.144531 127 L 63 127 Z M 63 0.132812 "/>
+</clipPath>
+</defs>
+<g clip-path="url(#clip-0)">
+<path fill="none" stroke-width="0.79701" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-miterlimit="10" d="M -0.000631394 73.703182 L -69.43158 40.086708 L -55.561846 -32.079008 L -0.000631394 -81.304811 L 62.381828 -36.016602 L 59.376719 34.280226 Z M -0.000631394 73.703182 " transform="matrix(0.997, 0, 0, -0.997, 74.586567, 78.97426)"/>
+</g>
+<g clip-path="url(#clip-1)">
+<path fill="none" stroke-width="0.79701" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-dasharray="2.98883 2.98883" stroke-miterlimit="10" d="M -0.000631394 73.703182 L -55.561846 -32.079008 " transform="matrix(0.997, 0, 0, -0.997, 74.586567, 78.97426)"/>
+</g>
+<path fill="none" stroke-width="0.79701" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-dasharray="2.98883 2.98883" stroke-miterlimit="10" d="M -0.000631394 73.703182 L -0.000631394 -81.304811 " transform="matrix(0.997, 0, 0, -0.997, 74.586567, 78.97426)"/>
+<g clip-path="url(#clip-2)">
+<path fill="none" stroke-width="0.79701" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-dasharray="2.98883 2.98883" stroke-miterlimit="10" d="M -0.000631394 73.703182 L 62.381828 -36.016602 " transform="matrix(0.997, 0, 0, -0.997, 74.586567, 78.97426)"/>
+</g>
+</svg>
