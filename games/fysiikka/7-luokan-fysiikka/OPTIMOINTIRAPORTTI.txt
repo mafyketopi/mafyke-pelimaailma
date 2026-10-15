@@ -1,0 +1,15 @@
+7. luokan fysiikan optimointiraportti
+
+Muutokset: upotetut base64-resurssit ulkoistettu yhteiseen assets/shared-kansioon bittitarkasti; H2:n a-osa palautettu aloitusosaksi; indexiin lisätty paluu Mafyke-etusivulle.
+
+fysiikka7_1_suureet_ja_tiheys.html: HTML 8.69 MB -> 0.55 MB; resurssiviitteitä 124, uniikkeja tässä sivussa 119
+fysiikka7_2_aallot_ja_aani.html: HTML 8.38 MB -> 0.54 MB; resurssiviitteitä 123, uniikkeja tässä sivussa 118
+fysiikka7_3_valo.html: HTML 8.64 MB -> 0.55 MB; resurssiviitteitä 125, uniikkeja tässä sivussa 120
+fysiikka7_4_heijastuminen_ja_taittuminen.html: HTML 27.12 MB -> 0.55 MB; resurssiviitteitä 129, uniikkeja tässä sivussa 124
+fysiikka7_5_linssit.html: HTML 10.27 MB -> 0.55 MB; resurssiviitteitä 146, uniikkeja tässä sivussa 135
+fysiikka7_6_avaruus.html: HTML 8.81 MB -> 0.53 MB; resurssiviitteitä 110, uniikkeja tässä sivussa 104
+fysiikka7_7_fysiikan_laskut.html: HTML 10.75 MB -> 0.57 MB; resurssiviitteitä 135, uniikkeja tässä sivussa 130
+
+Koko paketin uniikkeja ulkoisia resursseja: 176
+Assets yhteensä: 26.89 MB
+Tarkistusvirheet: ei
