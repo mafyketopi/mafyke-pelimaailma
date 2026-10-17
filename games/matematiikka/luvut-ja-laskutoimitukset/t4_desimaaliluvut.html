@@ -34,7 +34,7 @@ button.action{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-wei
 </style>
 </head>
 <body>
-<header><h1>Desimaalilukujen laskuharjoittelu</h1><p>7. luokka · ilman laskinta</p></header>
+<header><h1>Desimaalilukujen laskuharjoittelu</h1><p>7. luokka</p></header>
 <main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav>
 <div class="tabs">
 <button class="tab active" data-page="add">Yhteen- ja vähennyslasku</button>
@@ -46,7 +46,7 @@ button.action{border:0;border-radius:9px;padding:10px 15px;font:inherit;font-wei
 <section class="card">
 <h2 id="title"></h2><p class="intro" id="intro"></p><div class="examples" id="examples"></div>
 <div class="grid" id="grid"></div>
-<div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Arvo uudet</button></div>
+<div class="actions"><button class="action primary" id="check">Tarkista</button><button class="action secondary" id="new">Arvo uudet</button></div>
 <div class="score" id="score"></div><div class="note">Kirjoita desimaaliluvut desimaalipilkulla.</div>
 </section>
 </main>
@@ -58,8 +58,8 @@ const eq=(s,n)=>Number.isFinite(parse(s))&&Math.abs(parse(s)-n)<1e-8;
 let page='add', tasks=[];
 
 const info={
-add:{title:'Yhteen- ja vähennyslasku',intro:'Laske päässä. Hyödynnä kokonaisia ja helppoja osia.',examples:[]},
-ten:{title:'Kertominen ja jakaminen 10:n kerrannaisilla',intro:'Tarkkaile, miten lukuyksiköt muuttuvat.',examples:[
+add:{title:'Yhteen- ja vähennyslasku',intro:'Laske päässä.',examples:[]},
+ten:{title:'Kertominen ja jakaminen luvuilla 10, 100 ja 1000',intro:'Tarkkaile, miten lukuyksiköt muuttuvat.',examples:[
 '<b>3,47 · 100 = 347</b><br>3 ykkösestä tulee 3 sataa, 4 kymmenesosasta 4 kymmentä ja 7 sadasosasta 7 ykköstä.',
 '<b>52,6 : 10 = 5,26</b><br>5 kymmenestä tulee 5 ykköstä, 2 ykkösestä 2 kymmenesosaa ja 6 kymmenesosasta 6 sadasosaa.'
 ]},
@@ -71,7 +71,7 @@ line:{title:'Desimaaliluku lukusuoralla',intro:'Siirrä sininen piste annetun lu
 '<b>Esimerkki:</b> Jos 0:n ja 1:n väli on jaettu kymmeneen yhtä suureen osaan, yksi pieni väli on 0,1. Luku 0,7 on seitsemän pientä väliä nollasta.',
 '<b>Tarkkuus:</b> Pisteen ei tarvitse osua aivan pikselintarkasti. Se lukittuu lähimpään lukusuoran jakoviivaan.'
 ]},
-div:{title:'Desimaalilukujen jakolasku',intro:'Kun jakaja on desimaaliluku, muuta jako ensin vastaavaksi jaoksi, jossa jakaja on kokonaisluku.',examples:[
+div:{title:'Desimaalilukujen jakolasku',intro:'Kun jakaja on desimaaliluku, lavenna niin, että jakajasta tulee kokonaisluku.',examples:[
 '<b>8,4 : 4 = 2,1</b><br>8 ykköstä : 4 = 2 ykköstä ja 4 kymmenesosaa : 4 = 1 kymmenesosa.',
 '<b>4,8 : 0,6 = 48 : 6 = 8</b><br>Kerro sekä jaettava että jakaja 10:llä. Osamäärä ei muutu.'
 ]}};
@@ -174,7 +174,7 @@ function bindLines(){
 }
 
 function shuffle(a){a=[...a];for(let i=a.length-1;i;i--){let j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a}
-function generate(){tasks=page==='add'?addTasks():page==='ten'?tenTasks():page==='mul'?mulTasks():page==='div'?divTasks():lineTasks();render()}
+function generate(){answersRevealed=false;document.getElementById('check').textContent='Tarkista';tasks=page==='add'?addTasks():page==='ten'?tenTasks():page==='mul'?mulTasks():page==='div'?divTasks():lineTasks();render()}
 function normStep(s){return String(s).replace(/\s/g,'').replace(/÷/g,':').replace(/,/g,'.')}
 function render(){
  let I=info[page]; document.getElementById('title').textContent=I.title;document.getElementById('intro').textContent=I.intro;
@@ -191,15 +191,17 @@ function render(){
  }
  document.getElementById('score').textContent='';
 }
+let answersRevealed=false;
 function check(){
+ const reveal=answersRevealed;
  let points=0,total=tasks.length;
  if(page==='line'){
   tasks.forEach((t,i)=>{
    const ok=Math.abs(t.pos-t.target)<1e-8, el=document.getElementById('it'+i),c=document.getElementById('c'+i);
    el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');
-   if(ok){points++;c.textContent='✓ Oikein'}else c.textContent='Oikea kohta: '+F(t.target);
+   if(ok){points++;c.textContent='✓ Oikein'}else c.textContent=reveal?'Oikea kohta: '+F(t.target):'';
   });
-  document.getElementById('score').textContent=`Tulos: ${points} / ${total}`; return;
+  document.getElementById('score').textContent=`Tulos: ${points} / ${total}`;answersRevealed=true;document.getElementById('check').textContent='Näytä vastaukset'; return;
  }
  tasks.forEach((t,i)=>{
   let ok=eq(document.getElementById('a'+i).value,t.ans), stepok=true;
@@ -209,10 +211,10 @@ function check(){
   if(all){points++;c.textContent=''} else {
     let msg='Oikea vastaus: '+F(t.ans);
     if(t.step&&!stepok) msg='Lavennettu jako: '+t.stepAns.replace(':',' : ')+' · '+msg;
-    c.textContent=msg;
+    c.textContent=reveal?msg:'';
   }
  });
- document.getElementById('score').textContent=`Tulos: ${points} / ${total}`;
+ document.getElementById('score').textContent=`Tulos: ${points} / ${total}`;answersRevealed=true;document.getElementById('check').textContent='Näytä vastaukset';
 }
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;generate()});
 document.getElementById('check').onclick=check;document.getElementById('new').onclick=generate;generate();

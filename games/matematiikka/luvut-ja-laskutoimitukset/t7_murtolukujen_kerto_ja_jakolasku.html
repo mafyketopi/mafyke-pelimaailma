@@ -18,7 +18,7 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
-<header><h1>Murtolukujen kerto- ja jakolasku</h1><p>7. luokka · kertolasku ja jakolasku</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs"><button class="tab active" data-page="mul">Kertolasku</button><button class="tab" data-page="div">Jakolasku</button><button class="tab" data-page="challenge">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
+<header><h1>Murtolukujen kerto- ja jakolasku</h1><p>7. luokka</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs"><button class="tab active" data-page="mul">Kertolasku</button><button class="tab" data-page="div">Jakolasku</button><button class="tab" data-page="challenge">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function raw(s){return String(s).trim().replace(/−/g,'-').replace(/,/g,'.')}
 function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
@@ -34,7 +34,7 @@ const tex=(n,d)=>`\\(\\frac{${n}}{${d}}\\)`;
 const mix=(w,n,d)=>`${w} ${tex(n,d)}`;
 function typeset(){if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory'),$('#grid')]);}}
 
-let page='mul',tasks=[];
+let page='mul',tasks=[],answersRevealed=false;
 const mul=[
  {q:`4 · ${tex(1,5)}`,n:4,d:5},{q:`3 · ${tex(1,2)}`,n:3,d:2},{q:`${tex(1,2)} · ${tex(1,3)}`,n:1,d:6},
  {q:`${tex(1,4)} · 8`,n:2,d:1},{q:`5 · ${tex(3,7)}`,n:15,d:7},{q:`${tex(3,2)} · ${tex(3,2)}`,n:9,d:4},
@@ -43,16 +43,16 @@ const mul=[
 const div=[
  {q:`${tex(5,8)} : 5`,n:1,d:8},{q:`${tex(1,2)} : 4`,n:1,d:8},{q:`2 : ${tex(1,2)}`,n:4,d:1},
  {q:`3 : ${tex(1,6)}`,n:18,d:1},{q:`${tex(4,3)} : ${tex(1,3)}`,n:4,d:1},{q:`${tex(2,5)} : ${tex(4,5)}`,n:1,d:2},
- {q:`${tex(3,8)} : ${tex(2,5)}`,n:15,d:16},{q:`${mix(1,2,3)} : ${mix(1,1,2)}`,n:10,d:9}
+ {q:`${tex(3,8)} : ${tex(2,5)}`,n:15,d:16},{q:`${tex(15,2)} : ${tex(5,7)}`,n:21,d:2},{q:`${mix(1,2,3)} : ${mix(1,1,2)}`,n:10,d:9}
 ];
 const challenge=[
  {q:`${mix(1,1,5)} · (${mix(2,1,2)} + ${mix(3,1,3)})`,n:7,d:1},
  {q:`3 litraa limsaa jaetaan ${tex(1,6)} litran annoksiin. Montako annosta saadaan?`,n:18,d:1},
- {q:`Juna kulkee ${mix(2,1,3)} km minuutissa. Mikä on tuntinopeus km/h?`,n:140,d:1},
- {q:`${tex(15,2)} : ${tex(5,7)}`,n:21,d:2}
+ {q:`Juna kulkee ${mix(2,1,3)} km minuutissa. Mikä on tuntinopeus km/h?`,n:140,d:1}
 ];
 function setPage(p){page=p;render()}
 function render(){
+ answersRevealed=false;$('#check').textContent='Tarkista';
  tasks=page==='mul'?mul:page==='div'?div:challenge;
  $('#title').textContent=page==='mul'?'Murtolukujen kertolasku':page==='div'?'Murtolukujen jakolasku':'Haaste';
  $('#intro').textContent='Kirjoita vastaus muodossa 1/4 tai 2 1/3. Anna vastaus aina supistettuna. Kokonaisluku kirjoitetaan kokonaislukuna.';
@@ -62,7 +62,7 @@ function render(){
  $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" ></div><div class="correct" id="c${i}"></div></div>`).join('');
  $('#score').textContent='';typeset();
 }
-function check(){let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t.d===1?t.n:`${t.n}/${t.d}`);if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
+function check(){const reveal=answersRevealed;let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');let ans=t.d===1?String(t.n):tex(t.n,t.d);$('#c'+i).innerHTML=ok?'✓ Oikein':(reveal?'Oikea vastaus: '+ans:'');if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;answersRevealed=true;$('#check').textContent='Näytä vastaukset';typeset()}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');setPage(b.dataset.page)});
 $('#check').onclick=check;$('#new').onclick=render;render();
 </script><!-- Cloudflare Web Analytics -->

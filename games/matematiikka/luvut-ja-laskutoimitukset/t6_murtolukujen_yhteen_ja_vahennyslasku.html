@@ -18,7 +18,7 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
-<header><h1>Murtolukujen yhteen- ja vähennyslasku</h1><p>7. luokka · yhteen- ja vähennyslaskut</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs"><button class="tab active" data-page="easy">Päässälaskut</button><button class="tab" data-page="medium">Keskitaso</button><button class="tab" data-page="hard">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
+<header><h1>Murtolukujen yhteen- ja vähennyslasku</h1><p>7. luokka</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs"><button class="tab active" data-page="easy">Päässälaskut</button><button class="tab" data-page="medium">Keskitaso</button><button class="tab" data-page="hard">Haaste</button></div><section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main><script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 function raw(s){return String(s).trim().replace(/−/g,'-').replace(/,/g,'.')}
 function gcd(a,b){while(b){[a,b]=[b,a%b]}return Math.abs(a)}
@@ -34,7 +34,7 @@ const tex=(n,d)=>`\\(\\frac{${n}}{${d}}\\)`;
 const mix=(w,n,d)=>`${w} ${tex(n,d)}`;
 function typeset(){if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory'),$('#grid')]);}}
 
-let page='easy',tasks=[];
+let page='easy',tasks=[],answersRevealed=false;
 const easy=[
  {q:`${tex(1,3)} + ${tex(1,3)}`,n:2,d:3},
  {q:`${tex(4,7)} + ${tex(3,7)}`,n:1,d:1},
@@ -63,6 +63,7 @@ const hard=[
 ];
 function setPage(p){page=p;render()}
 function render(){
+ answersRevealed=false;$('#check').textContent='Tarkista';
  tasks=page==='easy'?easy:page==='medium'?medium:hard;
  $('#title').textContent=page==='easy'?'Päässälaskut':page==='medium'?'Erinimiset ja sekaluvut':'Haastavammat laskut';
  $('#intro').textContent='Anna vastaus supistettuna murto- tai sekalukuna. Jos tulos on kokonaisluku, kirjoita kokonaisluku.';
@@ -70,7 +71,7 @@ function render(){
  $('#grid').innerHTML=tasks.map((t,i)=>`<div class="item" id="it${i}"><div class="row"><span class="letter">${String.fromCharCode(97+i)})</span><span>${t.q} =</span><input id="a${i}" ></div><div class="correct" id="c${i}"></div></div>`).join('');
  $('#score').textContent='';typeset();
 }
-function check(){let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).textContent=ok?'✓ Oikein':'Oikea vastaus: '+(t.d===1?t.n:`${t.n}/${t.d}`);if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
+function check(){const reveal=answersRevealed;let p=0;tasks.forEach((t,i)=>{let ok=checkFrac($('#a'+i).value,t.n,t.d);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');let ans=t.d===1?String(t.n):tex(t.n,t.d);$('#c'+i).innerHTML=ok?'✓ Oikein':(reveal?'Oikea vastaus: '+ans:'');if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;answersRevealed=true;$('#check').textContent='Näytä vastaukset';typeset()}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');setPage(b.dataset.page)});
 $('#check').onclick=check;$('#new').onclick=render;render();
 </script><!-- Cloudflare Web Analytics -->

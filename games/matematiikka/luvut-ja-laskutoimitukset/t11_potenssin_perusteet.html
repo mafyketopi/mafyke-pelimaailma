@@ -18,9 +18,9 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
-<header><h1>Potenssin perusteet</h1><p>7. luokka · kantaluku, eksponentti ja potenssin arvo</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav>
+<header><h1>Potenssin perusteet</h1><p>7. luokka</p></header><main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav>
 <div class="tabs"><button class="tab active" data-page="meaning">Potenssimerkintä</button><button class="tab" data-page="value">Potenssin arvo</button><button class="tab" data-page="sign">Sulkeet ja miinus</button><button class="tab" data-page="order">Laskulausekkeet</button></div>
-<section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main>
+<section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div><div class="actions"><button class="action primary" id="check">Tarkista</button><button class="action secondary" id="new">Aloita osio alusta</button></div><div id="score" class="score"></div></section></main>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];const V=s=>{let z=String(s).trim().replace(/−/g,'-').replace(',','.');return z===''?NaN:Number(z)};const EQ=(s,x)=>Number.isFinite(V(s))&&Math.abs(V(s)-x)<1e-9;
 let page='meaning',tasks=[];
@@ -30,7 +30,7 @@ const signs=[['\\((-3)^2\\)',9],['\\(-3^2\\)',-9],['\\((-2)^3\\)',-8],['\\(-2^4\
 const order=[['\\(2^4 : 8\\)',2],['\\(27 : 3^2\\)',3],['\\(3^3 + 3\\)',30],['\\(2^3 - 3^2\\)',-1],['\\(49 - 7^2\\)',0],['\\(5^2 - 5^3\\)',-100]];
 function normPower(s){return String(s).trim().replace(/\s/g,'').replace(/−/g,'-').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g,c=>({'⁰':'^0','¹':'^1','²':'^2','³':'^3','⁴':'^4','⁵':'^5','⁶':'^6','⁷':'^7','⁸':'^8','⁹':'^9'}[c]))}
 function typeset(){if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory'),$('#grid')]);}}
-function render(){
+function render(){answersRevealed=false;$('#check').textContent='Tarkista';
  tasks=page==='meaning'?meaning:page==='value'?values:page==='sign'?signs:order;
  $('#title').textContent=page==='meaning'?'Potenssimerkintä':page==='value'?'Potenssin arvo':page==='sign'?'Sulkeet ja miinusmerkki':'Potenssit laskulausekkeessa';
  $('#intro').textContent=page==='meaning'?'Kirjoita tulo potenssina. Syötä potenssi merkillä ^, esimerkiksi 3^4.':'Laske.';
@@ -45,7 +45,8 @@ const orderSolutions=[
  '\\(49-7^2=49-49=0\\)',
  '\\(5^2-5^3=25-125=-100\\)'
 ];
-function check(){let p=0;tasks.forEach((t,i)=>{let ok=page==='meaning'?normPower($('#a'+i).value)===normPower(t[1]):EQ($('#a'+i).value,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).innerHTML=ok?'✓ Oikein':'Oikea vastaus: '+t[1];if(page==='order')$('#c'+i).innerHTML+=(ok?'':'<br>')+'<b>Malliratkaisu:</b> '+orderSolutions[i];if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;typeset();}
+let answersRevealed=false;
+function check(){let p=0;tasks.forEach((t,i)=>{let ok=page==='meaning'?normPower($('#a'+i).value)===normPower(t[1]):EQ($('#a'+i).value,t[1]);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#c'+i).innerHTML=ok?'✓ Oikein':(answersRevealed?'Oikea vastaus: '+t[1]:'');if(page==='order'&&answersRevealed&&!ok)$('#c'+i).innerHTML+='<br><b>Malliratkaisu:</b> '+orderSolutions[i];if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;answersRevealed=true;$('#check').textContent='Näytä vastaukset';typeset();}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;render()});$('#check').onclick=check;$('#new').onclick=render;render();
 </script><!-- Cloudflare Web Analytics -->
 <script>

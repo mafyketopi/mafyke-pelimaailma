@@ -19,7 +19,7 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 </head><body>
-<header><h1>Pyöristäminen ja lukujen tarkkuus</h1><p>7. luokka · pyöristäminen, merkitsevät numerot ja mittaustulokset</p></header>
+<header><h1>Pyöristäminen ja lukujen tarkkuus</h1><p>7. luokka</p></header>
 <main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav><div class="tabs">
 <button class="tab active" data-page="round">Pyöristäminen</button>
 <button class="tab" data-page="sig">Merkitsevät numerot</button>
@@ -27,7 +27,7 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 <button class="tab" data-page="measure">Mittaustulokset</button>
 </div>
 <section class="card"><h2 id="title"></h2><p class="intro" id="intro"></p><div id="theory" class="theory"></div><div id="grid" class="grid"></div>
-<div class="actions"><button class="action primary" id="check">Tarkista kaikki</button><button class="action secondary" id="next">Seuraava tehtävä</button></div><div id="score" class="score"></div></section></main>
+<div class="actions"><button class="action primary" id="check">Tarkista</button><button class="action secondary" id="next">Seuraava tehtävä</button></div><div id="score" class="score"></div></section></main>
 <script>
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const clean=s=>String(s).trim().replace(/\s/g,'').replace(',','.');const V=s=>clean(s)===''?NaN:Number(clean(s));
@@ -66,8 +66,8 @@ function theory(){
  if(page==='approx')return `<div class="box">Laske ensin mahdollisimman tarkasti ja pyöristä vasta lopuksi.</div><div class="box">Esim. \\(\\frac{1}{3}=0,333...\\), joten kahden desimaalin likiarvo on 0,33.</div>`;
  return `<div class="box"><b>Yhteen- ja vähennyslasku:</b> tulos ilmoitetaan epätarkimman lähtöluvun desimaalitarkkuuden mukaan.<br>3,85 + 0,4 → vastaus kymmenesosina.</div><div class="box"><b>Kerto- ja jakolasku:</b> tuloksessa on yhtä monta merkitsevää numeroa kuin epätarkimmassa lähtöluvussa.<br>3,8 · 4,9 = 18,62 ≈ 19.</div>`;
 }
-const roundBatches=roundSets.flatMap(g=>g.sets.map(set=>({g,set})));
-const sigBatches=sigSets.flatMap(g=>[g.vals.slice(0,3),g.vals.slice(3,6)].map(set=>({g,set})));
+const roundBatches=roundSets.flatMap(g=>{const vals=g.sets.flat();const out=[];for(let i=0;i<vals.length;i+=8)out.push({g,set:vals.slice(i,i+8)});return out;});
+const sigBatches=sigSets.map(g=>({g,set:g.vals}));
 function updateNext(){
  const b=$('#next');
  if(page==='approx'||page==='measure'){b.style.display='none';return;}
@@ -79,12 +79,14 @@ function updateNext(){
  b.style.cursor=done?'default':'pointer';
  b.textContent=done?'Tehtävät tehty':'Seuraava tehtävä';
 }
+let answersRevealed=false;
 function render(){
+ answersRevealed=false;$('#check').textContent='Tarkista';
  $('#theory').innerHTML=theory();$('#score').textContent='';
  if(page==='round'){
    const o=roundBatches[Math.min(roundIndex,roundBatches.length-1)],g=o.g,set=o.set;
    tasks=set.map(x=>({q:`${fmt(x)} ≈`,a:g.kind==='place'?rplace(x,g.p):rdec(x,g.d)}));
-   $('#title').textContent=g.q;$('#intro').textContent='Kaikki neljä lukua pyöristetään samaan tarkkuuteen.';
+   $('#title').textContent=`Pyöristäminen ${roundIndex+1}`;$('#intro').textContent=g.q;
  }
  if(page==='sig'){
    const o=sigBatches[Math.min(roundIndex,sigBatches.length-1)],g=o.g;
@@ -97,7 +99,7 @@ function render(){
  updateNext();
  if(window.MathJax?.typesetPromise){MathJax.typesetClear?.();MathJax.typesetPromise([$('#theory'),$('#grid')]);}
 }
-function check(){let p=0;tasks.forEach((t,i)=>{let raw=$('#a'+i).value,ok=EQ(raw.replace(/[a-zA-Z°]/g,''),t.a);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#m'+i).textContent=ok?'✓':'✗';$('#c'+i).textContent=ok?'':'Oikea vastaus: '+(t.show||fmt(t.a))+(t.u?' '+t.u:'');if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`}
+function check(){const reveal=answersRevealed;let p=0;tasks.forEach((t,i)=>{let raw=$('#a'+i).value,ok=EQ(raw.replace(/[a-zA-Z°]/g,''),t.a);let el=$('#it'+i);el.classList.remove('good','bad');el.classList.add(ok?'good':'bad');$('#m'+i).textContent=ok?'✓':'✗';$('#c'+i).textContent=(!ok&&reveal)?'Oikea vastaus: '+(t.show||fmt(t.a))+(t.u?' '+t.u:''):'';if(ok)p++});$('#score').textContent=`Tulos: ${p} / ${tasks.length}`;answersRevealed=true;$('#check').textContent='Näytä vastaukset'}
 $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');page=b.dataset.page;roundIndex=0;render()});
 $('#check').onclick=check;$('#next').onclick=()=>{if(!$('#next').disabled){roundIndex++;render()}};render();
 </script><!-- Cloudflare Web Analytics -->

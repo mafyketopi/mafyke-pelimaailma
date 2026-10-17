@@ -61,9 +61,10 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
 <body>
 <header>
   <h1>Päässälaskukone</h1>
-  <p>7. luokka · valitse taso ja ratkaise 12 tehtävää ilman laskinta. Kirjoita vastaukseen myös yksikkö, jos tehtävässä sitä tarvitaan.</p>
+  <p>7. luokka</p>
 </header>
 <main><nav class="backbar"><a class="backlink" href="index.html">← Luvut ja laskutoimitukset</a></nav>
+  <p>Valitse taso ja ratkaise 12 tehtävää ilman laskinta. Kirjoita vastaukseen myös yksikkö, jos sitä kysytään.</p>
   <div class="controls">
     <button class="level active" data-level="basic">Perus</button>
     <button class="level" data-level="medium">Keskitaso</button>
@@ -71,7 +72,7 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']]},svg:{fontCache:'globa
     <div class="spacer"></div>
     <span class="status" id="status">12 tehtävää</span>
     <button class="action secondary" id="newBtn">Arvo uudet</button>
-    <button class="action" id="checkBtn">Tarkista kaikki</button>
+    <button class="action" id="checkBtn">Tarkista</button>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -134,8 +135,8 @@ const basic = [
  ()=>{let m=pick([3.4,7.25,11.76]);return numTask(`${fmt(m)} m. Anna vastaus senttimetreinä.`,m*100,null,'cm')},
  ()=>{let price=pick([1.25,1.5,2.4]),count=pick([3,4,5]);return numTask(`${count} · ${fmt(price)} €`,count*price,null,'€')},
  ()=>{let startH=pick([8,12,18,19]),startM=pick([15,20,30,45]),dur=pick([55,75,90]);let total=startH*60+startM+dur,h=Math.floor(total/60)%24,m=total%60;return customTask(`Kello on ${startH}.${String(startM).padStart(2,'0')}. Mikä kellonaika on ${dur} minuutin kuluttua?`,`${h}.${String(m).padStart(2,'0')}`,s=>s.trim().replace(':','.')===`${h}.${String(m).padStart(2,'0')}`)},
- ()=>{let side=pick([6,8,9,10]);return numTask(`Neliössä on ${side*side} ruutua. Sivun pituus ruutuina?`,side)},
- ()=>{let side=pick([4,5,6,8]);return numTask(`Neliön piiri on ${4*side} m. Pinta-ala?`,side*side,`${side*side} m²`,'m²')},
+ ()=>{let side=pick([6,8,9,10]);return numTask(`Neliön pinta-ala on ${side*side} ruutua. Kuinka monta ruutua neliön sivun pituus on?`,side)},
+ ()=>{let side=pick([4,5,6,8]);return numTask(`Neliön piiri on ${4*side} m. Mikä on neliön pinta-ala?`,side*side,`${side*side} m²`,'m²')},
  ()=>{let a=pick([40,50,60]),b=a+2,c=a+4,d=a+6;return numTask(`${a} + ${b} + ${c} + ${d}`,a+b+c+d)},
  ()=>{let amount=pick([12,18,24]),coin=pick([0.2,0.5]);return numTask(`Kuinka monta ${fmt(coin)} € kolikkoa tarvitaan ${fmt(amount)} euroon?`,amount/coin)}
 ];
@@ -148,12 +149,12 @@ const medium = [
  ()=>{let n=pick([1200,1500,1800]),p=pick([12,15,20,25]);return numTask(`${p} % luvusta ${n}`,p*n/100)},
  ()=>{let ha=pick([1.4,2.8,13]);return numTask(`${fmt(ha)} ha. Anna vastaus neliömetreinä.`,ha*10000,null,'m²')},
  ()=>{let g=pick([2,7,12]),mg=pick([2,520,350]);return numTask(`${g} g + ${mg} mg. Anna vastaus milligrammoina.`,g*1000+mg,null,'mg')},
- ()=>{let a=pick([4,5,6]),b=pick([6,7,8]);return numTask(`Pienin positiivinen luku, joka on jaollinen luvuilla ${a} ja ${b}`,lcm(a,b))},
- ()=>{let div=pick([7,8,9]),target=pick([60,69,85]);return numTask(`Luvulla ${div} jaollinen luku lähimpänä lukua ${target}`,Math.round(target/div)*div)},
+ ()=>{let a=pick([4,5,6]),b=pick([6,7,8]);return numTask(`Mikä on pienin positiivinen luku, joka on jaollinen luvuilla ${a} ja ${b}?`,lcm(a,b))},
+ ()=>{let div=pick([7,8,9]),target=pick([60,69,85]);return numTask(`Mikä luvulla ${div} jaollinen luku on lähimpänä lukua ${target}?`,Math.round(target/div)*div)},
  ()=>{let lessons=pick([6,7]),lesson=45,breaks=lessons-2,br=15;let min=lessons*lesson+breaks*br;return numTask(`Koulupäivässä on ${lessons} oppituntia (45 min) ja ${breaks} välituntia (15 min). Kuinka pitkä koulupäivä on? Anna vastaus minuutteina.`,min,`${min} min`,'min')},
  ()=>{let prices=pick([[2.5,4.3],[3.2,5.6],[1.8,6.4]]),paid=20;let sum=prices[0]+prices[1];return numTask(`Ostokset maksavat ${fmt(prices[0])} € ja ${fmt(prices[1])} €. Paljonko saat takaisin ${paid} eurosta?`,paid-sum,null,'€')},
  ()=>{let n=pick([36,48,60]),d=pick([3,4,6]);return numTask(`Kuinka moneen \\(\\frac{1}{${d}}\\):n osaan voidaan jakaa ${n/d} kokonaisuutta?`,n)},
- ()=>{let avg=pick([8,9]),a=pick([7,8]),b=pick([9,10]);let c=3*avg-a-b;return numTask(`Kolmen luvun keskiarvo on ${avg}. Kaksi luvuista ovat ${a} ja ${b}. Kolmas?`,c)},
+ ()=>{let avg=pick([8,9]),a=pick([7,8]),b=pick([9,10]);let c=3*avg-a-b;return numTask(`Kolmen luvun keskiarvo on ${avg}. Kaksi luvuista ovat ${a} ja ${b}. Mikä on kolmas luku?`,c)},
  ()=>{let p=pick([15,20,25]),price=pick([200,400,500]);return numTask(`Tuotteen hinta on ${price} €. Kuinka suuri on ${p} % alennus?`,p*price/100,`${p*price/100} €`,'€')},
  ()=>{let p=pick([10,20]),price=pick([400,500,700]);return numTask(`Hinta on ${price} €. Sitä korotetaan ${p} %. Mikä on uusi hinta?`,price*(1+p/100),`${price*(1+p/100)} €`,'€')}
 ];
@@ -166,13 +167,13 @@ const hard = [
  ()=>{let a=pick([9,10,11,12]);return numTask(`${a}² − ${a-1}²`,a*a-(a-1)*(a-1))},
  ()=>{let a=pick([2,3,4]),b=pick([3,4,5]);return numTask(`(−${a})³ + ${b}²`,(-a)**3+b*b)},
  ()=>{let n=pick([6630,9918,16640]),d=pick([6,8,9]);while(n%d)n+=d-(n%d);return numTask(`Paljonko on \\(\\frac{1}{${d}}\\) luvusta ${n}?`,n/d)},
- ()=>{let total=pick([100,120]),red=pick([50,60]),brown=pick([20,25]),yellow=pick([14,18]);let left=total-red-brown-yellow;return numTask(`${total} ruutua: ${red} % punaisia, ${brown} % ruskeita ja ${yellow} keltaista. Värittämättä?`,left)},
+ ()=>{let total=pick([100,120]),red=pick([40,50]),brown=pick([20,25]),yellow=pick([10,15]);let left=total*(100-red-brown-yellow)/100;return numTask(`${total} ruudusta ${red} % on punaisia, ${brown} % ruskeita ja ${yellow} % keltaisia. Kuinka monta ruutua on värittämättä?`,left)},
  ()=>{let old=pick([50,100]),small=pick([10,20]),count=pick([10,40]);let factor=(old/small)**2;return numTask(`${count} kpl ${old} cm × ${old} cm laattoja korvataan ${small} cm × ${small} cm laatoilla. Montako tarvitaan?`,count*factor)},
  ()=>{let whole=pick([24,30,36]),missing=pick([4,5,6]);let left=whole*(missing-1)/missing;return numTask(`Rahasta on kadonnut \\(\\frac{1}{${missing}}\\). Jäljellä on ${left} €. Paljonko rahaa oli alun perin?`,whole,`${whole} €`,'€')},
- ()=>{let avg=pick([64,72,85]),a=pick([56,63,75]),b=pick([67,74,88]);let c=3*avg-a-b;return numTask(`Kolmen luvun keskiarvo on ${avg}. Kaksi luvuista ovat ${a} ja ${b}. Kolmas?`,c)},
+ ()=>{let avg=pick([64,72,85]),a=pick([56,63,75]),b=pick([67,74,88]);let c=3*avg-a-b;return numTask(`Kolmen luvun keskiarvo on ${avg}. Kaksi luvuista ovat ${a} ja ${b}. Mikä on kolmas luku?`,c)},
  ()=>{let start=pick([18*60+45,19*60+10]),end=start+pick([130,145,160]),breaks=pick([2,4,5]),br=pick([4,12,18]);let actual=end-start-breaks*br;return numTask(`Esitys kestää taukoineen ${end-start} min. Siinä on ${breaks} kpl ${br} min taukoja. Kuinka pitkä itse esitys on? Anna vastaus minuutteina.`,actual,`${actual} min`,'min')},
  ()=>{let nums=pick([[12,21,33,47,54,68],[14,26,31,45,52,67]]);let best=null,diff=1e9,prod=0;for(let i=0;i<nums.length;i++)for(let j=i+1;j<nums.length;j++){let p=nums[i]*nums[j],d=Math.abs(p-1000);if(d<diff){diff=d;best=[nums[i],nums[j]];prod=p}}return customTask(`Mitkä kaksi lukua antavat tulon lähimmäksi lukua 1000?<br>${nums.join(", ")}`,`${best[0]} ja ${best[1]}`,s=>{let arr=(s.match(/\d+/g)||[]).map(Number);return arr.includes(best[0])&&arr.includes(best[1])})},
- ()=>{let a=pick([4,5,6]),b=pick([6,8,9]),min=lcm(a,b);let mult=pick([2,3]);return numTask(`Eräs luku on jaollinen sekä luvulla ${a} että luvulla ${b}, suurempi kuin ${min} mutta enintään ${min*mult}. Pienin mahdollinen luku?`,min*2)},
+ ()=>{let a=pick([4,5,6]),b=pick([6,8,9]),min=lcm(a,b);let mult=pick([2,3]);return numTask(`Eräs luku on jaollinen sekä luvulla ${a} että luvulla ${b}. Se on suurempi kuin ${min} mutta enintään ${min*mult}. Mikä on pienin mahdollinen luku?`,min*2)},
  ()=>{let base=pick([2,3]),e1=pick([4,5]),e2=e1-1;return numTask(`${base}<sup>${e1}</sup> − ${base}<sup>${e2}</sup>`,base**e1-base**e2)}
 ];
 
@@ -182,6 +183,8 @@ let current=[];
 function getPool(){return currentLevel==='basic'?basic:currentLevel==='medium'?medium:hard}
 
 function generate(){
+  answersRevealed=false;
+  document.getElementById('checkBtn').textContent='Tarkista';
   const pool=getPool();
   current=shuffle(pool).slice(0,12).map(fn=>fn());
   render();
@@ -209,7 +212,9 @@ function render(){
   setTimeout(()=>document.getElementById('a0')?.focus(),0);
 }
 
+let answersRevealed=false;
 function checkAll(){
+  const reveal=answersRevealed;
   let score=0;
   current.forEach((t,i)=>{
     const input=document.getElementById('a'+i);
@@ -226,10 +231,13 @@ function checkAll(){
     }else{
       card.classList.add('bad');
       mark.textContent='✗';
-      corr.textContent='Oikea vastaus: '+t.display;
+      corr.textContent=reveal?'Oikea vastaus: '+t.display:'';
     }
   });
   document.getElementById('score').textContent=`Tulos: ${score} / 12`;
+  answersRevealed=true;
+  document.getElementById('checkBtn').textContent='Näytä vastaukset';
+  if(reveal && window.MathJax?.typesetPromise){MathJax.typesetPromise([document.getElementById('grid')]);}
 }
 
 document.querySelectorAll('.level').forEach(btn=>btn.addEventListener('click',()=>{
