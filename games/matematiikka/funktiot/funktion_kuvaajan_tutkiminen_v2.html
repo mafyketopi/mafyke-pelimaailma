@@ -103,7 +103,7 @@ const sections=[
   {kind:"mono",fn:x=>(x*x*x)/6-2*x,label:"vähenevä, 3. asteen kuvaaja",range:8,answer:"−2 ≤ x ≤ 2",correctOption:4,options:["x ≤ −2 tai x ≥ 2","x ≤ 2","x ≥ −2","−2 < x < 2","−2 ≤ x ≤ 2","kaikilla x:n arvoilla"]}
  ]}
 ];
-let sec=0,idx=0,selected=new Set(),solved=new Set(),highlight=false,attempted=false;
+let sec=0,idx=0,selected=new Set(),solved=new Set(),highlight=false,attempted=false,failedAttempts=0;
 const cvs=document.getElementById("g"),ctx=cvs.getContext("2d");
 const bound=()=>task().range||6,X=x=>cvs.width/2+x*cvs.width/(2*bound()),Y=y=>cvs.height/2-y*cvs.height/(2*bound());
 function task(){return sections[sec].tasks[idx]}
@@ -142,7 +142,7 @@ function draw(){
  }
 }
 function render(){
- selected.clear();highlight=false;attempted=false;feedback.textContent="";feedback.className="feedback";answer.classList.add("hidden");
+ selected.clear();highlight=false;attempted=false;failedAttempts=0;feedback.textContent="";feedback.className="feedback";answer.classList.add("hidden");
  let t=task();counter.textContent=`Tehtävä ${idx+1} / ${sections[sec].tasks.length}`;typeBadge.textContent=t.label;
  if(t.kind==="zeros")renderZeros(t); if(t.kind==="extrema")renderExtrema(t); if(t.kind==="sign")renderIntervals(t); if(t.kind==="mono")renderIntervals(t);
  prev.disabled=idx===0;next.textContent=idx===sections[sec].tasks.length-1?(sec===3?"Valmis":"Seuraava osio →"):"Seuraava →";
@@ -174,7 +174,7 @@ function renderIntervals(t){
  check.onclick=checkIntervals
 }
 function ok(msg){attempted=true;feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 16 oikein`;draw()}
-function no(msg){attempted=true;feedback.textContent=msg+' Voit yrittää uudelleen tai jatkaa ja nähdä ratkaisun.';feedback.className="feedback bad"}
+function no(msg){attempted=true;failedAttempts++;feedback.textContent=msg+(failedAttempts>=2?' Voit jatkaa yrittämistä tai pyytää ratkaisun Seuraava-painikkeella.':' Yritä uudelleen.');feedback.className="feedback bad"}
 function checkZeros(){
  let t=task(),vals=[...document.querySelectorAll(".z")].map(x=>Number(x.value)).filter(x=>x.value!==""),noneSel=none.classList.contains("sel");
  let good=t.roots.length===0?noneSel:(!noneSel&&vals.length===t.roots.length&&t.roots.every(x=>vals.includes(x)));
@@ -191,6 +191,7 @@ function checkIntervals(){
 prev.onclick=()=>{if(idx>0){idx--;render()}};
 next.onclick=()=>{
  if(!solved.has(key())&&!highlight){
+   if(failedAttempts<2){feedback.textContent='Yritä vielä itse. Ratkaisun voi pyytää kahden epäonnistuneen tarkistuksen jälkeen.';feedback.className='feedback bad';return;}
    let t=task(); selected=new Set(t.correctOption===undefined?[]:[t.correctOption]); highlight=true;
    let txt='Ratkaisu on merkitty kuvaajaan.';
    if(t.kind==='zeros') txt=t.roots.length?`Nollakohdat: <b>${t.roots.map(x=>'x = '+x).join(', ')}</b>`:'Funktiolla ei ole nollakohtia.';

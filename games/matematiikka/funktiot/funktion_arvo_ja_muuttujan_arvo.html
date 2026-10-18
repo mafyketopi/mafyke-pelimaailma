@@ -420,6 +420,8 @@ function modelHTML() {
   `;
 }
 
+let failedAttempts=0;
+
 function loadQuestion() {
   gameArea.classList.remove('hidden');
   completeBox.classList.add('hidden');
@@ -432,7 +434,7 @@ function loadQuestion() {
   hideFeedback(answerFeedback2);
   answerSection.classList.add('hidden');
   secondAnswerSection.classList.add('hidden');
-  taskSolved=false; solutionShown=false; nextBtn.classList.remove('hidden'); nextBtn.textContent='Näytä ratkaisu / seuraava';
+  taskSolved=false; solutionShown=false; failedAttempts=0; nextBtn.classList.remove('hidden'); nextBtn.textContent='Näytä ratkaisu / seuraava';
 
   modelBox.innerHTML = modelHTML();
   const q = current();
@@ -613,7 +615,7 @@ el('checkExpression').addEventListener('click', () => {
       answerSection.classList.remove('hidden');
       answerInput.focus();
     } else {
-      showFeedback(expressionFeedback, false, 'Tarkista sijoitus. Kirjoita funktion lauseke niin, että x:n paikalla on annettu muuttujan arvo.');
+      failedAttempts++; showFeedback(expressionFeedback, false, 'Tarkista sijoitus. Kirjoita funktion lauseke niin, että x:n paikalla on annettu muuttujan arvo.');
     }
   } else {
     ok = isEquivalentEquation(expressionInput.value, q.equation);
@@ -627,7 +629,7 @@ el('checkExpression').addEventListener('click', () => {
         answerInput2.focus();
       }
     } else {
-      showFeedback(expressionFeedback, false, `Tarkista yhtälö. Funktion lausekkeen pitää olla yhtä suuri kuin ${q.target}.`);
+      failedAttempts++; showFeedback(expressionFeedback, false, `Tarkista yhtälö. Funktion lausekkeen pitää olla yhtä suuri kuin ${q.target}.`);
     }
   }
   expressionPassed = ok;
@@ -656,7 +658,7 @@ el('checkAnswer').addEventListener('click', () => {
     scoreText.textContent = `Pisteet ${score}`;
     taskSolved=true; nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
   } else {
-    showFeedback(answerFeedback, false, 'Tarkista lasku ja yritä uudelleen.');
+    failedAttempts++; showFeedback(answerFeedback, false, 'Tarkista lasku ja yritä uudelleen.');
   }
 });
 
@@ -692,7 +694,7 @@ el('checkAnswer2').addEventListener('click', () => {
     scoreText.textContent = `Pisteet ${score}`;
     taskSolved=true; nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
   } else {
-    showFeedback(answerFeedback2, false, 'Tarvitaan kaksi muuttujan arvoa, esimerkiksi 2 tai -2. Tarkista yhtälön ratkaisut.');
+    failedAttempts++; showFeedback(answerFeedback2, false, 'Tarvitaan kaksi muuttujan arvoa, esimerkiksi 2 tai -2. Tarkista yhtälön ratkaisut.');
   }
 });
 
@@ -703,6 +705,10 @@ function solutionText(){
   return `Ratkaisu: \\(${inputToLatex(q.equation)}\\), joten \\(x=${q.answers[0]}\\) tai \\(x=${q.answers[1]}\\).`;
 }
 nextBtn.addEventListener('click', () => {
+  if(!taskSolved && !solutionShown && failedAttempts < 2){
+    const target=mode==='challenge'?answerFeedback2:(expressionPassed?answerFeedback:expressionFeedback);
+    showFeedback(target,false,'Yritä vielä itse. Ratkaisun voi pyytää kahden epäonnistuneen tarkistuksen jälkeen.'); return;
+  }
   if(!taskSolved && !solutionShown){
     solutionShown=true;
     const target=mode==='challenge'?answerFeedback2:answerFeedback;

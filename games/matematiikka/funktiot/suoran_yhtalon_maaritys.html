@@ -175,6 +175,7 @@ const challengeTasks = [
 ];
 
 let bi=0, pi=0, ci=0;
+let basicFails=0, parallelFails=0, challengeFails=0;
 let basicState={b:false,k:false,eq:false};
 let bs=0, ps=0, cs=0;
 let drawPoints=[];
@@ -319,11 +320,11 @@ function checkBasic(kind){
     if(ok && !basicState.eq){basicState.eq=true;bs++;renderBasic()}
   }
   fb.className='feedback '+(ok?'ok':'bad');
-  fb.innerHTML=ok?'Oikein!':(t.vertical!==undefined?`Ratkaisu: <b>x = ${fmt(t.vertical)}</b>. Voit jatkaa.`:`Ratkaisu: <b>${eqText(t.k,t.b)}</b>, kulmakerroin ${fmt(t.k)}, vakiotermi ${fmt(t.b)}. Voit jatkaa.`);
+  if(ok){fb.innerHTML='Oikein!';}else{basicFails++;fb.innerHTML=basicFails>=2?'Ei vielä oikein. <button type="button" id="basicHelp">Näytä ratkaisu</button>':'Ei vielä oikein. Yritä uudelleen.';if(basicFails>=2)document.getElementById('basicHelp').onclick=()=>{fb.innerHTML=t.vertical!==undefined?`Ratkaisu: <b>x = ${fmt(t.vertical)}</b>.`:`Ratkaisu: <b>${eqText(t.k,t.b)}</b>, kulmakerroin ${fmt(t.k)}, vakiotermi ${fmt(t.b)}.`;};}
 }
 function nextBasic(){
   bi=(bi+1)%basicTasks.length; basicState={b:false,k:false,eq:false};
-  basicAttempted=false;
+  basicAttempted=false; basicFails=0;
   ['bInput','kInput','eqInput'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('basicFeedback').textContent=''; renderBasic();
 }
@@ -393,11 +394,11 @@ function checkParallel(){
     if(!fb.dataset.done){ps++;fb.dataset.done='1'}
     fb.innerHTML=`Oikein! Kulmakerroin on <span class="eq">${fmt(t.k)}</span> ja suoran yhtälö on <span class="eq">${eqText(t.k,b)}</span>.`;
     renderParallel(); renderDraw(true);
-  }else {fb.innerHTML=`Ratkaisu: <b>${eqText(t.k,b)}</b>. Merkitse itse kaksi pistettä; toisen pitää olla annettu piste (${fmt(t.px)}, ${fmt(t.py)}).`; renderDraw(true);}
+  }else {parallelFails++;fb.innerHTML=parallelFails>=2?'Ei vielä oikein. <button type="button" id="parallelHelp">Näytä ratkaisu</button>':'Ei vielä oikein. Tarkista yhtälö ja piirtämäsi pisteet.';if(parallelFails>=2)document.getElementById('parallelHelp').onclick=()=>{fb.innerHTML=`Ratkaisu: <b>${eqText(t.k,b)}</b>. Merkitse kaksi pistettä; toisen pitää olla annettu piste (${fmt(t.px)}, ${fmt(t.py)}).`;renderDraw(true);};}
 }
 function nextParallel(){
   pi=(pi+1)%parallelTasks.length; drawPoints=[];
-  parallelAttempted=false;
+  parallelAttempted=false; parallelFails=0;
   document.getElementById('parallelEq').value='';
   const fb=document.getElementById('parallelFeedback');fb.textContent='';delete fb.dataset.done;
   document.getElementById('drawStatus').textContent='Valitse ensimmäinen piste.';renderParallel();
@@ -420,11 +421,11 @@ function checkChallenge(){
     if(!fb.dataset.done){cs++;fb.dataset.done='1'}
     fb.innerHTML=`Oikein! Ratkaistu muoto on <b>${eqText(k,b)}</b>, kulmakerroin <b>${fmt(k)}</b> ja vakiotermi <b>${fmt(b)}</b>.`;
     renderChallenge();
-  } else fb.innerHTML=`Tarkista lasku. Oikea ratkaistu muoto on <b>${eqText(k,b)}</b>, joten voit jatkaa seuraavaan tehtävään.`;
+  } else {challengeFails++;fb.innerHTML=challengeFails>=2?'Tarkista lasku. <button type="button" id="challengeHelp">Näytä ratkaisu</button>':'Tarkista lasku ja yritä uudelleen.';if(challengeFails>=2)document.getElementById('challengeHelp').onclick=()=>{fb.innerHTML=`Oikea ratkaistu muoto on <b>${eqText(k,b)}</b>, kulmakerroin <b>${fmt(k)}</b> ja vakiotermi <b>${fmt(b)}</b>.`;};}
 }
 function nextChallenge(){
   ci=(ci+1)%challengeTasks.length;
-  challengeAttempted=false;
+  challengeAttempted=false; challengeFails=0;
   ['challengeEq','challengeK','challengeB'].forEach(id=>document.getElementById(id).value='');
   const fb=document.getElementById('challengeFeedback');fb.textContent='';delete fb.dataset.done;renderChallenge();
 }

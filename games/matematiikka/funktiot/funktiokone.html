@@ -312,6 +312,7 @@ function chooseTask(){
   attempts = 0;
   visiblePoints = new Set([0,1,2]);
   nextBtn.textContent = taskIndex===tasks.length-1 ? 'Aloita alusta' : 'Seuraava tehtävä';
+  nextBtn.disabled = true;
   renderTask();
 }
 
@@ -506,6 +507,7 @@ function checkAnswers(){
     } else {
       feedback.innerHTML = `Oikein! Funktion sääntö on \\(y=${ruleLatex(currentTask.a,currentTask.b)}\\).`;
     }
+    nextBtn.disabled = false;
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise([feedback]);
     }
@@ -521,13 +523,14 @@ function checkAnswers(){
     } else {
       feedback.textContent = 'Funktion arvot ovat oikein. Tarkista vielä funktion sääntö.';
     }
-    nextBtn.textContent = 'Näytä ratkaisu ja jatka';
+    if (attempts >= 2) { nextBtn.textContent = 'Näytä ratkaisu ja jatka'; nextBtn.disabled = false; }
   }
   drawGraph();
 }
 
 checkBtn.addEventListener('click', checkAnswers);
 nextBtn.addEventListener('click', () => {
+  if (!solved && attempts < 2) return;
   if (!solved) {
     const ys=currentTask.xs.map(x=>currentTask.a*x+currentTask.b);
     document.querySelectorAll('.answer').forEach((input,i)=>{input.value=niceNumber(ys[i+3]);input.className='answer correct'});

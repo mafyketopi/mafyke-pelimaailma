@@ -49,10 +49,10 @@ const tasks = [
  {type:'mix', title:'7. Hyperbeli ja suora', xLabel:'x', yLabel:'y', text:'Piirrä samaan koordinaatistoon käyrä \\(y=\\frac{12}{x}\\) ja suora \\(y=x+1\\). Määritä leikkauspiste piirtämällä.', xs:[1,2,3,4,6], ys:[12,6,4,3,2], xMax:8,yMax:14,xStep:1,yStep:1,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',3],['Leikkauspisteen y-koordinaatti?',4]], equation:'y=12/x'},
  {type:'mix', title:'8. Haaste', xLabel:'x', yLabel:'y', text:'Piirrä käyrä \\(y=\\frac{20}{x}\\) ja suora \\(y=x+1\\). Määritä leikkauspiste piirtämällä.', xs:[1,2,4,5,10], ys:[20,10,5,4,2], xMax:10,yMax:22,xStep:1,yStep:2,line:x=>x+1,q:[['Leikkauspisteen x-koordinaatti?',4],['Leikkauspisteen y-koordinaatti?',5]], equation:'y=20/x'}
 ];
-let idx=0, score=0, checked=false, hyperbolaDrawn=false, lineDrawn=false;
+let idx=0, score=0, checked=false, hyperbolaDrawn=false, lineDrawn=false, failedAttempts=0;
 function fmt(n){return Number.isInteger(n)?String(n):String(n).replace('.',',')}
 function render(){
- checked=false; hyperbolaDrawn=false; lineDrawn=false;
+ checked=false; hyperbolaDrawn=false; lineDrawn=false; failedAttempts=0;
  const t=tasks[idx];
  document.getElementById('taskNum').textContent=idx+1;
  document.getElementById('score').textContent=score;
@@ -151,8 +151,8 @@ function checkTask(){if(checked)return; const t=tasks[idx]; if(t.type==='mix')re
  }
  t.q.forEach((q,i)=>{let el=document.getElementById('q'+i); let good=nearly(parseVal(el.value),q[1]); mark(el,good); ok &= good});
  if(t.equation){const el=document.getElementById('eqAnswer'),raw=String(el.value).toLowerCase().replace(/\s/g,'').replace(/,/g,'.');const expected=t.equation.replace(/\s/g,'');const aliases=expected.startsWith('t=')?[expected,'y='+expected.slice(2).replace(/v/g,'x')]:[expected];const good=aliases.includes(raw);mark(el,good);ok &= good;}
- checked=!!ok;document.getElementById('nextBtn').disabled=false;drawSolution(t);
- if(ok){score++; document.getElementById('score').textContent=score; document.getElementById('fb').innerHTML='<span class="ok">Oikein! Kuvaaja on piirretty koordinaatistoon.</span>'} else document.getElementById('fb').innerHTML='<span class="bad">Jokin arvo ei vielä täsmää. Oikea kuvaaja on piirretty, ja voit jatkaa seuraavaan tehtävään.</span>';
+ checked=!!ok;
+ if(ok){document.getElementById('nextBtn').disabled=false;drawSolution(t);score++; document.getElementById('score').textContent=score; document.getElementById('fb').innerHTML='<span class="ok">Oikein! Kuvaaja on piirretty koordinaatistoon.</span>'} else {failedAttempts++;document.getElementById('fb').innerHTML='<span class="bad">Jokin arvo ei vielä täsmää. '+(failedAttempts>=2?'<button type="button" id="showGraphSolution">Näytä oikea kuvaaja</button>':'Yritä uudelleen.')+'</span>';if(failedAttempts>=2)document.getElementById('showGraphSolution').onclick=()=>{drawSolution(t);document.getElementById('nextBtn').disabled=false;document.getElementById('fb').innerHTML='<span class="bad">Oikea kuvaaja on piirretty. Voit jatkaa tai korjata vastauksiasi.</span>';};}
 }
 function mark(el,good){el.style.borderColor=good?'#198754':'#c0392b';el.style.background=good?'#eefaf2':'#fff1ef'}
 function resetTask(){render()}
