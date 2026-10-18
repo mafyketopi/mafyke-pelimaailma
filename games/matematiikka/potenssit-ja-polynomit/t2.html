@@ -1,5 +1,5 @@
 <!doctype html><html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>T2 – Neliö, kuutio ja laskujärjestys</title><style>
+<title>T2 – Potenssit laskuissa</title><style>
 :root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#66727e;--line:#d9e0e6;--ok:#eaf7ee;--bad:#fff0f0;--accent:#274c77;--soft:#eef3f8}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
 .wrap{max-width:900px;margin:auto;padding:24px 18px 48px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.badge{font-size:.92rem;color:var(--muted)}
@@ -24,7 +24,7 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 
 .backlink{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:8px 11px;border:1px solid var(--line,#d9e0e6);border-radius:9px;background:#fff;color:var(--ink,#17212b);text-decoration:none;font-size:.9rem;font-weight:700}
 .backlink:hover{background:var(--soft,#eef3f8)}
-.batch{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;margin:12px 0 2px}
+.batch{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin:12px 0 2px}
 .taskblock{border:1px solid var(--line,#d9e0e6);border-radius:12px;padding:13px;background:#fbfcfe;min-width:0}
 .taskblock .task{margin:0 0 6px;font-size:1rem}
 .taskblock .math{margin:8px 0 11px;font-size:1.2rem;min-height:28px}
@@ -35,6 +35,8 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 .batch.batch-two{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
 @media(max-width:620px){.batch,.batch.batch-two{grid-template-columns:1fr}.taskblock{padding:12px}}
 
+
+.taskblock mjx-mfrac,.intro mjx-mfrac,.note mjx-mfrac{font-size:1.28em}
 </style>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)']]}};
@@ -62,6 +64,18 @@ function typesetPreview(inp, prev){
  prev.innerHTML='\\('+lx+'\\)';
  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([prev]);
 }
+function answerHTML(t){
+  if(t.answer) return t.answer;
+  let raw=(t.solution||'').trim();
+  if(!raw) return '';
+  let plain=raw.replace(/<br\s*\/?>/gi,' ').replace(/\\\(/g,'').replace(/\\\)/g,'').trim();
+  if(plain.includes('ei ole määritelty')) return 'Ei ole määritelty reaaliluvuissa.';
+  let part=plain;
+  if(part.includes('\\Rightarrow')) part=part.split('\\Rightarrow').pop().trim();
+  else if(part.includes('=')) part=part.split('=').pop().trim();
+  part=part.replace(/[.]$/,'').trim();
+  return '\\('+part+'\\)';
+}
 function basicGame(tasks){
  const pageSize = (document.body && document.body.dataset.pageSize) ? Number(document.body.dataset.pageSize) : 3;
  let start=0,score=0; const credited=new Set();
@@ -87,38 +101,41 @@ function basicGame(tasks){
    q.innerHTML=''; const end=Math.min(start+pageSize,tasks.length);
    c.textContent=`${start+1}–${end} / ${tasks.length}`; p.style.width=`${100*start/tasks.length}%`;
    for(let idx=start;idx<end;idx++) q.appendChild(makeBlock(tasks[idx],idx));
-   document.querySelector('#check').textContent='Tarkista sivu';
-   document.querySelector('#next').textContent=end===tasks.length?'Valmis':'Seuraavat tehtävät';
+   if(window.MathJax?.typesetPromise) MathJax.typesetPromise([q]);
+   document.querySelector('#check').textContent='Tarkista';delete document.querySelector('#check').dataset.phase;delete document.querySelector('#check').dataset.attempts;const _ra=document.querySelector('#revealAnswers');if(_ra)_ra.style.display='none';
+   document.querySelector('#prev').disabled=start===0;document.querySelector('#next').textContent=end===tasks.length?'Valmis':'Seuraava →';
  }
  function blockVals(block){return Object.fromEntries([...block.querySelectorAll('input')].map(x=>[x.name,x.value]))}
  document.querySelector('#check').onclick=()=>{
-   [...q.querySelectorAll('.taskblock')].forEach(block=>{
-     const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
-     const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
-     if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
-     if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
-   });
+   const checkBtn=document.querySelector('#check');
+   checkBtn.dataset.attempts=String((Number(checkBtn.dataset.attempts)||0)+1);
+   [...q.querySelectorAll('.taskblock')].forEach(block=>{let idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));let feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg;if(r.ok&&!credited.has(idx)){credited.add(idx);score++}if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feed])});
+   if(Number(checkBtn.dataset.attempts)>=2){
+     let reveal=document.querySelector('#revealAnswers');
+     if(!reveal){reveal=document.createElement('button');reveal.id='revealAnswers';reveal.className='secondary';reveal.textContent='Näytä vastaukset';checkBtn.parentElement.insertBefore(reveal,checkBtn.nextSibling);reveal.onclick=()=>{[...q.querySelectorAll('.taskblock')].forEach(block=>{const idx=Number(block.dataset.idx),t=tasks[idx],sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus</b><div style="margin-top:6px">'+answerHTML(t)+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([sol]);});};}
+     reveal.style.display='inline-block';
+   }
  };
+ document.querySelector('#prev').onclick=()=>{if(start>0){start=Math.max(0,start-pageSize);render();window.scrollTo({top:0,behavior:'smooth'})}};
  document.querySelector('#next').onclick=()=>{
    const end=Math.min(start+pageSize,tasks.length);
    if(end<tasks.length){start=end;render();window.scrollTo({top:0,behavior:'smooth'})}
-   else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}
+   else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tehtävää oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}
  };
  render();
 }
 function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
 </script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script></head>
-<body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
-<div class="card"><h1>T2 – Neliö, kuutio ja laskujärjestys</h1><p class="lead">Merkitse tarvittaessa lasku potenssien avulla ja laske. Loppua kohti tehtävät ovat monivaiheisia.</p>
-<div id="introScreen"><div class="note"><h2>Neliö ja kuutio</h2>
+<body data-page-size="4"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
+<div class="card"><h1>Potenssit laskuissa</h1><p class="lead"></p>
+<div id="introScreen"><div class="note"><h2>Neliö ja kuutio</h2><p>Toista potenssia kutsutaan myös neliöksi ja kolmatta potenssia kuutioksi.</p>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
-<div><svg viewBox="0 0 220 180"><rect x="45" y="25" width="120" height="120" fill="#eef3f8" stroke="#26323c" stroke-width="3"/><text x="105" y="165" text-anchor="middle">sivu a</text></svg><p>\(a^2=a\cdot a\). Neliön pinta-ala on \(a^2\).</p></div>
-<div><svg viewBox="0 0 240 190"><path d="M55 65 L145 65 L185 43 L95 43 Z M145 65 L145 155 L185 133 L185 43 M55 65 L55 155 L145 155" fill="none" stroke="#26323c" stroke-width="3"/><text x="100" y="175">särmä a</text></svg><p>\(a^3=a\cdot a\cdot a\). Kuution tilavuus on \(a^3\).</p></div></div>
+<div><svg viewBox="0 0 220 180" style="max-width:135px"><rect x="45" y="25" width="120" height="120" fill="#eef3f8" stroke="#26323c" stroke-width="3"/><foreignObject x="65" y="145" width="80" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center">\(a\)</div></foreignObject></svg><p>\(a^2=a\cdot a\). Neliön pinta-ala on \(a^2\).</p></div>
+<div><svg viewBox="0 0 240 190" style="max-width:145px"><path d="M55 65 L145 65 L185 43 L95 43 Z M145 65 L145 155 L185 133 L185 43 M55 65 L55 155 L145 155" fill="none" stroke="#26323c" stroke-width="3"/><foreignObject x="65" y="155" width="80" height="32"><div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center">\(a\)</div></foreignObject></svg><p>\(a^3=a\cdot a\cdot a\). Kuution tilavuus on \(a^3\).</p></div></div>
 <h2>Laskujärjestys</h2><p>Potenssit ennen kerto- ja jakolaskuja. Sen jälkeen yhteen- ja vähennyslaskut.</p>
 <p>\(3+2^3\cdot4=3+8\cdot4=35\)</p></div><div class="actions"><button id="startGame" class="primary">Aloita tehtävät</button></div></div><div id="gameScreen" style="display:none"><div class="progress"><div id="prog"></div></div><div id="question" class="task"></div><div id="math" class="math"></div>
 <div id="fields" class="inputs"></div><div id="feedback" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div>
-<div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
+<div class="actions"><button class="secondary" id="prev">← Edellinen</button><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava →</button></div>
 </div></main><script>
 function two(a,b){return v=>{let ok=anyMatch(v.m,a)&&numericEq(v.a,b);return {ok,msg:ok?'Sekä merkintä että arvo ovat oikein!':'Tarkista sekä potenssimerkintä että laskettu arvo.'}}}
 const tasks=[
@@ -126,8 +143,8 @@ const tasks=[
 {prompt:'Merkitse potenssina ja laske: luvun 4 kuutio.',fields:[{name:'m',label:'Potenssimerkintä'},{name:'a',label:'Arvo'}],solution:'\\(4^3=64\\)',check:two(['4^3'],64)},
 {prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 3 ja 5 neliöiden summa.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],solution:'\\(3^2+5^2=9+25=34\\)',check:two(['3^2+5^2','5^2+3^2'],34)},
 {prompt:'Merkitse lasku potensseja käyttäen ja laske: lukujen 5 ja 2 kuutioiden erotus.',fields:[{name:'m',label:'Lasku'},{name:'a',label:'Arvo'}],solution:'\\(5^3-2^3=125-8=117\\)',check:two(['5^3-2^3'],117)},
-{prompt:'Laske laskujärjestyksen mukaan.',latex:'3+2^3\\cdot4',solution:"\\(3+2^3\\cdot4=3+8\\cdot4=35\\)",check:v=>({ok:numericEq(v.a,35),msg:numericEq(v.a,35)?'Oikein!':'Potenssi lasketaan ennen kertolaskua.'})},
-{prompt:'Laske laskujärjestyksen mukaan.',latex:'24-2\\cdot3^2',solution:"\\(24-2\\cdot3^2=24-18=6\\)",check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Laske ensin potenssi.'})},
+{prompt:'Laske. Muista laskujärjestys.',latex:'3+2^3\\cdot4',solution:"\\(3+2^3\\cdot4=3+8\\cdot4=35\\)",check:v=>({ok:numericEq(v.a,35),msg:numericEq(v.a,35)?'Oikein!':'Potenssi lasketaan ennen kertolaskua.'})},
+{prompt:'Laske. Muista laskujärjestys.',latex:'24-2\\cdot3^2',solution:"\\(24-2\\cdot3^2=24-18=6\\)",check:v=>({ok:numericEq(v.a,6),msg:numericEq(v.a,6)?'Oikein!':'Laske ensin potenssi.'})},
 {prompt:'Laske.',latex:'2^4+3^2-5',solution:"\\(16+9-5=20\\)",check:v=>({ok:numericEq(v.a,20),msg:numericEq(v.a,20)?'Oikein!':'Laske potenssit ensin.'})},
 {prompt:'Laske.',latex:'2\\cdot(3^2+4)-5^2',solution:"\\(2(9+4)-25=26-25=1\\)",check:v=>({ok:numericEq(v.a,1),msg:numericEq(v.a,1)?'Oikein!':'Sulkeet ja potenssit ennen muuta laskemista.'})},
 {prompt:'Laske.',latex:'3^3-2\\cdot(5+2^2)',solution:"\\(27-2(5+4)=27-18=9\\)",check:v=>({ok:numericEq(v.a,9),msg:numericEq(v.a,9)?'Oikein!':'Etene laskujärjestyksen mukaan.'})},

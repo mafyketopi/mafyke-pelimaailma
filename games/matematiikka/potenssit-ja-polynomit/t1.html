@@ -24,7 +24,7 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 
 .backlink{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;padding:8px 11px;border:1px solid var(--line,#d9e0e6);border-radius:9px;background:#fff;color:var(--ink,#17212b);text-decoration:none;font-size:.9rem;font-weight:700}
 .backlink:hover{background:var(--soft,#eef3f8)}
-.batch{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px;margin:12px 0 2px}
+.batch{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px;margin:12px 0 2px}
 .taskblock{border:1px solid var(--line,#d9e0e6);border-radius:12px;padding:13px;background:#fbfcfe;min-width:0}
 .taskblock .task{margin:0 0 6px;font-size:1rem}
 .taskblock .math{margin:8px 0 11px;font-size:1.2rem;min-height:28px}
@@ -35,6 +35,8 @@ h1{font-size:clamp(1.7rem,4vw,2.45rem);margin:0 0 6px} h2{margin:18px 0 8px;font
 .batch.batch-two{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
 @media(max-width:620px){.batch,.batch.batch-two{grid-template-columns:1fr}.taskblock{padding:12px}}
 
+
+.taskblock mjx-mfrac,.intro mjx-mfrac,.note mjx-mfrac{font-size:1.28em}
 </style>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)']]}};
@@ -62,6 +64,18 @@ function typesetPreview(inp, prev){
  prev.innerHTML='\\('+lx+'\\)';
  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([prev]);
 }
+function answerHTML(t){
+  if(t.answer) return t.answer;
+  let raw=(t.solution||'').trim();
+  if(!raw) return '';
+  let plain=raw.replace(/<br\s*\/?>/gi,' ').replace(/\\\(/g,'').replace(/\\\)/g,'').trim();
+  if(plain.includes('ei ole määritelty')) return 'Ei ole määritelty reaaliluvuissa.';
+  let part=plain;
+  if(part.includes('\\Rightarrow')) part=part.split('\\Rightarrow').pop().trim();
+  else if(part.includes('=')) part=part.split('=').pop().trim();
+  part=part.replace(/[.]$/,'').trim();
+  return '\\('+part+'\\)';
+}
 function basicGame(tasks){
  const pageSize = (document.body && document.body.dataset.pageSize) ? Number(document.body.dataset.pageSize) : 3;
  let start=0,score=0; const credited=new Set();
@@ -87,33 +101,36 @@ function basicGame(tasks){
    q.innerHTML=''; const end=Math.min(start+pageSize,tasks.length);
    c.textContent=`${start+1}–${end} / ${tasks.length}`; p.style.width=`${100*start/tasks.length}%`;
    for(let idx=start;idx<end;idx++) q.appendChild(makeBlock(tasks[idx],idx));
-   document.querySelector('#check').textContent='Tarkista sivu';
-   document.querySelector('#next').textContent=end===tasks.length?'Valmis':'Seuraavat tehtävät';
+   if(window.MathJax?.typesetPromise) MathJax.typesetPromise([q]);
+   document.querySelector('#check').textContent='Tarkista';delete document.querySelector('#check').dataset.phase;delete document.querySelector('#check').dataset.attempts;const _ra=document.querySelector('#revealAnswers');if(_ra)_ra.style.display='none';
+   document.querySelector('#prev').disabled=start===0;document.querySelector('#next').textContent=end===tasks.length?'Valmis':'Seuraava →';
  }
  function blockVals(block){return Object.fromEntries([...block.querySelectorAll('input')].map(x=>[x.name,x.value]))}
  document.querySelector('#check').onclick=()=>{
-   [...q.querySelectorAll('.taskblock')].forEach(block=>{
-     const idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));
-     const feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg||(r.ok?'Oikein!':'Ei vielä.');
-     if(r.ok&&!credited.has(idx)){credited.add(idx);score++}
-     const sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus / malliratkaisu</b><div style="margin-top:6px">'+(typeof solutionHTML==='function'?solutionHTML(t.solution||''): (t.solution||''))+'</div>';
-     if(window.MathJax?.typesetPromise) MathJax.typesetPromise([feed,sol]);
-   });
+   const checkBtn=document.querySelector('#check');
+   checkBtn.dataset.attempts=String((Number(checkBtn.dataset.attempts)||0)+1);
+   [...q.querySelectorAll('.taskblock')].forEach(block=>{let idx=Number(block.dataset.idx),t=tasks[idx],r=t.check(blockVals(block));let feed=block.querySelector('.feedback');feed.className='feedback '+(r.ok?'ok':'bad');feed.innerHTML=r.msg;if(r.ok&&!credited.has(idx)){credited.add(idx);score++}if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feed])});
+   if(Number(checkBtn.dataset.attempts)>=2){
+     let reveal=document.querySelector('#revealAnswers');
+     if(!reveal){reveal=document.createElement('button');reveal.id='revealAnswers';reveal.className='secondary';reveal.textContent='Näytä vastaukset';checkBtn.parentElement.insertBefore(reveal,checkBtn.nextSibling);reveal.onclick=()=>{[...q.querySelectorAll('.taskblock')].forEach(block=>{const idx=Number(block.dataset.idx),t=tasks[idx],sol=block.querySelector('.solutionbox');sol.style.display='block';sol.innerHTML='<b>Vastaus</b><div style="margin-top:6px">'+answerHTML(t)+'</div>';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([sol]);});};}
+     reveal.style.display='inline-block';
+   }
  };
+ document.querySelector('#prev').onclick=()=>{if(start>0){start=Math.max(0,start-pageSize);render();window.scrollTo({top:0,behavior:'smooth'})}};
  document.querySelector('#next').onclick=()=>{
    const end=Math.min(start+pageSize,tasks.length);
    if(end<tasks.length){start=end;render();window.scrollTo({top:0,behavior:'smooth'})}
-   else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tarkistusta oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}
+   else{p.style.width='100%';document.querySelector('.card').innerHTML=`<div class="done"><div class="big">Valmis!</div><p>${score} / ${tasks.length} tehtävää oikein.</p><button class="primary" onclick="location.reload()">Uudelleen</button><div style="margin-top:14px"><a class="backlink" href="index.html">← Potenssit ja polynomit</a></div></div>`}
  };
  render();
 }
 function E(ans,wrong='Tarkista potenssisääntö.'){return v=>({ok:anyMatch(v.a,ans),msg:anyMatch(v.a,ans)?'Oikein!':wrong})}
 </script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script></head>
-<body data-page-size="3"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
-<div class="card"><h1>T1 – Potenssin arvo</h1><p class="lead">Laske potenssin arvo. Sulkeet ratkaisevat, kuuluuko miinusmerkki kantalukuun.</p>
+<body data-page-size="4"><main class="wrap"><a class="backlink" href="index.html">← Potenssit ja polynomit</a><div class="top"><span></span><span class="badge" id="count"></span></div>
+<div class="card"><h1>Potenssin arvo</h1><p class="lead">Laske potenssin arvo. Sulkeet ratkaisevat, kuuluuko miinusmerkki kantalukuun.</p><div class="note" style="margin-bottom:12px">Kertolaskun voi kirjoittaa *-merkillä. Potenssin voi kirjoittaa ^-merkillä, esimerkiksi <b>x^3</b>.</div>
 <div class="progress"><div id="prog"></div></div><div id="question" class="task"></div><div id="math" class="math"></div>
 <div id="fields" class="inputs"></div><div id="feedback" class="feedback"></div><div id="solution" class="note" style="display:none;margin-top:14px"></div>
-<div class="actions"><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava</button></div>
+<div class="actions"><button class="secondary" id="prev">← Edellinen</button><button class="primary" id="check">Tarkista</button><button class="secondary" id="next">Seuraava →</button></div>
 </div></main><script>
 function N(target, latex){return v=>{let ok=numericEq(v.a,target)||anyMatch(v.a,latex||[]);return {ok,msg:ok?'Oikein!':'Laske potenssi uudelleen ja kiinnitä huomiota kantalukuun.'}}}
 const tasks=[
