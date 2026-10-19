@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Funktiopeli – suoran piirtäminen</title>
+<title>Suoran piirtäminen</title>
 <script>
   window.MathJax = {
     tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
@@ -19,14 +19,18 @@
   .card { background:white; border-radius:18px; box-shadow:0 8px 30px rgba(0,0,0,.08); padding:22px; }
   h1 { margin:0 0 8px; font-size:1.7rem; }
   .lead { margin:0 0 18px; color:#4b5563; }
-  .modebar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+  .modebar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .tasknav{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 12px;}
+  .tasknav .label{font-weight:700;margin-right:4px;}
+  .taskBtn{min-width:38px;padding:7px 10px;background:#f3f4f6;color:#111827;border:1px solid #d1d5db;}
+  .taskBtn.active{background:#172033;color:white;border-color:#172033;}
   .modeBtn { background:#e5e7eb; color:#111827; }
   .modeBtn.active { background:#1d4ed8; color:white; }
   .top { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .equation { min-width:210px; text-align:center; font-size:1.55rem; font-weight:700; background:#eef2ff; border-radius:12px; padding:12px 16px; }
   .score { font-weight:700; }
-  .workarea { display:grid; grid-template-columns:minmax(0,640px) 260px; gap:22px; align-items:start; }
-  canvas { display:block; width:100%; max-width:640px; height:auto; background:white; border:1px solid #d1d5db; border-radius:12px; touch-action:none; }
+  .workarea { display:grid; grid-template-columns:minmax(0,500px) 260px; gap:22px; align-items:start; }
+  canvas { display:block; width:100%; max-width:500px; height:auto; background:white; border:1px solid #d1d5db; border-radius:12px; touch-action:none; }
   .side { background:#f9fafb; border:1px solid #e5e7eb; border-radius:14px; padding:16px; }
   .side h2 { font-size:1.08rem; margin:0 0 8px; }
   .side p { margin:0 0 12px; color:#6b7280; font-size:.92rem; }
@@ -44,7 +48,7 @@
   .hint { margin-top:14px; font-size:.95rem; color:#6b7280; text-align:center; }
   .hidden { display:none; }
   .smallbtn { width:100%; }
-  @media (max-width:830px){ .workarea{grid-template-columns:1fr;} .side{max-width:640px;} }
+  @media (max-width:830px){ .workarea{grid-template-columns:1fr;} .side{max-width:500px;} }
 
 .package-home{position:fixed;right:14px;bottom:14px;z-index:9999;background:#172033;color:#fff;text-decoration:none;padding:9px 13px;border-radius:999px;font:600 14px system-ui,sans-serif;box-shadow:0 3px 14px #0002;opacity:.92}.package-home:hover{opacity:1}
 @media(max-width:600px){.package-home{right:8px;bottom:8px;padding:7px 10px;font-size:12px}}
@@ -65,17 +69,19 @@
 <a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <div class="wrap">
   <div class="card">
-    <h1>Funktiopeli: piirrä suora</h1>
-    <p class="lead">Valitse tapa ja piirrä annetun yhtälön kuvaaja.</p>
+    <h1>Suoran piirtäminen</h1>
+    <p class="lead">Piirrä annetun suoran kuvaaja.</p>
 
     <div class="modebar">
-      <button class="modeBtn active" id="tableModeBtn">1) Piirrä taulukon avulla</button>
-      <button class="modeBtn" id="clickModeBtn">2) Piirrä kahden pisteen avulla</button>
+      <button class="modeBtn active" id="tableModeBtn">Taulukon avulla</button>
+      <button class="modeBtn" id="clickModeBtn">Pisteiden avulla</button>
     </div>
+
+    <div class="tasknav" id="taskNav" aria-label="Tehtävävalikko"></div>
 
     <div class="top">
       <div class="equation" id="equation">\(y=2x+1\)</div>
-      <div class="score"><span id="taskCounter">Tehtävä 1/12</span> · Pisteet: <span id="score">0</span> / <span id="tries">0</span></div>
+      <div class="score"><span id="taskCounter">Tehtävä 1/8</span> · Pisteet: <span id="score">0</span> / <span id="tries">0</span></div>
     </div>
 
     <div class="workarea">
@@ -83,7 +89,7 @@
 
       <div class="side" id="tablePanel">
         <h2>Arvotaulukko</h2>
-        <p>Valitse x-arvot ja laske niitä vastaavat y-arvot. Sen jälkeen valitse "Näytä pisteet" ja "Piirrä suora"</p>
+        <p>Valitse x-arvot ja laske niitä vastaavat y-arvot. Näytä sitten pisteet ja piirrä suora.</p>
         <table>
           <thead><tr><th>x</th><th>y</th></tr></thead>
           <tbody id="valueTable"></tbody>
@@ -103,7 +109,6 @@
       <button class="secondary" id="resetBtn">Yritä uudelleen</button>
       <button class="primary" id="nextBtn">Seuraava tehtävä</button>
     </div>
-    <div class="hint" id="hint">Vinkki: murtolukukulmakertoimella voit valita x-arvot niin, että y-arvojen laskeminen on helppoa.</div>
   </div>
 </div>
 
@@ -124,7 +129,7 @@ const clickPanel = document.getElementById('clickPanel');
 const valueTable = document.getElementById('valueTable');
 const drawTableBtn = document.getElementById('drawTableBtn');
 const showPointsBtn = document.getElementById('showPointsBtn');
-const hintEl = document.getElementById('hint');
+const taskNav=document.getElementById('taskNav');
 
 const MIN=-6, MAX=6, PAD=44, SIZE=canvas.width;
 const plot=SIZE-2*PAD, step=plot/(MAX-MIN);
@@ -141,15 +146,24 @@ let taskIndices={table:-1,click:-1};
 
 // a = kulmakerroin osoittaja/nimittäjä. Näin murtoluvut pysyvät tarkkoina.
 const tableTasks=[
-  {an:1,ad:1,b:2}, {an:-1,ad:1,b:3},
-  {an:2,ad:1,b:-1}, {an:-2,ad:1,b:4}, {an:3,ad:1,b:-2}, {an:1,ad:2,b:1},
-  {an:-1,ad:2,b:2}, {an:2,ad:3,b:-1}, {an:-2,ad:3,b:3}, {an:1,ad:1,b:-4},
-  {an:2,ad:1,b:-3}, {an:-3,ad:1,b:1}
+  {an:1,ad:1,b:2},
+  {an:-1,ad:1,b:3},
+  {an:2,ad:1,b:-1},
+  {an:0,ad:1,b:3},
+  {an:-2,ad:1,b:4},
+  {an:1,ad:2,b:1},
+  {an:-1,ad:2,b:2},
+  {an:-1,ad:1,b:5, display:'x+y=5'}
 ];
 const clickTasks=[
-  {an:-1,ad:1,b:1}, {an:2,ad:1,b:-2}, {an:-2,ad:1,b:3}, {an:1,ad:1,b:-3},
-  {an:-3,ad:1,b:2}, {an:1,ad:2,b:-2}, {an:-1,ad:2,b:1}, {an:2,ad:3,b:0},
-  {an:-2,ad:3,b:2}, {an:3,ad:1,b:-1}, {an:1,ad:1,b:4}, {an:2,ad:1,b:1}
+  {an:-1,ad:1,b:1},
+  {an:1,ad:1,b:-3},
+  {an:2,ad:1,b:-2},
+  {an:0,ad:1,b:-2},
+  {an:-2,ad:1,b:3},
+  {an:1,ad:2,b:-2},
+  {an:-1,ad:2,b:1},
+  {an:2,ad:3,b:0}
 ];
 function activeTasks(){return mode==='table'?tableTasks:clickTasks}
 
@@ -175,7 +189,7 @@ function equationLatex(t){
 }
 
 function renderEquation(){
-  eqEl.innerHTML='\\('+equationLatex(current)+'\\)';
+  eqEl.innerHTML='\\('+(current.display||equationLatex(current))+'\\)';
   if(window.MathJax?.typesetPromise) MathJax.typesetPromise([eqEl]);
 }
 
@@ -189,8 +203,8 @@ function drawGrid(){
   ctx.font='13px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
   for(let v=MIN;v<=MAX;v++){
     const px=xToPx(v), py=yToPx(v);
-    ctx.strokeStyle=v===0?'#64748b':'#e5e7eb';
-    ctx.lineWidth=v===0?1.7:1;
+    ctx.strokeStyle=v===0?'#374151':'#e5e7eb';
+    ctx.lineWidth=v===0?1.35:.75;
     ctx.beginPath(); ctx.moveTo(px,PAD); ctx.lineTo(px,SIZE-PAD); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(PAD,py); ctx.lineTo(SIZE-PAD,py); ctx.stroke();
   }
@@ -209,7 +223,7 @@ function drawGrid(){
   ctx.fillText('x',SIZE-PAD+20,yToPx(0));
   ctx.fillText('y',xToPx(0),PAD-20);
 
-  ctx.fillStyle='#cbd5e1';
+  ctx.fillStyle='#d1d5db';
   for(let x=MIN;x<=MAX;x++) for(let y=MIN;y<=MAX;y++){
     ctx.beginPath(); ctx.arc(xToPx(x),yToPx(y),1.8,0,Math.PI*2); ctx.fill();
   }
@@ -351,6 +365,28 @@ function resetAttempt(){
   } else statusEl.textContent='Valitse ensimmäinen piste.';
 }
 
+function renderTaskNav(){
+  const list=activeTasks();
+  taskNav.innerHTML='<span class="label">Tehtävä:</span>';
+  list.forEach((_,i)=>{
+    const b=document.createElement('button');
+    b.type='button'; b.className='taskBtn'+(i===taskIndex?' active':''); b.textContent=String(i+1);
+    b.setAttribute('aria-label',`Tehtävä ${i+1}`);
+    b.addEventListener('click',()=>selectTask(i));
+    taskNav.appendChild(b);
+  });
+}
+function selectTask(i){
+  const list=activeTasks();
+  taskIndices[mode]=i; taskIndex=i; current=list[i];
+  taskCounterEl.textContent=`Tehtävä ${i+1}/${list.length}`;
+  renderEquation(); points=[]; answered=false; tableValidated=false; tableLineVisible=false;
+  showPointsBtn.disabled=false; drawTableBtn.disabled=true;
+  if(mode==='table'){buildTable();statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.';}
+  else statusEl.textContent='Valitse ensimmäinen piste.';
+  renderTaskNav(); redraw();
+}
+
 function setMode(newMode){
   mode=newMode; points=[]; answered=false; tableValidated=false; tableLineVisible=false; showPointsBtn.disabled=false; drawTableBtn.disabled=true;
   const isTable=mode==='table';
@@ -358,9 +394,6 @@ function setMode(newMode){
   clickModeBtn.classList.toggle('active',!isTable);
   tablePanel.classList.toggle('hidden',!isTable);
   clickPanel.classList.toggle('hidden',isTable);
-  hintEl.textContent=isTable
-    ? 'Vinkki: murtolukukulmakertoimella voit valita x-arvot niin, että y-arvojen laskeminen on helppoa.'
-    : 'Klikkaus napsahtaa lähimpään kokonaislukupisteeseen. Koordinaatiston numerot on jätetty tarkoituksella hieman haaleiksi.';
   current=null;newTask(true);
 }
 
@@ -369,6 +402,7 @@ function newTask(force=false){
   renderEquation(); points=[]; answered=false; tableValidated=false; tableLineVisible=false; showPointsBtn.disabled=false; drawTableBtn.disabled=true;
   if(mode==='table'){ buildTable(); statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.'; }
   else statusEl.textContent='Valitse ensimmäinen piste.';
+  renderTaskNav();
   redraw();
 }
 

@@ -171,6 +171,8 @@ hr{border:0;border-top:1px solid var(--line);margin:22px 0}
   .feedback{margin-top:6px!important;margin-bottom:6px!important}
 }
 
+.tasknav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}.tasknav button{min-width:38px;padding:7px 10px;border:1px solid #cfd8e4;border-radius:9px;background:#fff;color:#172033;font-weight:700;cursor:pointer}.tasknav button.active{background:#172033;color:#fff;border-color:#172033}
+@media(min-width:900px){.canvas-wrap{max-width:500px;margin:auto}}
 </style>
 <script>
 window.MathJax = {
@@ -217,7 +219,7 @@ window.MathJax = {
       <div class="progress" id="basicProgress"></div>
       <div class="row">
         <div class="col">
-          <h2 id="basicTitle"></h2>
+          <div class="tasknav" id="basicNav"></div><h2 id="basicTitle"></h2>
           <div class="math" id="basicFunction"></div>
 
           <div id="countStep">
@@ -267,7 +269,7 @@ window.MathJax = {
     <div class="progress" id="challengeProgress"></div>
     <div class="row">
       <div class="col">
-        <h2>Haaste: missä suora ja paraabeli leikkaavat?</h2>
+        <div class="tasknav" id="challengeNav"></div><h2>Haaste: missä suora ja paraabeli leikkaavat?</h2>
         
         <div id="challengeEquations" class="math"></div>
 
@@ -497,7 +499,7 @@ q('#startBasic').onclick=()=>{
   q('#basicGame').classList.remove('hidden');
   loadBasic();
 };
-function loadBasic(){
+function loadBasic(){q("#basicNav").innerHTML=basicTasks.map((_,j)=>`<button type="button" class="${j===basicIndex?'active':''}" onclick="basicIndex=${j};loadBasic()">${j+1}</button>`).join('');
   const t=basicTasks[basicIndex];
   q('#basicProgress').textContent=`Harjoitus ${basicIndex+1} / ${basicTasks.length}`;
   q('#basicTitle').textContent='Piirrä paraabeli';
@@ -605,7 +607,7 @@ q('#nextBasic').onclick=()=>{
 let chIndex=0,chXs=[],chYs=[],chParaPlotted=[],chEnv=null;
 let chParaDrawn=false,chLinePts=[],chLineDrawn=false;
 
-function renderChallenge(){
+function renderChallenge(){q("#challengeNav").innerHTML=challengeTasks.map((_,j)=>`<button type="button" class="${j===chIndex?'active':''}" onclick="chIndex=${j};renderChallenge()">${j+1}</button>`).join('');
   if(chIndex>=challengeTasks.length){
     q('#challengeDone').classList.remove('hidden');return;
   }

@@ -55,7 +55,28 @@
       display:flex;
       gap:10px;
       flex-wrap:wrap;
+      align-items:center;
       margin:20px 0 22px;
+    }
+    .task-select{
+      margin-left:auto;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:11px 38px 11px 14px;
+      border-radius:12px;
+      font:700 1rem system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      cursor:pointer;
+    }
+    .examples{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .example{min-width:0}
+    .example+.example{border-left:1px solid var(--line);padding-left:16px}
+    .example-question{font-size:.96rem;white-space:nowrap}
+    @media(max-width:720px){
+      .task-select{margin-left:0;width:100%}
+      .examples{grid-template-columns:1fr}
+      .example+.example{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:12px}
+      .example-question{white-space:normal}
     }
     .tab{
       border:1px solid var(--line);
@@ -229,7 +250,7 @@
     <div class="tabs">
       <button class="tab active" data-mode="value">Funktion arvo</button>
       <button class="tab" data-mode="variable">Muuttujan arvo</button>
-      <button class="tab" data-mode="challenge">Haaste</button>
+      <select id="taskSelect" class="task-select" aria-label="Valitse tehtävä"></select>
     </div>
 
     <section class="card">
@@ -279,6 +300,7 @@
         </div>
 
         <div class="row">
+          <button id="solutionBtn" class="action secondary hidden">Näytä ratkaisu</button>
           <button id="nextBtn" class="action secondary hidden">Seuraava tehtävä</button>
         </div>
       </div>
@@ -303,9 +325,9 @@ const datasets = {
     { f:'x+4', target:9, equation:'x+4=9', answers:[5] },
     { f:'2x-3', target:7, equation:'2x-3=7', answers:[5] },
     { f:'-3x+2', target:14, equation:'-3x+2=14', answers:[-4] },
-    { f:'0.5x-3', displayF:'\\frac12x-3', target:2, equation:'0.5x-3=2', answers:[10] }
-  ],
-  challenge: [
+    { f:'0.5x-3', displayF:'\\frac12x-3', target:2, equation:'0.5x-3=2', answers:[10] },
+    { f:'3x+2', target:6.5, equation:'3x+2=6.5', answers:[1.5] },
+    { f:'3x+1', target:3, equation:'3x+1=3', answers:[2/3] },
     { f:'x^2-1', target:8, equation:'x^2-1=8', answers:[-3,3] },
     { f:'x^2+x', target:6, equation:'x^2+x=6', answers:[-3,2] }
   ]
@@ -336,6 +358,8 @@ const answerPrefix = el('answerPrefix');
 const answerFeedback = el('answerFeedback');
 const answerFeedback2 = el('answerFeedback2');
 const nextBtn = el('nextBtn');
+const solutionBtn = el('solutionBtn');
+const taskSelect = el('taskSelect');
 const completeBox = el('completeBox');
 const gameArea = el('gameArea');
 
@@ -346,8 +370,21 @@ document.querySelectorAll('.tab').forEach(btn => {
     mode = btn.dataset.mode;
     index = 0;
     score = 0;
+    buildTaskSelect();
     loadQuestion();
   });
+});
+
+function buildTaskSelect(){
+  taskSelect.innerHTML = datasets[mode].map((_,i) =>
+    `<option value="${i}">Tehtävä ${i+1}</option>`
+  ).join('');
+  taskSelect.value = String(index);
+}
+
+taskSelect.addEventListener('change', () => {
+  index = Number(taskSelect.value);
+  loadQuestion();
 });
 
 let mathJaxQueue = Promise.resolve();
@@ -384,39 +421,39 @@ function jsExprToLatex(s) {
 function modelHTML() {
   if (mode === 'value') {
     return `
-      <h2>Malli</h2>
+      <h2>Esimerkki</h2>
       <div>Kun \\(f(x)=3x-2\\) ja \\(x=4\\), sijoitetaan muuttujan arvo lausekkeeseen:</div>
       <div>\\[
         f(4)=3\\cdot\\mathbf{\\color{#d9485f}{4}}-2=10.
       \\]</div>
     `;
   }
-  if (mode === 'variable') {
-    return `
-      <h2>Malliratkaisu</h2>
-      <div>Millä muuttujan arvolla funktion \\(f(x)=3x-5\\) arvo on \\(7\\)?</div>
-      <div>\\[
-      \\begin{aligned}
-      f(x)&=7\\\\
-      3x-5&=7\\\\
-      3x&=12\\\\
-      x&=4
-      \\end{aligned}
-      \\]</div>
-      <div>Kirjoita tehtävässä ensin yhtälö ja ratkaise vasta sen jälkeen \\(x\\).</div>
-    `;
-  }
   return `
-    <h2>Haasteen malli</h2>
-    <div>Toisen asteen funktiolla muuttujan arvoja voi olla kaksi.</div>
-    <div>Jos \\(f(x)=x^2\\) ja funktion arvo on \\(9\\), muodostetaan</div>
-    <div>\\[
-      x^2=9
-    \\]</div>
-    <div>ja saadaan kaksi ratkaisua</div>
-    <div>\\[
-      x=-3 \\quad \\text{tai} \\quad x=3.
-    \\]</div>
+    <div class="examples">
+      <div class="example">
+        <h2>Esimerkki 1</h2>
+        <div class="example-question">Millä muuttujan arvolla funktion \\(f(x)=3x-5\\) arvo on \\(7\\)?</div>
+        <div>\\[
+        \\begin{aligned}
+        f(x)&=7\\\\
+        3x-5&=7\\\\
+        3x&=12\\\\
+        x&=4
+        \\end{aligned}
+        \\]</div>
+      </div>
+      <div class="example">
+        <h2>Esimerkki 2</h2>
+        <div>Sama funktion arvo voi vastata useampaa kuin yhtä muuttujan arvoa.</div>
+        <div class="example-question">Millä muuttujan arvoilla funktion \\(f(x)=x^2\\) arvo on \\(9\\)?</div>
+        <div>\\[
+        \\begin{aligned}
+        x^2&=9\\\\
+        x&=-3\\quad\\text{tai}\\quad x=3
+        \\end{aligned}
+        \\]</div>
+      </div>
+    </div>
   `;
 }
 
@@ -434,7 +471,11 @@ function loadQuestion() {
   hideFeedback(answerFeedback2);
   answerSection.classList.add('hidden');
   secondAnswerSection.classList.add('hidden');
-  taskSolved=false; solutionShown=false; failedAttempts=0; nextBtn.classList.remove('hidden'); nextBtn.textContent='Näytä ratkaisu / seuraava';
+  taskSolved=false; solutionShown=false; failedAttempts=0;
+  solutionBtn.classList.add('hidden');
+  nextBtn.classList.add('hidden');
+  nextBtn.textContent='Seuraava tehtävä';
+  taskSelect.value=String(index);
 
   modelBox.innerHTML = modelHTML();
   const q = current();
@@ -453,15 +494,13 @@ function loadQuestion() {
     answerLabel.textContent = 'Laske funktion arvo';
     answerPrefix.innerHTML = `f(${q.x}) =`;
   } else {
-    questionText.innerHTML = `Millä muuttujan arvolla funktion \\(f(x)=${latexFunction(q)}\\) arvo on \\(${q.target}\\)?`;
+    questionText.innerHTML = `Millä muuttujan ${q.answers.length > 1 ? 'arvoilla' : 'arvolla'} funktion \\(f(x)=${latexFunction(q)}\\) arvo on \\(${q.target}\\)?`;
     expressionLabel.textContent = 'Muodosta yhtälö';
     expressionInput.placeholder = 'esim. 3x-5=7';
     expressionNote.textContent = 'Kirjoita yhtälö käyttäen x:ää. Peli tarkistaa yhtälön ennen ratkaisua.';
     el('checkExpression').textContent = 'Tarkista yhtälö';
-    if (mode === 'variable') {
-      answerLabel.textContent = 'Ratkaise yhtälö';
-      answerPrefix.textContent = 'x =';
-    }
+    answerLabel.textContent = 'Ratkaise yhtälö';
+    answerPrefix.textContent = 'x =';
   }
 
   updateLivePreview();
@@ -603,6 +642,13 @@ function hideFeedback(node) {
   node.className = 'feedback';
   node.textContent = '';
 }
+function registerFailure(node){
+  failedAttempts++;
+  showFeedback(node, false, failedAttempts === 1
+    ? 'Ei vielä oikein. Yritä uudelleen.'
+    : 'Ei vielä oikein. Voit jatkaa yrittämistä tai näyttää ratkaisun.');
+  if(failedAttempts >= 2) solutionBtn.classList.remove('hidden');
+}
 
 el('checkExpression').addEventListener('click', () => {
   const q = current();
@@ -615,13 +661,13 @@ el('checkExpression').addEventListener('click', () => {
       answerSection.classList.remove('hidden');
       answerInput.focus();
     } else {
-      failedAttempts++; showFeedback(expressionFeedback, false, 'Tarkista sijoitus. Kirjoita funktion lauseke niin, että x:n paikalla on annettu muuttujan arvo.');
+      registerFailure(expressionFeedback);
     }
   } else {
     ok = isEquivalentEquation(expressionInput.value, q.equation);
     if (ok) {
       showFeedback(expressionFeedback, true, 'Oikein. Yhtälö on muodostettu oikein.');
-      if (mode === 'variable') {
+      if (q.answers.length === 1) {
         answerSection.classList.remove('hidden');
         answerInput.focus();
       } else {
@@ -629,7 +675,7 @@ el('checkExpression').addEventListener('click', () => {
         answerInput2.focus();
       }
     } else {
-      failedAttempts++; showFeedback(expressionFeedback, false, `Tarkista yhtälö. Funktion lausekkeen pitää olla yhtä suuri kuin ${q.target}.`);
+      registerFailure(expressionFeedback);
     }
   }
   expressionPassed = ok;
@@ -656,9 +702,9 @@ el('checkAnswer').addEventListener('click', () => {
     showFeedback(answerFeedback, true, 'Oikein!');
     score++;
     scoreText.textContent = `Pisteet ${score}`;
-    taskSolved=true; nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
+    taskSolved=true; solutionBtn.classList.add('hidden'); nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
   } else {
-    failedAttempts++; showFeedback(answerFeedback, false, 'Tarkista lasku ja yritä uudelleen.');
+    registerFailure(answerFeedback);
   }
 });
 
@@ -692,30 +738,34 @@ el('checkAnswer2').addEventListener('click', () => {
     showFeedback(answerFeedback2, true, 'Oikein. Löysit molemmat muuttujan arvot!');
     score++;
     scoreText.textContent = `Pisteet ${score}`;
-    taskSolved=true; nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
+    taskSolved=true; solutionBtn.classList.add('hidden'); nextBtn.classList.remove('hidden'); nextBtn.textContent='Seuraava tehtävä';
   } else {
-    failedAttempts++; showFeedback(answerFeedback2, false, 'Tarvitaan kaksi muuttujan arvoa, esimerkiksi 2 tai -2. Tarkista yhtälön ratkaisut.');
+    registerFailure(answerFeedback2);
   }
 });
 
 function solutionText(){
   const q=current();
   if(mode==='value') return `Ratkaisu: \\(f(${q.x})=${inputToLatex(q.expected)}=${q.answer}\\).`;
-  if(mode==='variable') return `Ratkaisu: \\(${inputToLatex(q.equation)}\\), joten \\(x=${q.answers[0]}\\).`;
+  if(q.answers.length===1) return `Ratkaisu: \\(${inputToLatex(q.equation)}\\), joten \\(x=${q.answers[0]}\\).`;
   return `Ratkaisu: \\(${inputToLatex(q.equation)}\\), joten \\(x=${q.answers[0]}\\) tai \\(x=${q.answers[1]}\\).`;
 }
+solutionBtn.addEventListener('click', () => {
+  if (failedAttempts < 2 || solutionShown) return;
+  solutionShown = true;
+  const q=current();
+  const target = q.answers && q.answers.length === 2 ? answerFeedback2 : (expressionPassed ? answerFeedback : expressionFeedback);
+  target.className='feedback ok';
+  target.innerHTML=solutionText();
+  if(mode==='value' || (q.answers && q.answers.length===1)) answerSection.classList.remove('hidden');
+  else secondAnswerSection.classList.remove('hidden');
+  solutionBtn.classList.add('hidden');
+  nextBtn.classList.remove('hidden');
+  nextBtn.textContent='Seuraava tehtävä';
+  queueMathJax([target]);
+});
+
 nextBtn.addEventListener('click', () => {
-  if(!taskSolved && !solutionShown && failedAttempts < 2){
-    const target=mode==='challenge'?answerFeedback2:(expressionPassed?answerFeedback:expressionFeedback);
-    showFeedback(target,false,'Yritä vielä itse. Ratkaisun voi pyytää kahden epäonnistuneen tarkistuksen jälkeen.'); return;
-  }
-  if(!taskSolved && !solutionShown){
-    solutionShown=true;
-    const target=mode==='challenge'?answerFeedback2:answerFeedback;
-    target.className='feedback ok'; target.innerHTML=solutionText();
-    if(mode==='value'||mode==='variable') answerSection.classList.remove('hidden'); else secondAnswerSection.classList.remove('hidden');
-    nextBtn.textContent='Jatka seuraavaan'; queueMathJax([target]); return;
-  }
   if (index < datasets[mode].length - 1) { index++; loadQuestion(); }
   else finishMode();
 });
@@ -726,7 +776,7 @@ nextBtn.addEventListener('click', () => {
     else if(inp===answerInput) el('checkAnswer').click();
     else el('checkAnswer2').click();
   }
-  if(e.key==='ArrowDown'){e.preventDefault(); if(inp===expressionInput){(mode==='challenge'?answerInput2:answerInput).focus()} else nextBtn.focus();}
+  if(e.key==='ArrowDown'){e.preventDefault(); if(inp===expressionInput){((current().answers&&current().answers.length===2)?answerInput2:answerInput).focus()} else nextBtn.focus();}
   if(e.key==='ArrowUp'){e.preventDefault(); if(inp!==expressionInput)expressionInput.focus();}
 }));
 
@@ -734,7 +784,7 @@ function finishMode() {
   gameArea.classList.add('hidden');
   completeBox.classList.remove('hidden');
   const total = datasets[mode].length;
-  const title = mode === 'value' ? 'Funktion arvo' : mode === 'variable' ? 'Muuttujan arvo' : 'Haaste';
+  const title = mode === 'value' ? 'Funktion arvo' : 'Muuttujan arvo';
   completeBox.innerHTML = `
     <h2>${title} valmis!</h2>
     <p>Sait ${score} / ${total} pistettä.</p>
@@ -742,6 +792,7 @@ function finishMode() {
   `;
 }
 
+buildTaskSelect();
 loadQuestion();
 </script>
 <!-- Cloudflare Web Analytics -->

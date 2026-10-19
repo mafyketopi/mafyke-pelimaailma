@@ -29,6 +29,8 @@
   main{padding-top:14px!important;padding-bottom:24px!important}
 }
 
+.tasknav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}.tasknav button{min-width:38px;padding:7px 10px;border:1px solid #cfd8e4;border-radius:9px;background:#fff;color:#172033;font-weight:700;cursor:pointer}.tasknav button.active{background:#172033;color:#fff;border-color:#172033}
+@media(min-width:900px){.canvasWrap canvas{max-width:460px}}
 </style>
 </head>
 <body>
@@ -36,7 +38,7 @@
 <header><h1>Verrannollisuus ja koordinaatisto</h1><p>Ratkaise sanalliset tehtävät taulukon ja kuvaajan avulla.</p></header>
 <main>
   <div class="topbar"><span class="pill">Tehtävä <strong id="taskNum">1</strong>/8</span><span class="pill score">Pisteet: <span id="score">0</span></span><div class="progress"><div id="prog"></div></div></div>
-  <section class="card" id="game"></section>
+  <div class="tasknav" id="taskNav"></div><section class="card" id="game"></section>
 </main>
 <script>
 const tasks = [
@@ -51,7 +53,7 @@ const tasks = [
 ];
 let idx=0, score=0, checked=false, hyperbolaDrawn=false, lineDrawn=false, failedAttempts=0;
 function fmt(n){return Number.isInteger(n)?String(n):String(n).replace('.',',')}
-function render(){
+function render(){document.getElementById("taskNav").innerHTML=tasks.map((_,j)=>`<button type="button" class="${j===idx?'active':''}" onclick="idx=${j};render()">${j+1}</button>`).join('');
  checked=false; hyperbolaDrawn=false; lineDrawn=false; failedAttempts=0;
  const t=tasks[idx];
  document.getElementById('taskNum').textContent=idx+1;

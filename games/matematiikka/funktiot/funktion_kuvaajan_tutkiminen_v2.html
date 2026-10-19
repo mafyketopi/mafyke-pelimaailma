@@ -9,13 +9,13 @@
 header{height:78px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 4%}
 h1{font-size:clamp(1.45rem,3vw,2.25rem);margin:0}.score{font-weight:800}
 main{max-width:1180px;margin:auto;padding:18px 3% 30px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
 .tab{border:1px solid var(--line);background:white;border-radius:11px;padding:10px 7px;font-weight:750;cursor:pointer}
 .tab.active{background:var(--blue);color:white;border-color:var(--blue)}
-.workspace{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(310px,.78fr);gap:16px;align-items:start}
+.workspace{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(350px,.95fr);gap:16px;align-items:start}
 .card{background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px rgba(25,40,65,.05)}
-.graphcard{padding:10px}.taskcard{padding:18px}
-canvas{display:block;width:min(100%,640px);height:auto;aspect-ratio:1;margin:auto}
+.graphcard{padding:12px;display:flex;align-items:center;justify-content:center}.taskcard{padding:16px 18px}
+canvas{display:block;width:min(100%,510px);height:auto;aspect-ratio:1;margin:auto}
 .topline{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
 .badge{background:#eef2f7;border-radius:999px;padding:6px 10px;font-size:.9rem;font-weight:750}
 h2{font-size:1.3rem;margin:8px 0 8px}.lead{color:var(--muted);line-height:1.45;margin:6px 0 13px}
@@ -26,7 +26,7 @@ button{font:inherit}.btn{border:0;border-radius:10px;padding:10px 13px;font-weig
 .nav{display:flex;justify-content:space-between;margin-top:15px;gap:8px}.hidden{display:none!important}
 .option{border:2px solid #d5dde7;background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:700}
 .option.sel{border-color:#6da0f8;background:#eef5ff}
-.math{font-family:Cambria,Georgia,serif;font-size:1.08rem}
+.math{font-family:Cambria,Georgia,serif;font-size:1.08rem}.analysis-grid{display:grid;grid-template-columns:150px 1fr;gap:8px 10px;align-items:center;margin:10px 0}.analysis-grid input{width:100%;min-width:0}.analysis-input.answer-correct{border:2px solid #168447;background:#eef9f2}.analysis-input.answer-wrong{border:2px solid #c94a4a;background:#fff7f7}.symbolbar{display:flex;gap:7px;margin:8px 0}.symbolbtn{border:1px solid #b8c4d1;background:#fff;border-radius:8px;padding:6px 12px;font:700 1.05rem Cambria,serif;cursor:pointer}.hintline{font-size:.92rem;color:var(--muted);margin:4px 0 8px}@media(max-width:520px){.analysis-grid{grid-template-columns:1fr}}
 .choices{display:grid;gap:8px;margin:12px 0}
 .segment{min-height:38px;border:2px solid transparent;border-radius:8px;background:rgba(226,232,240,.82);cursor:pointer;font-weight:750}
 .segment.sel{background:#cfe1ff;border-color:#4e8df5}
@@ -56,16 +56,17 @@ button{font:inherit}.btn{border:0;border-radius:10px;padding:10px 13px;font-weig
 </head>
 <body>
 <a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
-<header><div><h1>Funktion kuvaajan tutkiminen</h1></div><div class="score" id="score">0 / 16 oikein</div></header>
+<header><div><h1>Funktion kuvaajan tutkiminen</h1></div><div class="score" id="score">0 / 20 oikein</div></header>
 <main>
 <div class="tabs">
  <button class="tab active" data-sec="0">1. Nollakohdat</button>
  <button class="tab" data-sec="1">2. Pienin ja suurin arvo</button>
  <button class="tab" data-sec="2">3. Positiivinen / negatiivinen</button>
  <button class="tab" data-sec="3">4. Kasvava / vähenevä</button>
+ <button class="tab" data-sec="4">5. Tutki kuvaajia</button>
 </div>
 <div class="workspace">
- <section class="card graphcard"><canvas id="g" width="680" height="680"></canvas></section>
+ <section class="card graphcard"><canvas id="g" width="1000" height="1000"></canvas></section>
  <section class="card taskcard">
    <div class="topline"><span class="badge" id="counter"></span><span class="badge" id="typeBadge"></span></div>
    <h2 id="question"></h2><p class="lead" id="help"></p>
@@ -101,6 +102,12 @@ const sections=[
   {kind:"mono",fn:x=>-x*x+4,label:"kasvava",answer:"x ≤ 0",correctOption:2,options:["x ≥ 0","−2 ≤ x ≤ 2","x ≤ 0","x < −2","x ≠ 0","ei millään x:n arvolla"]},
   {kind:"mono",fn:x=>(x*x*x)/3-x*x-3*x+2,label:"kasvava, 3. asteen kuvaaja",range:8,answer:"x ≤ −1 tai x ≥ 3",correctOption:1,options:["−1 ≤ x ≤ 3","x ≤ −1 tai x ≥ 3","x ≤ 3","x ≥ −1","x < −1 tai x > 3","kaikilla x:n arvoilla"]},
   {kind:"mono",fn:x=>(x*x*x)/6-2*x,label:"vähenevä, 3. asteen kuvaaja",range:8,answer:"−2 ≤ x ≤ 2",correctOption:4,options:["x ≤ −2 tai x ≥ 2","x ≤ 2","x ≥ −2","−2 < x < 2","−2 ≤ x ≤ 2","kaikilla x:n arvoilla"]}
+ ]},
+ {name:"Tutki kuvaajia",tasks:[
+  {kind:"analysis",fn:x=>(2*x*x*x+3*x*x-12*x+32)/10,label:"3. asteen kuvaaja",range:6,analysis:{zeros:"x = −4",positive:"x > −4",negative:"x < −4",increasing:"x ≤ −2 tai x ≥ 1",decreasing:"−2 ≤ x ≤ 1"}},
+  {kind:"analysis",fn:x=>(-2*x*x*x+3*x*x+12*x+32)/10,label:"3. asteen kuvaaja",range:6,analysis:{zeros:"x = 4",positive:"x < 4",negative:"x > 4",increasing:"−1 ≤ x ≤ 2",decreasing:"x ≤ −1 tai x ≥ 2"}},
+  {kind:"analysis",fn:x=>(2*(x-1)*(x-1)*(x-1)+3*(x-1)*(x-1)-12*(x-1)+32)/10,label:"3. asteen kuvaaja",range:6,analysis:{zeros:"x = −3",positive:"x > −3",negative:"x < −3",increasing:"x ≤ −1 tai x ≥ 2",decreasing:"−1 ≤ x ≤ 2"}},
+  {kind:"analysis",fn:x=>x*(x-3)*(x-3),label:"3. asteen kuvaaja",range:6,analysis:{zeros:"x = 0 ja x = 3",positive:"0 < x < 3 tai x > 3",negative:"x < 0",increasing:"x ≤ 1 tai x ≥ 3",decreasing:"1 ≤ x ≤ 3"}}
  ]}
 ];
 let sec=0,idx=0,selected=new Set(),solved=new Set(),highlight=false,attempted=false,failedAttempts=0;
@@ -117,16 +124,16 @@ function curve(a,b,color="#172033",w=4,signMode=false){
 function ranges(cuts){let R=bound(),a=[-R,...cuts,R],r=[];for(let i=0;i<a.length-1;i++)r.push([a[i],a[i+1]]);return r}
 function draw(){
  let t=task(),R=bound(),xmin=-R,xmax=R,ymin=-R,ymax=R;ctx.clearRect(0,0,cvs.width,cvs.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,cvs.width,cvs.height);
- ctx.strokeStyle="#dce3ed";ctx.lineWidth=1;
+ ctx.strokeStyle="#e4e8ee";ctx.lineWidth=1.4;
  for(let x=xmin;x<=xmax;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()}
  for(let y=ymin;y<=ymax;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(cvs.width,Y(y));ctx.stroke()}
  if(t.domain){ctx.fillStyle="rgba(37,99,235,.07)";ctx.fillRect(X(t.domain[0]),0,X(t.domain[1])-X(t.domain[0]),cvs.height);
   ctx.strokeStyle="#8cb3f7";ctx.lineWidth=2;t.domain.forEach(x=>{ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),cvs.height);ctx.stroke()})}
- ctx.strokeStyle="#697586";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
+ ctx.strokeStyle="#394454";ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(cvs.width,Y(0));ctx.stroke();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),cvs.height);ctx.stroke();
  ctx.fillStyle="#172033";ctx.beginPath();ctx.moveTo(X(xmax),Y(0));ctx.lineTo(X(xmax)-14,Y(0)-7);ctx.lineTo(X(xmax)-14,Y(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(X(0),Y(ymax));ctx.lineTo(X(0)-7,Y(ymax)+14);ctx.lineTo(X(0)+7,Y(ymax)+14);ctx.fill();
- ctx.fillStyle="#596579";ctx.font="15px system-ui";ctx.textAlign='center';for(let x=xmin;x<=xmax;x++)if(x)ctx.fillText(x,X(x),Y(0)+18);
- ctx.textAlign='left';for(let y=ymin;y<=ymax;y++)if(y)ctx.fillText(y,X(0)+7,Y(y)+5);ctx.font='italic 20px serif';ctx.fillStyle='#172033';ctx.fillText('x',X(xmax)-12,Y(0)+24);ctx.fillText('y',X(0)+12,Y(ymax)+20);
- curve(xmin,xmax);
+ ctx.fillStyle="#596579";ctx.font="24px system-ui";ctx.textAlign='center';for(let x=xmin;x<=xmax;x++)if(x)ctx.fillText(x,X(x),Y(0)+18);
+ ctx.textAlign='left';for(let y=ymin;y<=ymax;y++)if(y)ctx.fillText(y,X(0)+7,Y(y)+5);ctx.font='italic 31px Cambria,serif';ctx.fillStyle='#172033';ctx.fillText('x',X(xmax)-12,Y(0)+24);ctx.fillText('y',X(0)+12,Y(ymax)+20);
+ curve(xmin,xmax,"#172033",5);
  if(highlight && (t.kind==='sign'||t.kind==='mono')){
    const wanted=t.label.includes('positiivinen')?'positive':t.label.includes('negatiivinen')?'negative':t.label.includes('kasvava')?'increasing':'decreasing';
    const goodAt=x=>{if(wanted==='positive')return t.fn(x)>0;if(wanted==='negative')return t.fn(x)<0;const h=.002,der=(t.fn(x+h)-t.fn(x-h))/(2*h);return wanted==='increasing'?der>1e-3:der< -1e-3};
@@ -138,14 +145,14 @@ function draw(){
    let pts=[];
    if(t.kind==="zeros") pts=t.roots.map(x=>[x,0]);
    if(t.kind==="extrema")pts=t.points;
-   pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(X(x),Y(y),10,0,Math.PI*2);ctx.fillStyle="rgba(22,132,71,.14)";ctx.fill();ctx.strokeStyle="#168447";ctx.lineWidth=4;ctx.stroke()})
+   pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(X(x),Y(y),7,0,Math.PI*2);ctx.fillStyle="rgba(22,132,71,.14)";ctx.fill();ctx.strokeStyle="#168447";ctx.lineWidth=3;ctx.stroke()})
  }
 }
 function render(){
  selected.clear();highlight=false;attempted=false;failedAttempts=0;feedback.textContent="";feedback.className="feedback";answer.classList.add("hidden");
  let t=task();counter.textContent=`Tehtävä ${idx+1} / ${sections[sec].tasks.length}`;typeBadge.textContent=t.label;
- if(t.kind==="zeros")renderZeros(t); if(t.kind==="extrema")renderExtrema(t); if(t.kind==="sign")renderIntervals(t); if(t.kind==="mono")renderIntervals(t);
- prev.disabled=idx===0;next.textContent=idx===sections[sec].tasks.length-1?(sec===3?"Valmis":"Seuraava osio →"):"Seuraava →";
+ if(t.kind==="zeros")renderZeros(t); if(t.kind==="extrema")renderExtrema(t); if(t.kind==="sign")renderIntervals(t); if(t.kind==="mono")renderIntervals(t); if(t.kind==="analysis")renderAnalysis(t);
+ prev.disabled=idx===0;next.textContent=idx===sections[sec].tasks.length-1?(sec===4?"Valmis":"Seuraava osio →"):"Seuraava →";
  document.querySelectorAll(".tab").forEach((b,i)=>b.classList.toggle("active",i===sec));draw()
 }
 function renderZeros(t){
@@ -166,15 +173,94 @@ function renderExtrema(t){
 function renderIntervals(t){
  let sign=t.kind==="sign";
  question.textContent=sign?`Millä muuttujan arvoilla funktio on ${t.label}?`:`Millä muuttujan arvoilla funktio on ${t.label}?`;
- help.textContent=sign?"Valitse yksi oikea kokonaisvastaus. Tarkistuksen jälkeen oikea alue korostetaan kuvaajaan.":"Valitse yksi oikea kokonaisvastaus. Tarkistuksen jälkeen kasvava osa korostetaan tummankeltaisella ja vähenevä vihreällä.";
+ help.textContent="Valitse yksi oikea kokonaisvastaus. Tarkistuksen jälkeen kuvaajasta korostetaan tehtävässä kysytty osa.";
  let labels=t.options.map((txt,i)=>`<button class="segment" data-i="${i}">${txt}</button>`).join('');
  controls.innerHTML=`<div class="choices">${labels}</div>
  <button class="btn primary" id="check">Tarkista</button>`;
  document.querySelectorAll(".segment").forEach(b=>b.onclick=()=>{selected.clear();document.querySelectorAll('.segment').forEach(x=>x.classList.remove('sel'));selected.add(+b.dataset.i);b.classList.add('sel')});
  check.onclick=checkIntervals
 }
-function ok(msg){attempted=true;feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 16 oikein`;draw()}
-function no(msg){attempted=true;failedAttempts++;feedback.textContent=msg+(failedAttempts>=2?' Voit jatkaa yrittämistä tai pyytää ratkaisun Seuraava-painikkeella.':' Yritä uudelleen.');feedback.className="feedback bad"}
+
+let lastAnalysisInput=null;
+function renderAnalysis(t){
+ question.textContent="Tutki kuvaajaa ja kirjoita vastaukset.";
+ help.textContent="Ilmoita vastaukset epäyhtälöinä. Jos vastaukseen kuuluu kaksi väliä, yhdistä ne sanalla tai.";
+ controls.innerHTML=`<div class="analysis-grid">
+  <label>Nollakohdat</label><input id="az" class="analysis-input" placeholder="esim. x = −5 ja x = 2">
+  <label>Positiivinen</label><input id="ap" class="analysis-input" placeholder="esim. x < −1 tai x > 4">
+  <label>Negatiivinen</label><input id="an" class="analysis-input" placeholder="esim. −3 < x < 2">
+  <label>Kasvava</label><input id="ai" class="analysis-input" placeholder="esim. x ≤ −4 tai x ≥ 3">
+  <label>Vähenevä</label><input id="ad" class="analysis-input" placeholder="esim. −2 ≤ x ≤ 5">
+ </div>
+ <div class="symbolbar"><button type="button" class="symbolbtn" data-sym="≤">≤</button><button type="button" class="symbolbtn" data-sym="≥">≥</button></div>
+ <button class="btn primary" id="check">Tarkista</button>`;
+ document.querySelectorAll('.analysis-input').forEach(inp=>{inp.addEventListener('focus',()=>lastAnalysisInput=inp);inp.addEventListener('click',()=>lastAnalysisInput=inp)});
+ lastAnalysisInput=document.getElementById('az');
+ document.querySelectorAll('.symbolbtn').forEach(b=>b.onclick=()=>{const inp=lastAnalysisInput;if(!inp)return;const a=inp.selectionStart??inp.value.length,z=inp.selectionEnd??a;inp.value=inp.value.slice(0,a)+b.dataset.sym+inp.value.slice(z);inp.focus();inp.setSelectionRange(a+1,a+1)});
+ check.onclick=checkAnalysis;
+}
+function rootValues(v){
+ const m=[...v.replace(/−/g,'-').matchAll(/x\s*=\s*(-?\d+(?:[.,]\d+)?)/gi)];
+ return m.map(z=>Number(z[1].replace(',','.'))).sort((a,b)=>a-b);
+}
+function canonicalIntervals(v){
+ let src=v.toLowerCase().replace(/−/g,'-').replace(/<=/g,'≤').replace(/>=/g,'≥').replace(/,/g,'.').replace(/\s+/g,'');
+ const parts=src.split(/tai/).filter(Boolean), out=[];
+ for(const part of parts){
+   let m;
+   if((m=part.match(/^x([<>≤≥])(-?\d+(?:\.\d+)?)$/))){
+     const op=m[1],n=Number(m[2]);
+     out.push(op==='>'||op==='≥'?{lo:n,li:op==='≥',hi:null,ui:false}:{lo:null,li:false,hi:n,ui:op==='≤'}); continue;
+   }
+   if((m=part.match(/^(-?\d+(?:\.\d+)?)([<>≤≥])x$/))){
+     const n=Number(m[1]),op=m[2];
+     out.push(op==='<'||op==='≤'?{lo:n,li:op==='≤',hi:null,ui:false}:{lo:null,li:false,hi:n,ui:op==='≥'}); continue;
+   }
+   if((m=part.match(/^(-?\d+(?:\.\d+)?)([<≤])x([<≤])(-?\d+(?:\.\d+)?)$/))){
+     out.push({lo:Number(m[1]),li:m[2]==='≤',hi:Number(m[4]),ui:m[3]==='≤'}); continue;
+   }
+   if((m=part.match(/^(-?\d+(?:\.\d+)?)([>≥])x([>≥])(-?\d+(?:\.\d+)?)$/))){
+     out.push({lo:Number(m[4]),li:m[3]==='≥',hi:Number(m[1]),ui:m[2]==='≥'}); continue;
+   }
+   return null;
+ }
+ const key=o=>`${o.lo===null?'-inf':o.lo}:${o.li?1:0}:${o.hi===null?'inf':o.hi}:${o.ui?1:0}`;
+ return out.map(key).sort();
+}
+function equivalent(v,w,key){
+ if(key==='zeros'){
+   const a=rootValues(v),b=rootValues(w);
+   return a.length===b.length && a.every((x,i)=>x===b[i]);
+ }
+ const a=canonicalIntervals(v),b=canonicalIntervals(w);
+ return !!a&&!!b&&a.length===b.length&&a.every((x,i)=>x===b[i]);
+}
+function checkAnalysis(){
+ const t=task(),A=t.analysis;
+ const fields={zeros:az,positive:ap,negative:an,increasing:ai,decreasing:ad};
+ const names={zeros:'Nollakohdat',positive:'Positiivinen',negative:'Negatiivinen',increasing:'Kasvava',decreasing:'Vähenevä'};
+ let allGood=true, newlyGood=0;
+ for(const [k,inp] of Object.entries(fields)){
+   if(inp.dataset.correct==='1') continue;
+   const good=equivalent(inp.value,A[k],k);
+   inp.classList.toggle('answer-correct',good);
+   inp.classList.toggle('answer-wrong',!good);
+   if(good){inp.dataset.correct='1';newlyGood++;} else allGood=false;
+ }
+ allGood=Object.values(fields).every(inp=>inp.dataset.correct==='1');
+ attempted=true;
+ if(allGood){
+   feedback.textContent="Oikein! Kuvaaja on tutkittu kokonaan.";feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 20 oikein`;draw();
+   answer.innerHTML=`Nollakohdat: <b>${A.zeros}</b><br>Positiivinen: <b>${A.positive}</b><br>Negatiivinen: <b>${A.negative}</b><br>Kasvava: <b>${A.increasing}</b><br>Vähenevä: <b>${A.decreasing}</b>`;answer.classList.remove('hidden');
+ }else{
+   failedAttempts++;
+   const done=Object.entries(fields).filter(([k,inp])=>inp.dataset.correct==='1').map(([k])=>names[k]);
+   feedback.textContent=(done.length?`Oikein: ${done.join(', ')}. `:'')+(failedAttempts>=2?"Korjaa vielä muut kohdat. Voit jatkaa yrittämistä tai pyytää ratkaisun Seuraava-painikkeella.":"Korjaa vielä muut kohdat ja yritä uudelleen.");
+   feedback.className="feedback bad";
+ }
+}
+function ok(msg){attempted=true;feedback.textContent=msg;feedback.className="feedback good";highlight=true;solved.add(key());score.textContent=`${solved.size} / 20 oikein`;draw()}
+function no(msg){attempted=true;failedAttempts++;feedback.textContent=failedAttempts>=2?"Ei vielä oikein. Voit jatkaa yrittämistä tai pyytää ratkaisun Seuraava-painikkeella.":"Ei vielä oikein. Yritä uudelleen.";feedback.className="feedback bad"}
 function checkZeros(){
  let t=task(),vals=[...document.querySelectorAll(".z")].map(x=>Number(x.value)).filter(x=>x.value!==""),noneSel=none.classList.contains("sel");
  let good=t.roots.length===0?noneSel:(!noneSel&&vals.length===t.roots.length&&t.roots.every(x=>vals.includes(x)));
@@ -197,9 +283,10 @@ next.onclick=()=>{
    if(t.kind==='zeros') txt=t.roots.length?`Nollakohdat: <b>${t.roots.map(x=>'x = '+x).join(', ')}</b>`:'Funktiolla ei ole nollakohtia.';
    else if(t.kind==='extrema') txt=`Pienin arvo: <b>${t.min===null?'ei ole':t.min}</b><br>Suurin arvo: <b>${t.max===null?'ei ole':t.max}</b>`;
    else if(t.answer) txt=`Vastaus: <b class="math">${t.answer}</b>`;
+   else if(t.kind==='analysis'){const A=t.analysis;txt=`Nollakohdat: <b>${A.zeros}</b><br>Positiivinen: <b>${A.positive}</b><br>Negatiivinen: <b>${A.negative}</b><br>Kasvava: <b>${A.increasing}</b><br>Vähenevä: <b>${A.decreasing}</b>`;}
    answer.innerHTML=txt; answer.classList.remove('hidden'); feedback.textContent='Ratkaisu näytetään. Paina Seuraava uudelleen jatkaaksesi.'; feedback.className='feedback good'; draw(); return;
  }
- if(idx<sections[sec].tasks.length-1){idx++;render()}else if(sec<3){sec++;idx=0;render()}
+ if(idx<sections[sec].tasks.length-1){idx++;render()}else if(sec<4){sec++;idx=0;render()}
 };
 document.addEventListener('keydown',e=>{
  if(e.target.matches('#controls input') && e.key==='Enter'){

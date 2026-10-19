@@ -61,16 +61,16 @@
       font-weight:750;
     }
 
-    .workspace{display:grid;grid-template-columns:minmax(260px,340px) minmax(340px,1fr);gap:22px;align-items:center;margin-top:10px}
+    .workspace{display:grid;grid-template-columns:minmax(230px,300px) minmax(300px,390px);gap:24px;align-items:center;justify-content:center;margin-top:10px}
     .machine{width:100%;border-collapse:collapse;background:#fff}
-    .machine th,.machine td{border:1px solid var(--line);padding:6px 9px;text-align:center;height:43px;font-size:1.08rem}
-    .machine th{background:#eef3fb;font-size:1.15rem}
+    .machine th,.machine td{border:1px solid var(--line);padding:5px 8px;text-align:center;height:39px;font-size:1.03rem}
+    .machine th{background:#f3f5f8;font-size:1.1rem}
     .graph-wrap{display:flex;justify-content:center}
-    canvas{display:block;width:min(100%,460px);height:auto;aspect-ratio:1;border:1px solid var(--line);border-radius:12px;background:#fff}
+    canvas{display:block;width:min(100%,390px);height:auto;aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:#fff}
 
     .answer{
       width:92px;
-      height:44px;
+      height:40px;
       border:2px solid #cbd5e1;
       border-radius:10px;
       font-size:1.1rem;
@@ -104,7 +104,7 @@
     }
 
     .rule-row{
-      margin-top:14px;
+      margin-top:0;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -137,6 +137,14 @@
       border-color:var(--bad);
       background:#fff5f5;
     }
+
+
+    .task-nav{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin:14px 0 4px}
+    .task-nav button{min-width:42px;padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--text);font-size:.95rem;font-weight:700}
+    .task-nav button.active{border-color:var(--text);background:var(--text);color:#fff}
+    .task-nav .challenge{border-style:solid}
+    .task-nav button.done:not(.active){background:#f3f5f8}
+    .live-rule{min-height:27px;margin-top:3px;text-align:center;font-size:1.15rem;color:var(--text)}
 
     .buttons{
       display:flex;
@@ -183,11 +191,13 @@
       font-size:.98rem;
     }
 
+    .rule-label{font-size:1.2rem;font-weight:750}
+
     .example{
       color:var(--muted);
       font-size:.93rem;
       text-align:center;
-      margin-top:8px;
+      margin-top:3px;
     }
 
     @media (max-width:760px){.workspace{grid-template-columns:1fr}.graph-wrap{order:2}.wrap{padding-top:8px}.lead{font-size:1rem}.answer{width:82px}}
@@ -201,6 +211,28 @@
   .wrap{padding-top:10px!important;padding-bottom:16px!important}
   .card{padding-top:16px!important;padding-bottom:16px!important}
   .buttons{margin-top:10px!important}
+}
+
+@media (min-width:900px) and (min-height:700px){
+  body{height:100dvh;overflow:hidden}
+  .wrap{height:100dvh;padding:8px 0!important;display:flex;align-items:center}
+  .card{width:100%;padding:14px 22px!important}
+  h1{font-size:2.25rem;margin-bottom:5px}
+  .lead{font-size:1rem;line-height:1.35}
+  .task-nav{margin:8px 0 2px;gap:6px}
+  .task-nav button{padding:5px 9px}
+  .task-title{margin-top:7px;font-size:1.08rem}
+  .workspace{margin-top:5px;gap:20px;grid-template-columns:minmax(230px,285px) minmax(300px,350px)}
+  canvas{width:min(100%,350px)}
+  .machine th,.machine td{height:34px;padding:3px 7px}
+  .answer{height:34px}
+  .rule-block{margin-top:7px;padding-top:7px}
+  .rule-row{gap:8px}
+  .rule-input{height:39px}
+  .buttons{margin-top:6px!important}
+  button{padding:9px 17px}
+  .feedback{min-height:24px;margin-top:5px}
+  .score{margin-top:3px}
 }
 
 </style>
@@ -220,8 +252,10 @@
     <section class="card">
       <h1>Funktiokone</h1>
       <p class="lead">
-        Tutki annettuja lähtöarvoja ja funktion arvoja. Päättele, miten lähtöarvosta saadaan funktion arvo.
+        Tutki annettuja muuttujan arvoja ja funktion arvoja. Päättele, miten muuttujan arvosta saadaan funktion arvo – ja toisin päin.
       </p>
+
+      <div id="taskNav" class="task-nav" aria-label="Valitse tehtävä"></div>
 
       <div class="task-title">1. Täydennä puuttuvat funktion arvot. Oikeat arvoparit ilmestyvät koordinaatistoon.</div>
       <div class="workspace">
@@ -230,17 +264,15 @@
       </div>
 
       <div class="rule-block">
-        <div class="task-title" style="margin-top:0">
-          2. Päättele funktion sääntö ja kirjoita se muodossa \(y=\ldots\)
-        </div>
-
         <div class="rule-row">
+          <span class="rule-label">2. Kirjoita funktion sääntö:</span>
           <span>\(y=\)</span>
           <input id="ruleInput" class="rule-input" type="text"
                  autocomplete="off" spellcheck="false"
                  aria-label="Funktion sääntö">
         </div>
 
+        <div id="liveRule" class="live-rule" aria-live="polite"></div>
         <div class="example">
           Voit kirjoittaa esimerkiksi <strong>3x+1</strong> tai <strong>1/3x-1</strong>.
         </div>
@@ -252,18 +284,22 @@
       </div>
 
       <div id="feedback" class="feedback" aria-live="polite"></div>
-      <div id="score" class="score">Tehtävä 1/6 · Oikein ratkaistut: 0</div>
+      <div id="score" class="score">Tehtävä 1/10 · Oikein ratkaistut: 0</div>
     </section>
   </main>
 
 <script>
 const tasks = [
-  { a: 2,    b: 0,  xs: [-2,0,1,3,4,5] },
-  { a: 1,    b: 3,  xs: [-3,0,2,4,5,8] },
-  { a: 3,    b: 0,  xs: [-2,0,1,2,3,6] },
-  { a: 2,    b: -2, xs: [-2,0,2,3,4,7] },
-  { a: -2,   b: 3,  xs: [-2,0,1,2,3,5] },
-  { a: 1/3,  b: -1, xs: [-6,-3,0,3,6,12] }
+  { a: 2,    b: 0,  xs: [-2,0,1,3,4,5], label:'1', group:'basic' },
+  { a: 1,    b: 3,  xs: [-3,0,2,4,5,8], label:'2', group:'basic' },
+  { a: 3,    b: 0,  xs: [-2,0,1,2,3,6], label:'3', group:'basic' },
+  { a: 2,    b: -2, xs: [-2,0,2,3,4,7], label:'4', group:'basic' },
+  { a: -1,   b: 3,  xs: [-3,-1,0,2,4,6], label:'5', group:'basic' },
+  { a: 1/2,  b: 2,  xs: [-6,-2,0,2,6,10], label:'6', group:'basic', inputX:[4] },
+  { a: -2,   b: 3,  xs: [-2,0,1,2,3,5], label:'7', group:'basic', inputX:[3] },
+  { a: -1/2, b: 3,  xs: [-6,-2,0,2,6,10], label:'8', group:'basic', inputX:[4] },
+  { a: 1/5,  b: -2, xs: [-10,-5,0,5,10,20], label:'9', group:'challenge', inputX:[4] },
+  { kind:'square', xs: [0,1,2,3,4,5], label:'10', group:'challenge', inputX:[4] }
 ];
 
 let taskIndex = 0;
@@ -272,6 +308,8 @@ let solved = false;
 let solvedCount = 0;
 
 const machine = document.getElementById('machine');
+const taskNav = document.getElementById('taskNav');
+const liveRule = document.getElementById('liveRule');
 const ruleInput = document.getElementById('ruleInput');
 const feedback = document.getElementById('feedback');
 const score = document.getElementById('score');
@@ -293,6 +331,7 @@ function latexNumber(n){
   if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
   if (Math.abs(Math.abs(n) - 1/2) < 1e-9) return (n < 0 ? '-' : '') + '\\frac{1}{2}';
   if (Math.abs(Math.abs(n) - 1/3) < 1e-9) return (n < 0 ? '-' : '') + '\\frac{1}{3}';
+  if (Math.abs(Math.abs(n) - 1/5) < 1e-9) return (n < 0 ? '-' : '') + '\\frac{1}{5}';
   return niceNumber(n).replace(',', '{,}');
 }
 
@@ -306,6 +345,31 @@ function ruleLatex(a,b){
   return xPart + (b > 0 ? '+' : '') + latexNumber(b);
 }
 
+function taskY(task,x){ return task.kind==='square' ? x*x : task.a*x+task.b; }
+function taskRuleLatex(task){ return task.kind==='square' ? 'x^2' : ruleLatex(task.a,task.b); }
+function taskScoreText(){ return `Tehtävä ${taskIndex+1}/10 · Oikein ratkaistut: ${solvedCount}`; }
+function renderTaskNav(){
+  taskNav.innerHTML='';
+  tasks.forEach((task,i)=>{
+    const b=document.createElement('button');
+    b.type='button'; b.textContent=task.label;
+    
+    if(i===taskIndex) b.classList.add('active');
+    b.setAttribute('aria-label',`Tehtävä ${task.label}`);
+    b.addEventListener('click',()=>{ taskIndex=i; chooseTask(); });
+    taskNav.appendChild(b);
+  });
+}
+function updateRulePreview(){
+  const raw=ruleInput.value.trim();
+  if(!raw){ liveRule.innerHTML=''; return; }
+  let t=raw.replace(/,/g,'.').replace(/−/g,'-').replace(/\*/g,'\\cdot ');
+  t=t.replace(/(\d+)\s*\/\s*(\d+)/g,'\\frac{$1}{$2}');
+  t=t.replace(/\^2/g,'^{2}');
+  liveRule.innerHTML=`\\(y=${t}\\)`;
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([liveRule]);
+}
+
 function chooseTask(){
   currentTask = tasks[taskIndex];
   solved = false;
@@ -313,6 +377,8 @@ function chooseTask(){
   visiblePoints = new Set([0,1,2]);
   nextBtn.textContent = taskIndex===tasks.length-1 ? 'Aloita alusta' : 'Seuraava tehtävä';
   nextBtn.disabled = true;
+  score.textContent = taskScoreText();
+  renderTaskNav();
   renderTask();
 }
 
@@ -322,8 +388,10 @@ function renderTask(){
   feedback.className = 'feedback';
   ruleInput.value = '';
   ruleInput.className = 'rule-input';
+  liveRule.innerHTML = '';
 
-  const ys = currentTask.xs.map(x => currentTask.a*x + currentTask.b);
+  const ys = currentTask.xs.map(x => taskY(currentTask,x));
+  const inputX = new Set(currentTask.inputX || []);
   const head=document.createElement('tr');
   head.innerHTML='<th>\\(x\\)</th><th>\\(y\\)</th>';
   machine.appendChild(head);
@@ -331,50 +399,48 @@ function renderTask(){
   currentTask.xs.forEach((x,i) => {
     const row=document.createElement('tr');
     const left = document.createElement('td');
-    left.innerHTML = `\\(${latexNumber(x)}\\)`;
     const right = document.createElement('td');
-
-    if (i < 3) {
-      right.innerHTML = `\\(${latexNumber(ys[i])}\\)`;
-    } else {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.inputMode = 'decimal';
-      input.className = 'answer';
-      input.dataset.answer = String(ys[i]);
-      input.setAttribute('aria-label', `Funktion arvo lähtöarvolle ${x}`);
-      input.addEventListener('keydown', e => {
-        const inputs=[...document.querySelectorAll('.answer'), ruleInput];
-        const pos=inputs.indexOf(input);
-        if(e.key==='Enter' || e.key==='ArrowDown'){e.preventDefault();(inputs[pos+1]||ruleInput).focus();}
+    const makeInput=(expected,kind)=>{
+      const input=document.createElement('input');
+      input.type='text'; input.inputMode='decimal'; input.className='answer';
+      input.dataset.answer=String(expected); input.dataset.index=String(i); input.dataset.kind=kind;
+      input.setAttribute('aria-label', kind==='x' ? `Muuttujan arvo, kun funktion arvo on ${ys[i]}` : `Funktion arvo muuttujan arvolle ${x}`);
+      input.addEventListener('keydown', e=>{
+        const inputs=[...document.querySelectorAll('.answer'),ruleInput], pos=inputs.indexOf(input);
+        if(e.key==='Enter'||e.key==='ArrowDown'){e.preventDefault();(inputs[pos+1]||ruleInput).focus();}
         if(e.key==='ArrowUp'){e.preventDefault();(inputs[pos-1]||input).focus();}
       });
-      input.addEventListener('input', ()=>{
+      input.addEventListener('input',()=>{
         updateLivePoints();
         const got=parseNumber(input.value), expected=Number(input.dataset.answer);
-        if(input.value.trim()!=='' && Number.isFinite(got) && Math.abs(got-expected)<1e-8){
-          input.classList.add('correct'); input.classList.remove('wrong');
-          const inputs=[...document.querySelectorAll('.answer')]; const pos=inputs.indexOf(input);
-          if(pos>=0 && pos<inputs.length-1) inputs[pos+1].focus(); else ruleInput.focus();
+        if(input.value.trim()!==''&&Number.isFinite(got)&&Math.abs(got-expected)<1e-8){
+          input.classList.add('correct');input.classList.remove('wrong');
+          const inputs=[...document.querySelectorAll('.answer')],pos=inputs.indexOf(input);
+          if(pos>=0&&pos<inputs.length-1) inputs[pos+1].focus(); else ruleInput.focus();
         }
       });
-      right.appendChild(input);
+      return input;
+    };
+
+    if(i<3){
+      left.innerHTML=`\\(${latexNumber(x)}\\)`;
+      right.innerHTML=`\\(${latexNumber(ys[i])}\\)`;
+    } else if(inputX.has(i)){
+      left.appendChild(makeInput(x,'x'));
+      right.innerHTML=`\\(${latexNumber(ys[i])}\\)`;
+    } else {
+      left.innerHTML=`\\(${latexNumber(x)}\\)`;
+      right.appendChild(makeInput(ys[i],'y'));
     }
-
-    row.append(left,right);
-    machine.appendChild(row);
+    row.append(left,right); machine.appendChild(row);
   });
-
-  if (window.MathJax && MathJax.typesetPromise) {
-    MathJax.typesetPromise([machine]);
-  }
-  drawGraph();
-  setTimeout(()=>document.querySelector('.answer')?.focus(),0);
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([machine]);
+  drawGraph(); setTimeout(()=>document.querySelector('.answer')?.focus(),0);
 }
 
 function updateLivePoints(){
-  document.querySelectorAll('.answer').forEach((input,j)=>{
-    const i=j+3,got=parseNumber(input.value),expected=currentTask.a*currentTask.xs[i]+currentTask.b;
+  document.querySelectorAll('.answer').forEach(input=>{
+    const i=Number(input.dataset.index),got=parseNumber(input.value),expected=Number(input.dataset.answer);
     if(input.value.trim()!==''&&Number.isFinite(got)&&Math.abs(got-expected)<1e-8) visiblePoints.add(i);
     else visiblePoints.delete(i);
   });
@@ -382,27 +448,100 @@ function updateLivePoints(){
 }
 
 function drawGraph(){
-  const W=canvas.width,H=canvas.height,pad=46;
-  const ys=currentTask.xs.map(x=>currentTask.a*x+currentTask.b);
-  const lim=Math.max(6,...currentTask.xs.map(Math.abs),...ys.map(Math.abs));
-  const R=Math.ceil(lim/2)*2;
-  const X=x=>pad+(x+R)*(W-2*pad)/(2*R),Y=y=>H-pad-(y+R)*(H-2*pad)/(2*R);
-  ctx.clearRect(0,0,W,H);ctx.font='15px system-ui';ctx.textAlign='center';ctx.textBaseline='top';
-  for(let v=-R;v<=R;v++){
-    ctx.strokeStyle=v===0?'#53627a':'#dce3ed';ctx.lineWidth=v===0?2:1;
-    ctx.beginPath();ctx.moveTo(X(v),Y(-R));ctx.lineTo(X(v),Y(R));ctx.stroke();
-    ctx.beginPath();ctx.moveTo(X(-R),Y(v));ctx.lineTo(X(R),Y(v));ctx.stroke();
-    if(v!==0 && (R<=8 || v%2===0)){
-      ctx.fillStyle='#445067';ctx.fillText(String(v),X(v),Y(0)+6);
-      ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(String(v),X(0)-7,Y(v));ctx.textAlign='center';ctx.textBaseline='top';
+  const W=canvas.width,H=canvas.height;
+  const xs=currentTask.xs;
+  const ys=xs.map(x=>taskY(currentTask,x));
+
+  // Oppikirjamainen asteikko: 1 ruutu vastaa 1, 2 tai 3 yksikköä.
+  // x- ja y-akseli saavat tarvittaessa eri asteikon, jotta kuva pysyy selkeänä.
+  function axisSpec(values){
+    const maxAbs=Math.max(1,...values.map(v=>Math.abs(v)));
+    let unit=1;
+    if(maxAbs>8) unit=2;
+    if(maxAbs>14) unit=3;
+    const half=Math.max(4,Math.ceil(maxAbs/unit)+1);
+    return {unit,half};
+  }
+  const sx=axisSpec(xs), sy=axisSpec(ys);
+
+  const margin={left:52,right:34,top:30,bottom:42};
+  const maxCellX=(W-margin.left-margin.right)/(2*sx.half);
+  const maxCellY=(H-margin.top-margin.bottom)/(2*sy.half);
+  const cell=Math.min(maxCellX,maxCellY);
+  const plotW=2*sx.half*cell, plotH=2*sy.half*cell;
+  const left=(W-plotW)/2, top=(H-plotH)/2;
+  const X=x=>left+(x/sx.unit+sx.half)*cell;
+  const Y=y=>top+(sy.half-y/sy.unit)*cell;
+  const x0=X(0), y0=Y(0);
+
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+
+  // Kevyt ruudukko, kuten painetussa oppikirjassa.
+  ctx.strokeStyle='#d9d9d9';
+  ctx.lineWidth=1;
+  for(let i=-sx.half;i<=sx.half;i++){
+    const px=left+(i+sx.half)*cell;
+    ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,top+plotH);ctx.stroke();
+  }
+  for(let j=-sy.half;j<=sy.half;j++){
+    const py=top+(j+sy.half)*cell;
+    ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(left+plotW,py);ctx.stroke();
+  }
+
+  // Akselit.
+  ctx.strokeStyle='#202020';
+  ctx.fillStyle='#202020';
+  ctx.lineWidth=1.55;
+  ctx.beginPath();ctx.moveTo(left-5,y0);ctx.lineTo(left+plotW+9,y0);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x0,top+plotH+5);ctx.lineTo(x0,top-9);ctx.stroke();
+
+  // Pienet avoimet nuolenkärjet.
+  function arrowRight(x,y){
+    ctx.beginPath();ctx.moveTo(x-8,y-4);ctx.lineTo(x,y);ctx.lineTo(x-8,y+4);ctx.stroke();
+  }
+  function arrowUp(x,y){
+    ctx.beginPath();ctx.moveTo(x-4,y+8);ctx.lineTo(x,y);ctx.lineTo(x+4,y+8);ctx.stroke();
+  }
+  arrowRight(left+plotW+9,y0); arrowUp(x0,top-9);
+
+  // Asteikkoviivat ja luvut. Jokainen ruutu merkitään, mutta nolla vain kerran.
+  ctx.font='16px "Times New Roman", Times, serif';
+  ctx.fillStyle='#202020';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let i=-sx.half;i<=sx.half;i++){
+    const value=i*sx.unit, px=left+(i+sx.half)*cell;
+    if(i!==0){
+      ctx.beginPath();ctx.moveTo(px,y0-3.5);ctx.lineTo(px,y0+3.5);ctx.stroke();
+      ctx.fillText(String(value).replace('.',','),px,y0+7);
     }
   }
-  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(X(R),Y(0));ctx.lineTo(X(R)-13,Y(0)-7);ctx.lineTo(X(R)-13,Y(0)+7);ctx.fill();
-  ctx.beginPath();ctx.moveTo(X(0),Y(R));ctx.lineTo(X(0)-7,Y(R)+13);ctx.lineTo(X(0)+7,Y(R)+13);ctx.fill();
-  ctx.font='italic 20px serif';ctx.fillText('x',X(R)-8,Y(0)+12);ctx.textAlign='left';ctx.fillText('y',X(0)+10,Y(R)+4);
-  currentTask.xs.forEach((x,i)=>{if(!visiblePoints.has(i))return;const y=currentTask.a*x+currentTask.b;ctx.fillStyle='#d32f2f';ctx.beginPath();ctx.arc(X(x),Y(y),7,0,Math.PI*2);ctx.fill();});
-}
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let j=-sy.half;j<=sy.half;j++){
+    const value=-j*sy.unit, py=top+(j+sy.half)*cell;
+    if(j!==0){
+      ctx.beginPath();ctx.moveTo(x0-3.5,py);ctx.lineTo(x0+3.5,py);ctx.stroke();
+      ctx.fillText(String(value).replace('.',','),x0-8,py);
+    }
+  }
+  ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('0',x0-7,y0+7);
 
+  // Akselien tunnukset.
+  ctx.font='italic 19px "Times New Roman", Times, serif';
+  ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('x',left+plotW+14,y0+13);
+  ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('y',x0+9,top-9);
+
+  // Oikeat arvoparit: pienet, rauhalliset mustat pisteet.
+  currentTask.xs.forEach((x,i)=>{
+    if(!visiblePoints.has(i)) return;
+    const y=taskY(currentTask,x);
+    ctx.fillStyle='#111';
+    ctx.beginPath();ctx.arc(X(x),Y(y),4,0,Math.PI*2);ctx.fill();
+  });
+  ctx.restore();
+}
 function parseNumber(text){
   let s = text.trim().replace(',', '.');
   if (!s) return NaN;
@@ -430,7 +569,9 @@ function evalRuleAt(rule, x){
   let s = normalizeRule(rule);
   if (!s) return NaN;
 
-  // Hyväksyy mm. 3x+1, -x+4, 1/3x-1, x/3-1, 0.5x+2.
+  // Hyväksyy mm. 3x+1, -x+4, 1/3x-1, x/3-1, 0.5x+2 ja x^2.
+  s = s.replace(/\^/g,'**');
+
   // Lisätään kertomerkki luvun tai sulun ja x:n väliin.
   s = s.replace(/(\d|\))x/g,'$1*x');
 
@@ -454,7 +595,7 @@ function ruleIsCorrect(text){
   const tests = [-9,-4,-1,0,2,5,11];
   return tests.every(x => {
     const got = evalRuleAt(text,x);
-    const expected = currentTask.a*x + currentTask.b;
+    const expected = taskY(currentTask,x);
     return Number.isFinite(got) && Math.abs(got-expected) < 1e-8;
   });
 }
@@ -500,12 +641,12 @@ function checkAnswers(){
   if (valuesCorrect && ruleCorrect) {
     solved = true;
     solvedCount++;
-    score.textContent = `Tehtävä ${taskIndex + 1}/6 · Oikein ratkaistut: ${solvedCount}`;
+    score.textContent = taskScoreText();
     feedback.className = 'feedback ok';
     if (taskIndex === tasks.length - 1) {
-      feedback.innerHTML = `Oikein! Funktion sääntö on \\(y=${ruleLatex(currentTask.a,currentTask.b)}\\). Kaikki kuusi tehtävää on ratkaistu!`;
+      feedback.innerHTML = `Oikein! Funktion sääntö on \\(y=${taskRuleLatex(currentTask)}\\). Kaikki tehtävät on ratkaistu!`;
     } else {
-      feedback.innerHTML = `Oikein! Funktion sääntö on \\(y=${ruleLatex(currentTask.a,currentTask.b)}\\).`;
+      feedback.innerHTML = `Oikein! Funktion sääntö on \\(y=${taskRuleLatex(currentTask)}\\).`;
     }
     nextBtn.disabled = false;
     if (window.MathJax && MathJax.typesetPromise) {
@@ -528,26 +669,27 @@ function checkAnswers(){
   drawGraph();
 }
 
+ruleInput.addEventListener('input', updateRulePreview);
 checkBtn.addEventListener('click', checkAnswers);
 nextBtn.addEventListener('click', () => {
   if (!solved && attempts < 2) return;
   if (!solved) {
-    const ys=currentTask.xs.map(x=>currentTask.a*x+currentTask.b);
-    document.querySelectorAll('.answer').forEach((input,i)=>{input.value=niceNumber(ys[i+3]);input.className='answer correct'});
-    ruleInput.value=ruleLatex(currentTask.a,currentTask.b).replace(/\\frac\{(\d+)\}\{(\d+)\}/g,'$1/$2');
+    const ys=currentTask.xs.map(x=>taskY(currentTask,x));
+    document.querySelectorAll('.answer').forEach(input=>{input.value=niceNumber(Number(input.dataset.answer));input.className='answer correct'});
+    ruleInput.value=taskRuleLatex(currentTask).replace(/\\frac\{(\d+)\}\{(\d+)\}/g,'$1/$2');
     ruleInput.className='rule-input correct';visiblePoints=new Set(currentTask.xs.map((_,i)=>i));drawGraph();solved=true;
-    feedback.className='feedback ok';feedback.innerHTML=`Ratkaisu: \\(y=${ruleLatex(currentTask.a,currentTask.b)}\\). Kaikki oikeat arvoparit on merkitty kuvaajaan.`;
+    feedback.className='feedback ok';feedback.innerHTML=`Ratkaisu: \\(y=${taskRuleLatex(currentTask)}\\). Kaikki oikeat arvoparit on merkitty kuvaajaan.`;
     nextBtn.textContent=taskIndex===tasks.length-1?'Aloita alusta':'Jatka seuraavaan';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feedback]);return;
   }
 
   if (taskIndex < tasks.length - 1) {
     taskIndex++;
-    score.textContent = `Tehtävä ${taskIndex + 1}/6 · Oikein ratkaistut: ${solvedCount}`;
+    score.textContent = taskScoreText();
     chooseTask();
   } else {
     taskIndex = 0;
     solvedCount = 0;
-    score.textContent = 'Tehtävä 1/6 · Oikein ratkaistut: 0';
+    score.textContent = 'Tehtävä 1/10 · Oikein ratkaistut: 0';
     chooseTask();
   }
 });

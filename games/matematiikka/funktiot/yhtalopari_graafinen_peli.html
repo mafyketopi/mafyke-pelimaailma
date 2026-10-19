@@ -70,6 +70,8 @@ canvas{display:block;width:100%;height:auto;background:white;border-radius:12px;
   .eqpair{margin-top:4px!important;margin-bottom:8px!important;padding-top:8px!important;padding-bottom:8px!important}
 }
 
+.tasknav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}.tasknav button{min-width:38px;padding:7px 10px;border:1px solid #cfd8e4;border-radius:9px;background:#fff;color:#172033;font-weight:700;cursor:pointer}.tasknav button.active{background:#172033;color:#fff;border-color:#172033}
+@media(min-width:900px){.graph-card{max-width:500px}.graph-card canvas{max-width:480px;margin:auto}}
 </style>
 </head>
 <body>
@@ -85,7 +87,7 @@ canvas{display:block;width:100%;height:auto;background:white;border-radius:12px;
   </div>
 
   <div class="layout">
-    <section class="card left" id="taskCard"></section>
+    <section class="card left"><div class="tasknav" id="taskNav"></div><div id="taskCard"></div></section>
     <section class="card graph-card">
       <canvas id="graph" width="560" height="560" aria-label="Koordinaatisto"></canvas>
       <div class="legend"><span><span class="dot dot1"></span>1. kuvaaja</span><span><span class="dot dot2"></span>2. kuvaaja</span></div>
@@ -150,7 +152,7 @@ function parseFi(v){ return Number(String(v).trim().replace(',','.')); }
 
 function resetState(){ state={t1:false,t2:false,done:false,attempted:false,live1:[],live2:[]}; }
 
-function renderTask(){
+function renderTask(){document.getElementById("taskNav").innerHTML=tasks.map((_,j)=>`<button type="button" class="${j===taskIndex?'active':''}" onclick="taskIndex=${j};resetState();renderTask()">${j+1}</button>`).join('');
   const t=tasks[taskIndex];
   progress.textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`;
   score.textContent=`Pisteet: ${totalScore}`;

@@ -190,19 +190,21 @@ button:disabled{opacity:.5;cursor:not-allowed}
   main{padding-top:14px!important;padding-bottom:24px!important}
 }
 
+.tasknav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}.tasknav button{min-width:38px;padding:7px 10px;border:1px solid #cfd8e4;border-radius:9px;background:#fff;color:#172033;font-weight:700;cursor:pointer}.tasknav button.active{background:#172033;color:#fff;border-color:#172033}
+@media(min-width:900px){.graph-wrap canvas{max-width:480px!important}.game-grid{align-items:start}}
 </style>
 </head>
 <body>
 <a class="package-home" href="index.html" aria-label="Takaisin pelivalikkoon">← Pelivalikko</a>
 <header>
   <h1>Suora-analyysi</h1>
-  <p>Tutki kuvaajaa ja päättele suoran ominaisuudet.</p>
+  <p>Tutki suoran kuvaajaa ja vastaa kysymyksiin.</p>
 </header>
 
 <main>
   <div class="topbar">
     <div class="progress" id="progress">Esimerkki</div>
-    <div class="score" id="score">Pisteet: 0 / 30</div>
+    <div class="score" id="score">Pisteet: 0 / 40</div>
   </div>
 
   <section class="card" id="gameCard">
@@ -235,7 +237,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </div>
 
       <div>
-        <h2 class="question-title">Analysoi suora</h2>
+        <div class="tasknav" id="taskNav" aria-label="Tehtävävalikko"></div>
 
         <div class="field">
           <label for="direction">1. Millainen suora on?</label>
@@ -287,10 +289,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 const tasks = [
   { m:1,   b:-2 },
   { m:-1,  b:2 },
+  { m:0,   b:3 },
   { m:2,   b:-2 },
-  { m:-0.5,b:2 },
+  { m:-2,  b:4 },
   { m:0.5, b:-2 },
-  { m:0,   b:3 }
+  { m:-0.5,b:2 },
+  { m:1/3, b:-1 }
 ];
 
 let taskIndex = 0;
@@ -301,6 +305,7 @@ let constantRevealed = false;
 
 const $ = id => document.getElementById(id);
 
+function renderTaskNav(){const n=$("taskNav");if(!n)return;n.innerHTML=tasks.map((_,j)=>`<button type="button" class="${j===taskIndex?'active':''}" onclick="taskIndex=${j};loadTask()">${j+1}</button>`).join('');}
 function nearly(a,b){ return Math.abs(a-b) < 1e-7; }
 
 function parseNumber(s){
@@ -509,7 +514,7 @@ function clearInputs(){
 
 function loadTask(){
   clearInputs();
-  $("progress").textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`;
+  $("progress").textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`; renderTaskNav();
   $("score").textContent=`Pisteet: ${totalScore} / ${tasks.length*5}`;
   redrawTask();
 }

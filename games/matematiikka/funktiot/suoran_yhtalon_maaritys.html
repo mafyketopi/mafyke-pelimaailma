@@ -61,6 +61,8 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
   .card{padding-top:16px!important;padding-bottom:16px!important}
 }
 
+.tasknav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}.tasknav button{min-width:38px;padding:7px 10px;border:1px solid #cfd8e4;border-radius:9px;background:#fff;color:#172033;font-weight:700;cursor:pointer}.tasknav button.active{background:#172033;color:#fff;border-color:#172033}
+@media(min-width:900px){.canvasWrap{max-width:500px;margin:auto}}
 </style>
 </head>
 <body>
@@ -72,15 +74,15 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 
 <main>
   <div class="tabs">
-    <button class="tab active" data-tab="basic">1. Kuvaajasta</button>
-    <button class="tab" data-tab="parallel">2. Yhdensuuntainen suora</button>
-    <button class="tab" data-tab="challenge">3. Haaste</button>
+    <button class="tab active" data-tab="basic">Suoran yhtälön määritys</button>
+    <button class="tab" data-tab="parallel">Yhdensuuntaisuus ja suoran yhtälö</button>
+    <button class="tab" data-tab="challenge">Haastetehtävät</button>
   </div>
 
   <section id="basic" class="card">
     <div class="layout">
       <div>
-        <div class="score" id="basicScore"></div>
+        <div class="score" id="basicScore"></div><div class="tasknav" id="basicNav"></div>
         <p class="task">Määritä kuvaajasta vakiotermi, kulmakerroin ja lopuksi suoran yhtälö.</p>
 
         <div class="field" id="bField">
@@ -119,7 +121,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
     </div>
     <div id="parallelWork" class="layout hidden">
       <div>
-        <div class="score" id="parallelScore"></div>
+        <div class="score" id="parallelScore"></div><div class="tasknav" id="parallelNav"></div>
         <p class="task" id="parallelTask"></p>
         <div class="note">Voit hahmotella suoran koordinaatistoon napsauttamalla kahta pistettä. Pisteet napsahtavat kokonais- ja puolikkaisiin koordinaatteihin.</div>
 
@@ -144,7 +146,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 
   <section id="challenge" class="card hidden">
     <div class="challengeBox">
-      <div class="score" id="challengeScore"></div>
+      <div class="score" id="challengeScore"></div><div class="tasknav" id="challengeNav"></div>
       <p class="task" id="challengeTask"></p>
       <div class="field"><label>Ratkaistu muoto</label><input id="challengeEq" placeholder="esim. y = 2x - 3"><span></span></div>
       <div class="field"><label>Kulmakerroin \(k\)</label><input id="challengeK" placeholder="esim. 2/3"><span></span></div>
@@ -157,7 +159,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 
 <script>
 const basicTasks = [
-  {k:1,b:2},{k:-1,b:3},{k:0,b:-2},{vertical:2},{k:0.5,b:-2},{k:-1.5,b:1},{k:2/3,b:-2}
+  {k:1,b:2},{k:-1,b:3},{k:0,b:-2},{vertical:2},{k:0.5,b:-2},{k:-1.5,b:1},{k:2/3,b:-2},{k:-1/3,b:2}
 ];
 const parallelTasks = [
   {px:0,py:2,k:-2, given:"y = -2x"},
@@ -180,6 +182,11 @@ let basicState={b:false,k:false,eq:false};
 let bs=0, ps=0, cs=0;
 let drawPoints=[];
 let basicAttempted=false,parallelAttempted=false,challengeAttempted=false;
+function navHtml(arr,cur,fn){return arr.map((_,j)=>`<button type="button" class="${j===cur?'active':''}" onclick="${fn}(${j})">${j+1}</button>`).join('')}
+function goBasic(j){bi=j;basicState={b:false,k:false,eq:false};basicFails=0;renderBasic()}
+function goParallel(j){pi=j;drawPoints=[];parallelFails=0;renderParallel()}
+function goChallenge(j){ci=j;challengeFails=0;renderChallenge()}
+
 
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -275,7 +282,7 @@ function drawLine(base,k,b,thick=3){
   ctx.beginPath();ctx.moveTo(X(min),Y(k*min+b));ctx.lineTo(X(max),Y(k*max+b));ctx.stroke();ctx.restore();
 }
 function drawVertical(base,x,thick=3){const {ctx,X}=base;ctx.save();ctx.strokeStyle='#2f6fed';ctx.lineWidth=thick;ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),520);ctx.stroke();ctx.restore()}
-function renderBasic(){
+function renderBasic(){document.getElementById("basicNav").innerHTML=navHtml(basicTasks,bi,"goBasic");
   const t=basicTasks[bi], base=setupCanvas(document.getElementById('basicCanvas'));
   t.vertical===undefined?drawLine(base,t.k,t.b):drawVertical(base,t.vertical);
   document.getElementById('bField').classList.toggle('hidden',t.vertical!==undefined);
@@ -329,7 +336,7 @@ function nextBasic(){
   document.getElementById('basicFeedback').textContent=''; renderBasic();
 }
 
-function renderParallel(){
+function renderParallel(){document.getElementById("parallelNav").innerHTML=navHtml(parallelTasks,pi,"goParallel");
   const t=parallelTasks[pi];
   document.getElementById('parallelTask').innerHTML=
     `Määritä sen suoran yhtälö, joka kulkee pisteen \\((${t.px}, ${t.py})\\) kautta ja on yhdensuuntainen suoran \\(${t.given}\\) kanssa.`;
@@ -404,7 +411,7 @@ function nextParallel(){
   document.getElementById('drawStatus').textContent='Valitse ensimmäinen piste.';renderParallel();
 }
 
-function renderChallenge(){
+function renderChallenge(){document.getElementById("challengeNav").innerHTML=navHtml(challengeTasks,ci,"goChallenge");
   const t=challengeTasks[ci];
   document.getElementById('challengeScore').textContent=`Tehtävä ${ci+1}/${challengeTasks.length} • pisteet ${cs}`;
   document.getElementById('challengeTask').innerHTML=
