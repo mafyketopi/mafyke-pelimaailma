@@ -166,7 +166,7 @@ function renderTask(){document.getElementById("taskNav").innerHTML=tasks.map((_,
   const t=tasks[taskIndex];
   progress.textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`;
   score.textContent=`Pisteet: ${totalScore}`;
-  let transform = t.transform ? `<div class="hintline"><b>Muuta ensin kuvaajan muotoon:</b><div class="inline-form" style="margin-top:7px">\\(${t.transformDisplay}\\) &nbsp;→&nbsp; \\(y=\\) <input class="answer wide" id="transformInput" placeholder="ratkaistu muoto"><button id="checkTransform">Tarkista</button></div><div class="feedback" id="transformFb"></div></div>` : '';
+  let transform = t.transform ? `<div class="hintline"><b>Muuta suoran yhtälö muotoon</b><div class="inline-form" style="margin-top:7px">\\(${t.transformDisplay}\\) &nbsp;→&nbsp; \\(y=\\) <input class="answer wide" id="transformInput" placeholder="ratkaistu muoto"><button id="checkTransform">Tarkista</button></div><div class="feedback" id="transformFb"></div></div>` : '';
   taskCard.innerHTML=`
     <div class="eqpair">
       <div class="eqrow"><span class="brace">{</span><div><div>\\(${t.eq1}\\)</div><div>\\(${t.eq2}\\)</div></div></div>

@@ -284,7 +284,7 @@ function drawLine(base,k,b,thick=3){
   ctx.save();ctx.strokeStyle='#17191c';ctx.lineWidth=Math.min(thick,2.15);
   ctx.beginPath();ctx.moveTo(X(min),Y(k*min+b));ctx.lineTo(X(max),Y(k*max+b));ctx.stroke();ctx.restore();
 }
-function drawVertical(base,x,thick=3){const {ctx,X}=base;ctx.save();ctx.strokeStyle='#17191c';ctx.lineWidth=Math.min(thick,2.15);ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),520);ctx.stroke();ctx.restore()}
+function drawVertical(base,x,thick=3){const {ctx,X}=base;ctx.save();ctx.strokeStyle='#17191c';ctx.lineWidth=Math.min(thick,2.15);ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),ctx.canvas.height);ctx.stroke();ctx.restore()}
 function renderBasic(){document.getElementById("basicNav").innerHTML=navHtml(basicTasks,bi,"goBasic");
   const t=basicTasks[bi], base=setupCanvas(document.getElementById('basicCanvas'));
   t.vertical===undefined?drawLine(base,t.k,t.b):drawVertical(base,t.vertical);

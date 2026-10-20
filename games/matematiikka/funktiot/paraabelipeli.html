@@ -531,6 +531,7 @@ q('#checkCount').onclick=()=>{
   setFeedback(q('#countFeedback'),'Taulukko on valmis täytettäväksi.','ok');
   buildXYTable('#valueTable',n);
   q('#tableStep').classList.remove('hidden');
+  q('#checkY').classList.remove('hidden');
   typeset();
 }
 function buildXInputs(sel,n){
