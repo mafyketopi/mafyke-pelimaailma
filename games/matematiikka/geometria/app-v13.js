@@ -140,9 +140,7 @@ function lessonResults(){const sec=currentSection(),n=sec.tasks.filter(taskDone)
 function showIntro(){const c=COURSES[ci];if(c.noIntro){showTask();return;}app.innerHTML=`<button class="back" id="back">← Kaikki harjoitukset</button><h1>${esc(c.title)}</h1><section class="intro-sheet"><h2>Johdantoesimerkki</h2><button class="primary" id="begin-top">Siirry harjoituksiin →</button><div id="intro-content"></div><button class="primary" id="begin">Siirry harjoituksiin →</button></section>`;$('#back').onclick=home;$('#begin').onclick=()=>{state().introSeen=true;persist();showTask();};renderIntroduction(c,$('#intro-content'));$('#begin-top').onclick=()=>$('#begin').onclick();math();}
 for(const c of COURSES)for(const sec of c.sections)for(const t of sec.tasks)for(const p of t.parts||t.items||[])if(p.options)p.options=p.options.map(o=>o.replace(/\\\((.*?)\\\)/g,(all,inside)=>{try{return '\\('+latex(inside.replace(/\\alpha/g,'alpha').replace(/\\(sin|cos|tan)\s*/g,'$1').replace(/\^\\circ/g,'°'))+'\\)';}catch{return all;}}));
 window.GeometryApp={answerMatches,checkDimensions,rowResult,checkItem,checkRow,checkTable,conversionCheck,openCourse,showTask};
-if($('#homeBtn')) $('#homeBtn').onclick=home;
-if($('.brand')) $('.brand').onclick=e=>{e.preventDefault();home();};
-if($('#helpBtn')) $('#helpBtn').onclick=()=>$('#help')?.showModal();
+const homeBtn=$('#homeBtn');if(homeBtn)homeBtn.onclick=home;const brand=$('.brand');if(brand)brand.onclick=e=>{e.preventDefault();home();};const helpBtn=$('#helpBtn'),helpDialog=$('#help');if(helpBtn&&helpDialog)helpBtn.onclick=()=>helpDialog.showModal();
 const hash=location.hash.match(/^#harjoitus-(\d+)$/);if(hash&&+hash[1]>=1&&+hash[1]<=COURSES.length)openCourse(+hash[1]-1);else home();
 
 function testPageDone(page){return currentTask().items.slice(page*15,page*15+15).every(p=>itemState(p.key).locked);}
