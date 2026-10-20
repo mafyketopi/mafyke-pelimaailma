@@ -35,6 +35,7 @@ button{font:inherit}
 .next{margin-top:18px;padding:11px 16px;border:0;border-radius:10px;background:#172033;color:#fff;font-weight:700;cursor:pointer}
 .feedback{min-height:28px;font-weight:700;margin-top:14px}
 .ok{color:var(--ok)} .bad{color:var(--bad)}
+input.answer-ok{border-color:#198754!important;background:#eefaf2!important;box-shadow:0 0 0 2px #19875422}
 .score{color:var(--muted);font-weight:700;margin-bottom:12px}
 .canvasWrap{position:relative;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}
 canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
@@ -86,20 +87,20 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
         <p class="task">Määritä kuvaajasta vakiotermi, kulmakerroin ja lopuksi suoran yhtälö.</p>
 
         <div class="field" id="bField">
-          <label>Vakiotermi <span class="eq">b</span></label>
-          <input id="bInput" inputmode="decimal" placeholder="esim. -2">
+          <label>Vakiotermi \(b\)</label>
+          <input id="bInput" inputmode="decimal" placeholder="Kirjoita vakiotermi">
           <button class="check" onclick="checkBasic('b')">Tarkista</button>
         </div>
 
         <div class="field" id="kField">
-          <label>Kulmakerroin <span class="eq">k</span></label>
-          <input id="kInput" inputmode="text" placeholder="esim. 2/3">
+          <label>Kulmakerroin \(k\)</label>
+          <input id="kInput" inputmode="text" placeholder="Kirjoita kulmakerroin">
           <button class="check" onclick="checkBasic('k')">Tarkista</button>
         </div>
 
         <div class="field">
           <label>Suoran yhtälö</label>
-          <input id="eqInput" placeholder="esim. y = 2x - 3">
+          <input id="eqInput"><div id="eqPreview" class="eq"></div>
           <button class="check" onclick="checkBasic('eq')">Tarkista</button>
         </div>
 
@@ -127,7 +128,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
 
         <div class="field" style="grid-template-columns:180px 1fr auto">
           <label>Suoran yhtälö</label>
-          <input id="parallelEq" placeholder="esim. y = -2x + 2">
+          <input id="parallelEq"><div id="parallelPreview" class="eq"></div>
           <button class="check" onclick="checkParallel()">Tarkista</button>
         </div>
 
@@ -148,9 +149,9 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
     <div class="challengeBox">
       <div class="score" id="challengeScore"></div><div class="tasknav" id="challengeNav"></div>
       <p class="task" id="challengeTask"></p>
-      <div class="field"><label>Ratkaistu muoto</label><input id="challengeEq" placeholder="esim. y = 2x - 3"><span></span></div>
-      <div class="field"><label>Kulmakerroin \(k\)</label><input id="challengeK" placeholder="esim. 2/3"><span></span></div>
-      <div class="field"><label>Vakiotermi \(b\)</label><input id="challengeB" placeholder="esim. -3"><button class="check" onclick="checkChallenge()">Tarkista</button></div>
+      <div class="field"><label>Ratkaistu muoto</label><input id="challengeEq"><div id="challengePreview" class="eq"></div></div>
+      <div class="field"><label>Kulmakerroin \(k\)</label><input id="challengeK" placeholder="Kirjoita kulmakerroin"><span></span></div>
+      <div class="field"><label>Vakiotermi \(b\)</label><input id="challengeB" placeholder="Kirjoita vakiotermi"><button class="check" onclick="checkChallenge()">Tarkista</button></div>
       <div id="challengeFeedback" class="feedback"></div>
       <button class="next" onclick="nextChallenge()">Seuraava tehtävä</button>
     </div>
@@ -183,9 +184,11 @@ let bs=0, ps=0, cs=0;
 let drawPoints=[];
 let basicAttempted=false,parallelAttempted=false,challengeAttempted=false;
 function navHtml(arr,cur,fn){return arr.map((_,j)=>`<button type="button" class="${j===cur?'active':''}" onclick="${fn}(${j})">${j+1}</button>`).join('')}
-function goBasic(j){bi=j;basicState={b:false,k:false,eq:false};basicFails=0;renderBasic()}
-function goParallel(j){pi=j;drawPoints=[];parallelFails=0;renderParallel()}
-function goChallenge(j){ci=j;challengeFails=0;renderChallenge()}
+function clearPreview(id){const e=document.getElementById(id);if(e)e.innerHTML=''}
+function clearAnswerState(id){const e=document.getElementById(id);if(e)e.classList.remove('answer-ok')}
+function goBasic(j){bi=j;basicState={b:false,k:false,eq:false};basicFails=0;['bInput','kInput','eqInput'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';clearAnswerState(id)});clearPreview('eqPreview');renderBasic()}
+function goParallel(j){pi=j;drawPoints=[];parallelFails=0;const e=document.getElementById('parallelEq');if(e){e.value='';clearAnswerState('parallelEq')}clearPreview('parallelPreview');renderParallel()}
+function goChallenge(j){ci=j;challengeFails=0;['challengeEq','challengeK','challengeB'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';clearAnswerState(id)});clearPreview('challengePreview');renderChallenge()}
 
 
 document.querySelectorAll('.tab').forEach(btn=>{
@@ -260,28 +263,28 @@ function setupCanvas(canvas){
   function X(x){return (x-min)*scale}
   function Y(y){return H-(y-min)*scale}
   ctx.lineWidth=1;
-  ctx.strokeStyle='#e4e8ef';
+  ctx.strokeStyle='#e3e5e8';
   for(let i=min;i<=max;i++){
     ctx.beginPath();ctx.moveTo(X(i),0);ctx.lineTo(X(i),H);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,Y(i));ctx.lineTo(W,Y(i));ctx.stroke();
   }
-  ctx.strokeStyle='#697586';ctx.lineWidth=2;
+  ctx.strokeStyle='#17191c';ctx.lineWidth=1.35;
   ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(W,Y(0));ctx.stroke();
   ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),H);ctx.stroke();
-  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(W,Y(0));ctx.lineTo(W-14,Y(0)-7);ctx.lineTo(W-14,Y(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0)-7,14);ctx.lineTo(X(0)+7,14);ctx.fill();
-  ctx.fillStyle='#475569';ctx.font='14px system-ui';
+  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(W,Y(0));ctx.lineTo(W-10,Y(0)-5);ctx.lineTo(W-10,Y(0)+5);ctx.fill();ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0)-5,10);ctx.lineTo(X(0)+5,10);ctx.fill();
+  ctx.fillStyle='#555b63';ctx.font='17px Georgia, serif';
   for(let i=min;i<=max;i++){
     if(i!==0){ctx.fillText(i,X(i)+3,Y(0)-5);ctx.fillText(i,X(0)+5,Y(i)-4)}
   }
-  ctx.font='italic 19px Georgia,serif';ctx.fillStyle='#172033';ctx.fillText('x',W-18,Y(0)+22);ctx.fillText('y',X(0)+10,20);
+  ctx.font='italic 21px \"STIX Two Math\", \"Cambria Math\", \"Times New Roman\", serif';ctx.fillStyle='#172033';ctx.fillText('x',W-34,Y(0)+24);ctx.fillText('y',X(0)+12,34);
   return {ctx,X,Y,min,max,scale};
 }
 function drawLine(base,k,b,thick=3){
   const {ctx,X,Y,min,max}=base;
-  ctx.save();ctx.strokeStyle='#2f6fed';ctx.lineWidth=thick;
+  ctx.save();ctx.strokeStyle='#17191c';ctx.lineWidth=Math.min(thick,2.15);
   ctx.beginPath();ctx.moveTo(X(min),Y(k*min+b));ctx.lineTo(X(max),Y(k*max+b));ctx.stroke();ctx.restore();
 }
-function drawVertical(base,x,thick=3){const {ctx,X}=base;ctx.save();ctx.strokeStyle='#2f6fed';ctx.lineWidth=thick;ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),520);ctx.stroke();ctx.restore()}
+function drawVertical(base,x,thick=3){const {ctx,X}=base;ctx.save();ctx.strokeStyle='#17191c';ctx.lineWidth=Math.min(thick,2.15);ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),520);ctx.stroke();ctx.restore()}
 function renderBasic(){document.getElementById("basicNav").innerHTML=navHtml(basicTasks,bi,"goBasic");
   const t=basicTasks[bi], base=setupCanvas(document.getElementById('basicCanvas'));
   t.vertical===undefined?drawLine(base,t.k,t.b):drawVertical(base,t.vertical);
@@ -314,16 +317,16 @@ function checkBasic(kind){
   const t=basicTasks[bi], fb=document.getElementById('basicFeedback');
   let ok=false;
   if(kind==='b'){
-    ok=approx(parseNum(document.getElementById('bInput').value),t.b);
+    ok=approx(parseNum(document.getElementById('bInput').value),t.b);document.getElementById('bInput').classList.toggle('answer-ok',ok);
     if(ok && !basicState.b){basicState.b=true;bs++;renderBasic()}
   }
   if(kind==='k'){
-    ok=approx(parseNum(document.getElementById('kInput').value),t.k);
+    ok=approx(parseNum(document.getElementById('kInput').value),t.k);document.getElementById('kInput').classList.toggle('answer-ok',ok);
     if(ok && !basicState.k){basicState.k=true;bs++;renderBasic()}
   }
   if(kind==='eq'){
     const e=evalAnyLineInput(document.getElementById('eqInput').value);
-    ok=t.vertical!==undefined?(e&&approx(e.vertical,t.vertical)):(e&&approx(e.k,t.k)&&approx(e.b,t.b));
+    ok=t.vertical!==undefined?(e&&approx(e.vertical,t.vertical)):(e&&approx(e.k,t.k)&&approx(e.b,t.b));document.getElementById('eqInput').classList.toggle('answer-ok',!!ok);
     if(ok && !basicState.eq){basicState.eq=true;bs++;renderBasic()}
   }
   fb.className='feedback '+(ok?'ok':'bad');
@@ -332,7 +335,7 @@ function checkBasic(kind){
 function nextBasic(){
   bi=(bi+1)%basicTasks.length; basicState={b:false,k:false,eq:false};
   basicAttempted=false; basicFails=0;
-  ['bInput','kInput','eqInput'].forEach(id=>document.getElementById(id).value='');
+  ['bInput','kInput','eqInput'].forEach(id=>{document.getElementById(id).value='';clearAnswerState(id)});clearPreview('eqPreview');
   document.getElementById('basicFeedback').textContent=''; renderBasic();
 }
 
@@ -394,19 +397,20 @@ function checkParallel(){
   parallelAttempted=true;
   const t=parallelTasks[pi], b=t.py-t.k*t.px, e=evalLinearEqInput(document.getElementById('parallelEq').value);
   const pointsOK=drawPoints.length===2 && drawPoints.every(p=>approx(p.y,t.k*p.x+b)) && drawPoints.some(p=>approx(p.x,t.px)&&approx(p.y,t.py));
-  const ok=e&&approx(e.k,t.k)&&approx(e.b,b)&&pointsOK;
+  const eqOK=!!(e&&approx(e.k,t.k)&&approx(e.b,b));document.getElementById('parallelEq').classList.toggle('answer-ok',eqOK);
+  const ok=eqOK&&pointsOK;
   const fb=document.getElementById('parallelFeedback');
   fb.className='feedback '+(ok?'ok':'bad');
   if(ok){
     if(!fb.dataset.done){ps++;fb.dataset.done='1'}
     fb.innerHTML=`Oikein! Kulmakerroin on <span class="eq">${fmt(t.k)}</span> ja suoran yhtälö on <span class="eq">${eqText(t.k,b)}</span>.`;
     renderParallel(); renderDraw(true);
-  }else {parallelFails++;fb.innerHTML=parallelFails>=2?'Ei vielä oikein. <button type="button" id="parallelHelp">Näytä ratkaisu</button>':'Ei vielä oikein. Tarkista yhtälö ja piirtämäsi pisteet.';if(parallelFails>=2)document.getElementById('parallelHelp').onclick=()=>{fb.innerHTML=`Ratkaisu: <b>${eqText(t.k,b)}</b>. Merkitse kaksi pistettä; toisen pitää olla annettu piste (${fmt(t.px)}, ${fmt(t.py)}).`;renderDraw(true);};}
+  }else {parallelFails++;fb.innerHTML=parallelFails>=2?'Ei vielä oikein. <button type="button" id="parallelHelp">Näytä ratkaisu</button>':'Ei vielä oikein. Yritä uudelleen.';if(parallelFails>=2)document.getElementById('parallelHelp').onclick=()=>{fb.innerHTML=`Ratkaisu: <b>${eqText(t.k,b)}</b>. Merkitse kaksi pistettä; toisen pitää olla annettu piste (${fmt(t.px)}, ${fmt(t.py)}).`;renderDraw(true);};}
 }
 function nextParallel(){
   pi=(pi+1)%parallelTasks.length; drawPoints=[];
   parallelAttempted=false; parallelFails=0;
-  document.getElementById('parallelEq').value='';
+  document.getElementById('parallelEq').value='';clearAnswerState('parallelEq');clearPreview('parallelPreview');
   const fb=document.getElementById('parallelFeedback');fb.textContent='';delete fb.dataset.done;
   document.getElementById('drawStatus').textContent='Valitse ensimmäinen piste.';renderParallel();
 }
@@ -421,21 +425,28 @@ function renderChallenge(){document.getElementById("challengeNav").innerHTML=nav
 function checkChallenge(){
   challengeAttempted=true;
   const t=challengeTasks[ci],k=-t.a/t.b,b=-t.c/t.b,e=evalLinearEqInput(document.getElementById('challengeEq').value);
-  const ok=e&&approx(e.k,k)&&approx(e.b,b)&&approx(parseNum(document.getElementById('challengeK').value),k)&&approx(parseNum(document.getElementById('challengeB').value),b);
+  const eqOK=!!(e&&approx(e.k,k)&&approx(e.b,b)), kOK=approx(parseNum(document.getElementById('challengeK').value),k), bOK=approx(parseNum(document.getElementById('challengeB').value),b);
+  document.getElementById('challengeEq').classList.toggle('answer-ok',eqOK);document.getElementById('challengeK').classList.toggle('answer-ok',kOK);document.getElementById('challengeB').classList.toggle('answer-ok',bOK);
+  const ok=eqOK&&kOK&&bOK;
   const fb=document.getElementById('challengeFeedback');
   fb.className='feedback '+(ok?'ok':'bad');
   if(ok){
     if(!fb.dataset.done){cs++;fb.dataset.done='1'}
     fb.innerHTML=`Oikein! Ratkaistu muoto on <b>${eqText(k,b)}</b>, kulmakerroin <b>${fmt(k)}</b> ja vakiotermi <b>${fmt(b)}</b>.`;
     renderChallenge();
-  } else {challengeFails++;fb.innerHTML=challengeFails>=2?'Tarkista lasku. <button type="button" id="challengeHelp">Näytä ratkaisu</button>':'Tarkista lasku ja yritä uudelleen.';if(challengeFails>=2)document.getElementById('challengeHelp').onclick=()=>{fb.innerHTML=`Oikea ratkaistu muoto on <b>${eqText(k,b)}</b>, kulmakerroin <b>${fmt(k)}</b> ja vakiotermi <b>${fmt(b)}</b>.`;};}
+  } else {challengeFails++;fb.innerHTML=challengeFails>=2?'Ei vielä oikein. Voit jatkaa yrittämistä tai <button type="button" id="challengeHelp">näyttää ratkaisun</button>.':'Ei vielä oikein. Yritä uudelleen.';if(challengeFails>=2)document.getElementById('challengeHelp').onclick=()=>{fb.innerHTML=`Oikea ratkaistu muoto on <b>${eqText(k,b)}</b>, kulmakerroin <b>${fmt(k)}</b> ja vakiotermi <b>${fmt(b)}</b>.`;};}
 }
 function nextChallenge(){
   ci=(ci+1)%challengeTasks.length;
   challengeAttempted=false; challengeFails=0;
-  ['challengeEq','challengeK','challengeB'].forEach(id=>document.getElementById(id).value='');
+  ['challengeEq','challengeK','challengeB'].forEach(id=>{document.getElementById(id).value='';clearAnswerState(id)});clearPreview('challengePreview');
   const fb=document.getElementById('challengeFeedback');fb.textContent='';delete fb.dataset.done;renderChallenge();
 }
+
+[['eqInput','eqPreview'],['parallelEq','parallelPreview'],['challengeEq','challengePreview']].forEach(([id,pid])=>{
+  const el=document.getElementById(id), prev=document.getElementById(pid); if(!el||!prev)return;
+  el.addEventListener('input',()=>{const raw=el.value.trim();prev.innerHTML=raw?'\\('+raw.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'\\)':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([prev]);});
+});
 
 document.addEventListener('keydown',e=>{
   if(!e.target.matches('input')) return; const inputs=[...document.querySelectorAll('input:not(.hidden input)')].filter(x=>x.offsetParent!==null); const i=inputs.indexOf(e.target);
@@ -458,5 +469,18 @@ renderBasic(); renderParallel(); renderChallenge(); drawParallelIntro();
   }
 </script>
 <!-- End Cloudflare Web Analytics -->
-</body>
+\n<script>
+// Näppäimistökäyttö: Enter vastaa kulloinkin näkyvän Tarkista-painikkeen painamista.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  const a=document.activeElement;
+  if(!a || !/^(INPUT|SELECT)$/.test(a.tagName)) return;
+  const buttons=[...document.querySelectorAll('button')].filter(b=>{
+    const label=(b.textContent||'').trim();
+    const cs=getComputedStyle(b);
+    return !b.disabled && label.startsWith('Tarkista') && cs.display!=='none' && cs.visibility!=='hidden' && b.getClientRects().length>0;
+  });
+  if(buttons.length===1){ e.preventDefault(); buttons[0].click(); }
+});
+</script>\n</body>
 </html>

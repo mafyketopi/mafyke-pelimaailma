@@ -32,14 +32,14 @@ const tasks=[
  {story:'Kaupasta ostettiin yhteensä 40 vihkoa ja kynää. Vihko maksoi 3 € ja kynä 2 €. Ostokset maksoivat 100 €.',x:'vihkojen määrä',y:'kynien määrä',eqs:[[1,1,-40],[3,2,-100]],show:['x+y=40','3x+2y=100']},
  {story:'Varastossa on yhteensä 28 polkupyörää ja kolmipyörää. Niissä on yhteensä 66 pyörää.',x:'polkupyörien määrä',y:'kolmipyörien määrä',eqs:[[1,1,-28],[2,3,-66]],show:['x+y=28','2x+3y=66']},
  {story:'Äidin ja lapsen iät ovat yhteensä 50 vuotta. Viisi vuotta sitten äiti oli kaksi kertaa niin vanha kuin lapsi.',x:'äidin nykyinen ikä',y:'lapsen nykyinen ikä',eqs:[[1,1,-50],[1,-2,5]],show:['x+y=50','x-5=2(y-5)']},
- {story:'Sekoitetaan 10-prosenttista ja 30-prosenttista liuosta. Seosta valmistetaan 500 grammaa, ja sen pitoisuuden pitää olla 20 %.',x:'10-prosenttisen liuoksen massa grammoina',y:'30-prosenttisen liuoksen massa grammoina',eqs:[[1,1,-500],[0.10,0.30,-100]],show:['x+y=500','0{,}10x+0{,}30y=0{,}20\\cdot500']},
- {story:'Sekoitetaan 5-prosenttista ja 25-prosenttista suolaliuosta. Seosta tarvitaan 600 grammaa ja sen pitoisuuden tulee olla 12 %.',x:'5-prosenttisen liuoksen massa grammoina',y:'25-prosenttisen liuoksen massa grammoina',eqs:[[1,1,-600],[0.05,0.25,-72]],show:['x+y=600','0{,}05x+0{,}25y=0{,}12\\cdot600']}
+ {story:'Säästötilillä on yhteensä 6000 euroa kahdessa eri sijoituksessa. Toisen sijoituksen vuotuinen korko on 2 % ja toisen 5 %. Vuodessa sijoituksille kertyy korkoa yhteensä 210 euroa. Muodosta tilanteesta yhtälöpari.',x:'2-prosenttiseen sijoitukseen sijoitettu rahamäärä euroina',y:'5-prosenttiseen sijoitukseen sijoitettu rahamäärä euroina',eqs:[[1,1,-6000],[0.02,0.05,-210]],show:['x+y=6000','0{,}02x+0{,}05y=210']},
+ {story:'Laboratoriossa valmistetaan 600 g suolaliuosta sekoittamalla 5-prosenttista ja 15-prosenttista suolaliuosta. Valmiin liuoksen suolapitoisuuden tulee olla 9 %. Muodosta tilanteesta yhtälöpari.',x:'5-prosenttisen liuoksen massa grammoina',y:'15-prosenttisen liuoksen massa grammoina',eqs:[[1,1,-600],[0.05,0.15,-54]],show:['x+y=600','0{,}05x+0{,}15y=0{,}09\\cdot600']},
 ];
 let i=0,points=0,attempted=false,done=false,failedAttempts=0;const $=id=>document.getElementById(id);
 function coeffs(raw){let s=String(raw).toLowerCase().replace(/−/g,'-').replace(/,/g,'.').replace(/\s+/g,'').replace(/(\d+(?:\.\d+)?)%/g,'($1/100)');if((s.match(/=/g)||[]).length!==1)return null;let [l,r]=s.split('=');const val=(e,x,y)=>{e=e.replace(/(\d|\))([xy])/g,'$1*$2').replace(/([xy])(\d)/g,'$1*$2').replace(/(\d|[xy]|\))\(/g,'$1*(');if(!/^[0-9xy+\-*/().]+$/.test(e))throw 0;return Function('x','y','"use strict";return ('+e+')')(x,y)};try{const f=(x,y)=>val(l,x,y)-val(r,x,y),c=f(0,0),a=f(1,0)-c,b=f(0,1)-c;if(![a,b,c].every(Number.isFinite))return null;return[a,b,c]}catch{return null}}
 function same(a,b){if(!a||Math.abs(a[0])+Math.abs(a[1])<1e-9)return false;let k=null;for(let j=0;j<3;j++)if(Math.abs(b[j])>1e-9){k=a[j]/b[j];break}return k!==null&&Math.abs(k)>1e-9&&a.every((v,j)=>Math.abs(v-k*b[j])<1e-7)}
 function render(){const t=tasks[i];$("taskNav").innerHTML=tasks.map((_,j)=>`<button type="button" class="${j===i?'active':''}" onclick="i=${j};render()">${j+1}</button>`).join('');attempted=false;done=false;failedAttempts=0;$('progress').textContent=`Tehtävä ${i+1}/${tasks.length}`;$('score').textContent=`Oikein ${points}`;$('story').textContent=t.story;$('meaning').innerHTML=`\\(x\\) = ${t.x}<br>\\(y\\) = ${t.y}`;['eq1','eq2'].forEach(id=>{$(id).value='';$(id).className=''});$('feedback').textContent='';$('feedback').className='feedback';$('solution').classList.add('hidden');$('solution').innerHTML='';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('meaning')])}
-function check(){attempted=true;const t=tasks[i],a=coeffs($('eq1').value),b=coeffs($('eq2').value);const direct=same(a,t.eqs[0])&&same(b,t.eqs[1]),reverse=same(a,t.eqs[1])&&same(b,t.eqs[0]),ok=direct||reverse;[a,b].forEach((v,j)=>$('eq'+(j+1)).className=v&&(same(v,t.eqs[0])||same(v,t.eqs[1]))?'good':'bad');if(ok){if(!done)points++;done=true;$('score').textContent=`Oikein ${points}`;$('feedback').textContent='Oikein! Molemmat tehtävän tiedot on muutettu yhtälöiksi.';$('feedback').className='feedback ok';$('solution').classList.add('hidden')}else{failedAttempts++;$('feedback').innerHTML='Yhtälöpari ei vielä vastaa molempia tehtävän tietoja. '+(failedAttempts>=2?'<button type="button" id="showSolution">Näytä ratkaisu</button>':'Yritä uudelleen.');$('feedback').className='feedback bad';$('solution').classList.add('hidden');if(failedAttempts>=2)$('showSolution').onclick=()=>{$('solution').innerHTML=`Yksi oikea yhtälöpari on \\(\\begin{cases}${t.show[0]}\\\\${t.show[1]}\\end{cases}\\)`;$('solution').classList.remove('hidden');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('solution')])}}}
+function check(){attempted=true;const t=tasks[i],a=coeffs($('eq1').value),b=coeffs($('eq2').value);const direct=same(a,t.eqs[0])&&same(b,t.eqs[1]),reverse=same(a,t.eqs[1])&&same(b,t.eqs[0]),ok=direct||reverse;[a,b].forEach((v,j)=>$('eq'+(j+1)).className=v&&(same(v,t.eqs[0])||same(v,t.eqs[1]))?'good':'bad');if(ok){if(!done)points++;done=true;$('score').textContent=`Oikein ${points}`;$('feedback').textContent='Oikein! Molemmat tehtävän tiedot on muutettu yhtälöiksi.';$('feedback').className='feedback ok';$('solution').classList.add('hidden')}else{failedAttempts++;$('feedback').innerHTML=(failedAttempts>=2?'Ei vielä oikein. Voit jatkaa yrittämistä tai <button type="button" id="showSolution">näyttää ratkaisun</button>.':'Ei vielä oikein. Yritä uudelleen.');$('feedback').className='feedback bad';$('solution').classList.add('hidden');if(failedAttempts>=2)$('showSolution').onclick=()=>{$('solution').innerHTML=`Yksi oikea yhtälöpari on \\(\\begin{cases}${t.show[0]}\\\\${t.show[1]}\\end{cases}\\)`;$('solution').classList.remove('hidden');if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('solution')])}}}
 ['eq1','eq2'].forEach((id,j)=>$(id).addEventListener('input',()=>{const raw=$(id).value.trim();$('prev'+(j+1)).innerHTML=raw?'\\('+raw.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'\\)':'';if(window.MathJax?.typesetPromise)MathJax.typesetPromise([$('prev'+(j+1))])}));$('check').onclick=check;$('next').onclick=()=>{i=(i+1)%tasks.length;render()};render();
 </script><!-- Cloudflare Web Analytics -->
 <script>
@@ -55,4 +55,17 @@ function check(){attempted=true;const t=tasks[i],a=coeffs($('eq1').value),b=coef
   }
 </script>
 <!-- End Cloudflare Web Analytics -->
-</body></html>
+\n<script>
+// Näppäimistökäyttö: Enter vastaa kulloinkin näkyvän Tarkista-painikkeen painamista.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  const a=document.activeElement;
+  if(!a || !/^(INPUT|SELECT)$/.test(a.tagName)) return;
+  const buttons=[...document.querySelectorAll('button')].filter(b=>{
+    const label=(b.textContent||'').trim();
+    const cs=getComputedStyle(b);
+    return !b.disabled && label.startsWith('Tarkista') && cs.display!=='none' && cs.visibility!=='hidden' && b.getClientRects().length>0;
+  });
+  if(buttons.length===1){ e.preventDefault(); buttons[0].click(); }
+});
+</script>\n</body></html>

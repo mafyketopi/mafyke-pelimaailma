@@ -74,7 +74,7 @@
 
     <div class="modebar">
       <button class="modeBtn active" id="tableModeBtn">Taulukon avulla</button>
-      <button class="modeBtn" id="clickModeBtn">Pisteiden avulla</button>
+      <button class="modeBtn" id="clickModeBtn">Suoran yhtälön perusteella</button>
     </div>
 
     <div class="tasknav" id="taskNav" aria-label="Tehtävävalikko"></div>
@@ -99,8 +99,8 @@
       </div>
 
       <div class="side hidden" id="clickPanel">
-        <h2>Kaksi pistettä</h2>
-        <p>Klikkaa koordinaatistosta kaksi kokonaislukupistettä, jotka kuuluvat suoralle. Suora ilmestyy toisen pisteen jälkeen.</p>
+        <h2>Suoran yhtälön perusteella</h2>
+        <p>Merkitse ensin suoran ja \(y\)-akselin leikkauspiste. Merkitse sitten toinen suoralle kuuluva kokonaislukupiste.</p>
       </div>
     </div>
 
@@ -175,7 +175,9 @@ function yValue(t,x){ return slopeValue(t)*x+t.b; }
 function equationLatex(t){
   let [n,d]=reducedFrac(t.an,t.ad);
   let s='y=';
-  if(d===1){
+  if(n===0){
+    return 'y='+t.b; // Vaakasuora suora: y=b, ei koskaan 0x+b.
+  } else if(d===1){
     if(n===1) s+='x';
     else if(n===-1) s+='-x';
     else s+=n+'x';
@@ -200,15 +202,15 @@ function pxToY(py){ return MAX-(py-PAD)/step; }
 
 function drawGrid(){
   ctx.clearRect(0,0,SIZE,SIZE);
-  ctx.font='13px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='18px \"Times New Roman\", Times, serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   for(let v=MIN;v<=MAX;v++){
     const px=xToPx(v), py=yToPx(v);
-    ctx.strokeStyle=v===0?'#374151':'#e5e7eb';
+    ctx.strokeStyle=v===0?'#17191c':'#e3e5e8';
     ctx.lineWidth=v===0?1.35:.75;
     ctx.beginPath(); ctx.moveTo(px,PAD); ctx.lineTo(px,SIZE-PAD); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(PAD,py); ctx.lineTo(SIZE-PAD,py); ctx.stroke();
   }
-  ctx.fillStyle='#475569';
+  ctx.fillStyle='#303236';
   for(let v=MIN;v<=MAX;v++){
     if(v!==0){
       ctx.fillText(v,xToPx(v),yToPx(0)+17);
@@ -216,22 +218,17 @@ function drawGrid(){
     }
   }
   ctx.fillText('0',xToPx(0)-13,yToPx(0)+16);
-  ctx.fillStyle='#172033';
-  ctx.beginPath();ctx.moveTo(xToPx(MAX),yToPx(0));ctx.lineTo(xToPx(MAX)-14,yToPx(0)-7);ctx.lineTo(xToPx(MAX)-14,yToPx(0)+7);ctx.fill();
-  ctx.beginPath();ctx.moveTo(xToPx(0),yToPx(MAX));ctx.lineTo(xToPx(0)-7,yToPx(MAX)+14);ctx.lineTo(xToPx(0)+7,yToPx(MAX)+14);ctx.fill();
-  ctx.font='italic 19px Georgia,serif';
-  ctx.fillText('x',SIZE-PAD+20,yToPx(0));
-  ctx.fillText('y',xToPx(0),PAD-20);
-
-  ctx.fillStyle='#d1d5db';
-  for(let x=MIN;x<=MAX;x++) for(let y=MIN;y<=MAX;y++){
-    ctx.beginPath(); ctx.arc(xToPx(x),yToPx(y),1.8,0,Math.PI*2); ctx.fill();
-  }
+  ctx.strokeStyle='#17191c'; ctx.lineWidth=1.35;
+  ctx.beginPath();ctx.moveTo(xToPx(MAX)-8,yToPx(0)-4);ctx.lineTo(xToPx(MAX),yToPx(0));ctx.lineTo(xToPx(MAX)-8,yToPx(0)+4);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(xToPx(0)-4,yToPx(MAX)+8);ctx.lineTo(xToPx(0),yToPx(MAX));ctx.lineTo(xToPx(0)+4,yToPx(MAX)+8);ctx.stroke();
+  ctx.fillStyle='#17191c';ctx.font='italic 22px \"STIX Two Math\", \"Cambria Math\", \"Times New Roman\", serif';
+  ctx.fillText('x',SIZE-PAD+24,yToPx(0)+28);
+  ctx.fillText('y',xToPx(0)+16,PAD-18);
 }
 
 function drawSelected(){
   for(const p of points){
-    ctx.fillStyle='#2563eb';
+    ctx.fillStyle='#111827';
     ctx.beginPath(); ctx.arc(xToPx(p.x),yToPx(p.y),7,0,Math.PI*2); ctx.fill();
     ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
   }
@@ -241,12 +238,12 @@ function drawStudentLine(){
   if(points.length<2) return;
   const p1=points[0], p2=points[1];
   if(p1.x===p2.x){
-    ctx.strokeStyle='#2563eb'; ctx.lineWidth=3;
+    ctx.strokeStyle='#17191c'; ctx.lineWidth=2.1;
     ctx.beginPath(); ctx.moveTo(xToPx(p1.x),PAD); ctx.lineTo(xToPx(p1.x),SIZE-PAD); ctx.stroke();
     return;
   }
   const m=(p2.y-p1.y)/(p2.x-p1.x), c=p1.y-m*p1.x;
-  ctx.strokeStyle='#2563eb'; ctx.lineWidth=3;
+  ctx.strokeStyle='#17191c'; ctx.lineWidth=2.1;
   ctx.beginPath(); ctx.moveTo(xToPx(MIN),yToPx(m*MIN+c)); ctx.lineTo(xToPx(MAX),yToPx(m*MAX+c)); ctx.stroke();
 }
 
@@ -258,7 +255,8 @@ function redraw(){
 function pointOnTarget(p){ return Math.abs(p.y-yValue(current,p.x))<=0.011; }
 
 function finishCheck(ok, message){
-  answered=true; tries++; triesEl.textContent=tries;
+  tries++; triesEl.textContent=tries;
+  answered=ok;
   if(ok){ score++; scoreEl.textContent=score; }
   statusEl.textContent=message;
 }
@@ -268,7 +266,13 @@ function checkClickAnswer(){
   const ok=distinct && pointOnTarget(points[0]) && pointOnTarget(points[1]);
   if(!distinct) finishCheck(false,'Valitse kaksi eri pistettä.');
   else if(ok) finishCheck(true,'Oikein! Molemmat pisteet kuuluvat suoralle.');
-  else finishCheck(false,'Ei aivan – ainakin toinen piste ei kuulu annettuun suoraan.');
+  else {
+    finishCheck(false,'Ei vielä oikein. Yritä uudelleen.');
+    // Ensimmäinen piste on jo tarkistettu y-akselin leikkauspisteeksi.
+    // Säilytetään se ja annetaan oppilaan valita toinen piste uudelleen.
+    points=points.slice(0,1);
+    redraw();
+  }
 }
 
 function buildTable(){
@@ -286,11 +290,9 @@ function buildTable(){
 }
 
 function updateLiveTablePoints(){
-  const xs=[...document.querySelectorAll('.xInput')].map(i=>parseNumber(i.value));
-  const ys=[...document.querySelectorAll('.yInput')].map(i=>parseNumber(i.value));
-  points=[];
-  xs.forEach((x,i)=>{if(Number.isInteger(x)&&x>=MIN&&x<=MAX&&Number.isFinite(ys[i])&&Math.abs(ys[i]-yValue(current,x))<=0.011)points.push({x,y:ys[i]})});
-  tableLineVisible=false;redraw();
+  // Taulukon pisteitä ei näytetä ennen Näytä pisteet -painiketta.
+  // Muokkaaminen tarkistuksen jälkeen aloittaa uuden yrityksen.
+  if(!tableValidated){ points=[]; tableLineVisible=false; redraw(); }
 }
 
 function parseNumber(s){
@@ -344,8 +346,16 @@ function showPointsFromTable(){
       ? 'Oikein! Kaikki kolme pistettä kuuluvat suoralle. Nyt voit piirtää suoran.'
       : 'Pisteet ovat oikein, mutta ainakin yksi jää koordinaatiston ulkopuolelle. Voit silti piirtää suoran.';
   } else {
-    answered=true;
-    statusEl.textContent='Ei aivan – ainakin yksi taulukon pisteistä ei kuulu annettuun suoraan. Katso pisteitä ja yritä uudelleen.';
+    // Väärän yrityksen pisteitä ei jätetä näkyviin. Oppilas voi korjata
+    // taulukkoa ja yrittää uudelleen ilman että tehtävä lukkiutuu.
+    points=[];
+    answered=false;
+    tableValidated=false;
+    tableLineVisible=false;
+    drawTableBtn.disabled=true;
+    showPointsBtn.disabled=false;
+    redraw();
+    statusEl.textContent='Ei vielä oikein. Yritä uudelleen.';
   }
 }
 
@@ -362,7 +372,7 @@ function resetAttempt(){
   if(mode==='table'){
     buildTable();
     statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.';
-  } else statusEl.textContent='Valitse ensimmäinen piste.';
+  } else statusEl.textContent='Merkitse ensin suoran ja y-akselin leikkauspiste. Merkitse sitten toinen suoralle kuuluva kokonaislukupiste.';
 }
 
 function renderTaskNav(){
@@ -383,7 +393,7 @@ function selectTask(i){
   renderEquation(); points=[]; answered=false; tableValidated=false; tableLineVisible=false;
   showPointsBtn.disabled=false; drawTableBtn.disabled=true;
   if(mode==='table'){buildTable();statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.';}
-  else statusEl.textContent='Valitse ensimmäinen piste.';
+  else statusEl.textContent='Merkitse ensin suoran ja y-akselin leikkauspiste. Merkitse sitten toinen suoralle kuuluva kokonaislukupiste.';
   renderTaskNav(); redraw();
 }
 
@@ -401,7 +411,7 @@ function newTask(force=false){
   const list=activeTasks();taskIndices[mode]=(taskIndices[mode]+1)%list.length;taskIndex=taskIndices[mode];current=list[taskIndex];taskCounterEl.textContent=`Tehtävä ${taskIndex+1}/${list.length}`;
   renderEquation(); points=[]; answered=false; tableValidated=false; tableLineVisible=false; showPointsBtn.disabled=false; drawTableBtn.disabled=true;
   if(mode==='table'){ buildTable(); statusEl.textContent='Valitse kolme x-arvoa ja laske niitä vastaavat y-arvot.'; }
-  else statusEl.textContent='Valitse ensimmäinen piste.';
+  else statusEl.textContent='Merkitse ensin suoran ja y-akselin leikkauspiste. Merkitse sitten toinen suoralle kuuluva kokonaislukupiste.';
   renderTaskNav();
   redraw();
 }
@@ -412,6 +422,7 @@ canvas.addEventListener('pointerdown',e=>{
   const px=(e.clientX-r.left)*sx, py=(e.clientY-r.top)*sy;
   const x=Math.round(pxToX(px)), y=Math.round(pxToY(py));
   if(x<MIN||x>MAX||y<MIN||y>MAX) return;
+  if(points.length===0 && (x!==0 || Math.abs(y-current.b)>1e-9)){ statusEl.textContent='Merkitse ensimmäiseksi suoran ja y-akselin leikkauspiste.'; return; }
   points.push({x,y});
   if(points.length===1) statusEl.textContent=`Ensimmäinen piste: (${x}, ${y}). Valitse toinen piste.`;
   redraw();
@@ -449,5 +460,18 @@ newTask();
   }
 </script>
 <!-- End Cloudflare Web Analytics -->
-</body>
+\n<script>
+// Näppäimistökäyttö: Enter vastaa kulloinkin näkyvän Tarkista-painikkeen painamista.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  const a=document.activeElement;
+  if(!a || !/^(INPUT|SELECT)$/.test(a.tagName)) return;
+  const buttons=[...document.querySelectorAll('button')].filter(b=>{
+    const label=(b.textContent||'').trim();
+    const cs=getComputedStyle(b);
+    return !b.disabled && label.startsWith('Tarkista') && cs.display!=='none' && cs.visibility!=='hidden' && b.getClientRects().length>0;
+  });
+  if(buttons.length===1){ e.preventDefault(); buttons[0].click(); }
+});
+</script>\n</body>
 </html>

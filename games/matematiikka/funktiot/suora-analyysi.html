@@ -145,6 +145,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 }
 .feedback.good{color:var(--good)}
 .feedback.bad{color:var(--bad)}
+.answer-ok{border-color:var(--good)!important;background:#f2fbf5!important}
 .solution{
   display:none;
   margin-top:14px;
@@ -251,25 +252,25 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
         <div class="field">
           <label for="slope">2. Kulmakerroin \(k\)</label>
-          <input id="slope" inputmode="decimal" autocomplete="off" placeholder="esim. 2 tai -1/2">
+          <input id="slope" inputmode="decimal" autocomplete="off" placeholder="Kirjoita kulmakerroin">
           <div class="hint">Kun kulmakerroin on oikein, kuvaajaan ilmestyy apukolmio.</div>
         </div>
 
         <div class="field">
           <label for="constant">3. Vakiotermi \(b\)</label>
-          <input id="constant" inputmode="decimal" autocomplete="off" placeholder="esim. -3">
+          <input id="constant" inputmode="decimal" autocomplete="off" placeholder="Kirjoita vakiotermi">
           <div class="hint">Kun vakiotermi on oikein, y-akselin leikkauspiste korostuu.</div>
         </div>
 
         <div class="field">
           <label>4. Missä pisteessä suora leikkaa x-akselin?</label>
-          <input id="xIntercept" inputmode="decimal" autocomplete="off" placeholder="esim. (-1, 0)">
+          <input id="xIntercept" inputmode="decimal" autocomplete="off" placeholder="Kirjoita piste">
           <div class="hint">Kirjoita piste muodossa <b>(x, y)</b>. Jos suora ei leikkaa x-akselia, kirjoita <b>ei</b>.</div>
         </div>
 
         <div class="field">
           <label>5. Missä pisteessä suora leikkaa y-akselin?</label>
-          <input id="yIntercept" inputmode="decimal" autocomplete="off" placeholder="esim. (0, 2)">
+          <input id="yIntercept" inputmode="decimal" autocomplete="off" placeholder="Kirjoita piste">
           <div class="hint">Välilyönnit ovat vapaaehtoisia.</div>
         </div>
 
@@ -302,6 +303,7 @@ let totalScore = 0;
 let checked = false;
 let slopeRevealed = false;
 let constantRevealed = false;
+let failedAttempts = 0;
 
 const $ = id => document.getElementById(id);
 
@@ -364,7 +366,7 @@ function drawBase(canvas,t){
   ctx.fillRect(0,0,W,H);
 
   ctx.lineWidth=1;
-  ctx.strokeStyle="#e5e9ef";
+  ctx.strokeStyle="#e3e5e8";
   for(let i=-range;i<=range;i++){
     ctx.beginPath();
     ctx.moveTo(X(i),Y(-range));
@@ -377,8 +379,8 @@ function drawBase(canvas,t){
     ctx.stroke();
   }
 
-  ctx.strokeStyle="#263449";
-  ctx.lineWidth=2.2;
+  ctx.strokeStyle="#17191c";
+  ctx.lineWidth=1.35;
   ctx.beginPath();
   ctx.moveTo(X(-range),Y(0)); ctx.lineTo(X(range),Y(0));
   ctx.moveTo(X(0),Y(-range)); ctx.lineTo(X(0),Y(range));
@@ -387,13 +389,13 @@ function drawBase(canvas,t){
   ctx.fillStyle="#263449";
   function arrow(px,py,angle){
     ctx.save(); ctx.translate(px,py); ctx.rotate(angle);
-    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-11,-5); ctx.lineTo(-11,5); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-9,-4); ctx.lineTo(-9,4); ctx.closePath(); ctx.fill();
     ctx.restore();
   }
   arrow(X(range),Y(0),0);
   arrow(X(0),Y(range),-Math.PI/2);
 
-  ctx.font="18px system-ui";
+  ctx.font="18px Georgia, serif";
   ctx.fillStyle="#4e5c70";
   ctx.textAlign="center";
   ctx.textBaseline="top";
@@ -408,7 +410,7 @@ function drawBase(canvas,t){
     ctx.fillText(String(i),X(0)-8,Y(i));
   }
 
-  ctx.font="bold 21px system-ui";
+  ctx.font="italic 22px Georgia,serif";
   ctx.textAlign="left";
   ctx.fillText("x",X(range)-5,Y(0)+23);
   ctx.fillText("y",X(0)+12,Y(range)+8);
@@ -417,8 +419,8 @@ function drawBase(canvas,t){
   ctx.beginPath();
   ctx.rect(margin,margin,W-2*margin,H-2*margin);
   ctx.clip();
-  ctx.strokeStyle="#2563eb";
-  ctx.lineWidth=5;
+  ctx.strokeStyle="#17191c";
+  ctx.lineWidth=2.15;
   ctx.lineCap="round";
   ctx.beginPath();
   ctx.moveTo(X(-range),Y(t.m*(-range)+t.b));
@@ -513,6 +515,8 @@ function clearInputs(){
 }
 
 function loadTask(){
+  failedAttempts=0;
+  ["direction","slope","constant","xIntercept","yIntercept"].forEach(id=>$(id)?.classList.remove("answer-ok"));
   clearInputs();
   $("progress").textContent=`Tehtävä ${taskIndex+1} / ${tasks.length}`; renderTaskNav();
   $("score").textContent=`Pisteet: ${totalScore} / ${tasks.length*5}`;
@@ -551,7 +555,6 @@ function liveVisualCheck(){
 
 function check(){
   if(checked) return;
-  checked=true;
   const t=tasks[taskIndex];
   let pts=0;
   const results=[];
@@ -594,40 +597,46 @@ function check(){
   if(yOK) pts++;
   results.push(["y-akselin leikkauspisteen",yOK]);
 
-  totalScore += pts;
+  if(pts===5){ totalScore += 5; checked=true; }
   $("score").textContent=`Pisteet: ${totalScore} / ${tasks.length*5}`;
+
+  [["direction",dirOK],["slope",slopeOK],["constant",constantOK],["xIntercept",xOK],["yIntercept",yOK]].forEach(([id,ok])=>$(id)?.classList.toggle("answer-ok",ok));
 
   const fb=$("feedback");
   if(pts===5){
     fb.textContent="Kaikki oikein! 5 / 5 pistettä.";
     fb.className="feedback good";
   }else{
-    const wrong=results.filter(r=>!r[1]).map(r=>r[0]);
-    fb.textContent=`${pts} / 5 oikein. Tarkista ${wrong.join(", ")}.`;
+    failedAttempts++;
+    fb.textContent = failedAttempts >= 2 ? "Ei vielä oikein. Voit jatkaa yrittämistä." : "Ei vielä oikein. Yritä uudelleen.";
     fb.className="feedback bad";
   }
 
-  const xText = xi===null ? "ei leikkaa x-akselia" : `\\((${pretty(xi[0])},\\,0)\\)`;
-  const eq = nearly(t.m,0)
-    ? `\\(y=${pretty(t.b)}\\)`
-    : `\\(y=${pretty(t.m)}x${t.b>=0?"+":""}${pretty(t.b)}\\)`;
-
-  const sol=$("solution");
-  sol.style.display="block";
-  sol.innerHTML =
-    `<b>Oikeat vastaukset:</b><br>
-     Suora on <b>${directionOf(t)}</b>.<br>
-     Kulmakerroin: \\(k=${pretty(t.m)}\\)<br>
-     Vakiotermi: \\(b=${pretty(t.b)}\\)<br>
-     x-akselin leikkauspiste: ${xText}<br>
-     y-akselin leikkauspiste: \\((0,\\,${pretty(t.b)})\\)<br>
-     <span class="hint">Suoran yhtälö on ${eq}.</span>`;
-
-  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([sol]);
-
-  $("checkBtn").disabled=true;
-  $("nextBtn").disabled=false;
-  $("nextBtn").textContent = taskIndex===tasks.length-1 ? "Tulokset" : "Seuraava";
+  if(pts===5){
+    const xText = xi===null ? "ei leikkaa x-akselia" : `\((${pretty(xi[0])},\,0)\)`;
+    const eq = nearly(t.m,0)
+      ? `\(y=${pretty(t.b)}\)`
+      : `\(y=${pretty(t.m)}x${t.b>=0?"+":""}${pretty(t.b)}\)`;
+    const sol=$("solution");
+    sol.style.display="block";
+    sol.innerHTML =
+      `<b>Oikeat vastaukset:</b><br>
+       Suora on <b>${directionOf(t)}</b>.<br>
+       Kulmakerroin: \(k=${pretty(t.m)}\)<br>
+       Vakiotermi: \(b=${pretty(t.b)}\)<br>
+       x-akselin leikkauspiste: ${xText}<br>
+       y-akselin leikkauspiste: \((0,\,${pretty(t.b)})\)<br>
+       <span class="hint">Suoran yhtälö on ${eq}.</span>`;
+    if(window.MathJax?.typesetPromise) MathJax.typesetPromise([sol]);
+    $("checkBtn").disabled=true;
+    $("nextBtn").disabled=false;
+    $("nextBtn").textContent = taskIndex===tasks.length-1 ? "Tulokset" : "Seuraava";
+  } else {
+    checked=false;
+    $("solution").style.display="none";
+    $("solution").innerHTML="";
+    $("checkBtn").disabled=false;
+  }
 }
 
 function next(){
@@ -683,5 +692,18 @@ if(window.MathJax?.typesetPromise) MathJax.typesetPromise();
   }
 </script>
 <!-- End Cloudflare Web Analytics -->
-</body>
+\n<script>
+// Näppäimistökäyttö: Enter vastaa kulloinkin näkyvän Tarkista-painikkeen painamista.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  const a=document.activeElement;
+  if(!a || !/^(INPUT|SELECT)$/.test(a.tagName)) return;
+  const buttons=[...document.querySelectorAll('button')].filter(b=>{
+    const label=(b.textContent||'').trim();
+    const cs=getComputedStyle(b);
+    return !b.disabled && label.startsWith('Tarkista') && cs.display!=='none' && cs.visibility!=='hidden' && b.getClientRects().length>0;
+  });
+  if(buttons.length===1){ e.preventDefault(); buttons[0].click(); }
+});
+</script>\n</body>
 </html>

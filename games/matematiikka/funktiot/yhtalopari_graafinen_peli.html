@@ -135,6 +135,16 @@ const tasks = [
     eq1:'y = x + 2', f1:x=>x+2, xs1:[-2,0,2], type1:'line',
     eq2:'y = x^2', f2:x=>x*x, xs2:[-2,-1,0,1,2], type2:'parabola',
     kind:'twoPoints', solutions:[[-1,1],[2,4]], range:6,self1:true,self2:true
+  },
+  {
+    eq1:'y = x + 1', f1:x=>x+1, xs1:[-2,0,2], type1:'line',
+    eq2:'y = x - 2', f2:x=>x-2, xs2:[-2,0,2], type2:'line',
+    kind:'choice', correctChoice:'none', range:6,self1:true,self2:true
+  },
+  {
+    eq1:'y = 2x + 1', f1:x=>2*x+1, xs1:[-2,0,2], type1:'line',
+    eq2:'4x - 2y = -2', f2:x=>2*x+1, xs2:[-2,0,2], type2:'line',
+    kind:'choice', correctChoice:'infinite', range:6,self1:true,self2:true
   }
 ];
 
@@ -150,7 +160,7 @@ const ctx=canvas.getContext('2d');
 function fmt(n){ return Number.isInteger(n)? String(n) : String(n).replace('.',','); }
 function parseFi(v){ return Number(String(v).trim().replace(',','.')); }
 
-function resetState(){ state={t1:false,t2:false,done:false,attempted:false,live1:[],live2:[]}; }
+function resetState(){ state={t1:false,t2:false,done:false,attempted:false,live1:[],live2:[],transformFails:0,tableFails:[0,0],solutionFails:0}; }
 
 function renderTask(){document.getElementById("taskNav").innerHTML=tasks.map((_,j)=>`<button type="button" class="${j===taskIndex?'active':''}" onclick="taskIndex=${j};resetState();renderTask()">${j+1}</button>`).join('');
   const t=tasks[taskIndex];
@@ -182,7 +192,7 @@ function renderTask(){document.getElementById("taskNav").innerHTML=tasks.map((_,
       const ok=[-3,-1,0,2,5].every(x=>Math.abs(parseExpr(raw,x)-t.f1(x))<1e-9);
       const fb=document.getElementById('transformFb');
       if(ok){ fb.textContent='Oikein! Nyt voit täyttää taulukot.'; fb.className='feedback good'; document.getElementById('tablesWrap').style=''; }
-      else { fb.innerHTML=`Ratkaistu muoto on <b>y = ${t.transformAnswer}</b>. Taulukot on nyt avattu.`; fb.className='feedback bad'; document.getElementById('tablesWrap').style=''; }
+      else { state.transformFails++; fb.textContent=state.transformFails>=2?'Ei vielä oikein. Voit jatkaa yrittämistä.':'Ei vielä oikein. Yritä uudelleen.'; fb.className='feedback bad'; }
     };
   }
   document.getElementById('prevBtn').onclick=()=>{if(taskIndex>0){taskIndex--;resetState();renderTask();}};
@@ -223,7 +233,7 @@ function wireTable(n,t){
       drawGraph();
       if(state.t1&&state.t2) showSolution(t);
     } else {
-      fb.textContent='Tarkista punaisella merkityt arvot.'; fb.className='feedback bad';
+      state.tableFails[n-1]++; fb.textContent=state.tableFails[n-1]>=2?'Ei vielä oikein. Voit jatkaa yrittämistä.':'Ei vielä oikein. Yritä uudelleen.'; fb.className='feedback bad';
     }
   };
 }
@@ -257,7 +267,7 @@ function showSolution(t){
       if(sel&&sel.value===t.correctChoice){
         const msg=t.correctChoice==='none'?'Oikein! Suorat ovat yhdensuuntaiset eivätkä leikkaa.':'Oikein! Kuvaajat ovat sama suora, joten jokainen suoran piste toteuttaa molemmat yhtälöt.';
         finish(msg);
-      } else { fb.textContent='Katso kuvaajia vielä kerran.'; fb.className='feedback bad'; }
+      } else { state.solutionFails++; fb.textContent=state.solutionFails>=2?'Ei vielä oikein. Voit jatkaa yrittämistä.':'Ei vielä oikein. Yritä uudelleen.'; fb.className='feedback bad'; }
     };
   }
 }
@@ -266,14 +276,14 @@ function checkPoint(sol){
   const x=parseFi(document.getElementById('sx').value), y=parseFi(document.getElementById('sy').value);
   const fb=document.getElementById('solFb');
   if(x===sol[0]&&y===sol[1]) finish(`Oikein! Yhtälöparin ratkaisu on x = ${fmt(sol[0])} ja y = ${fmt(sol[1])}.`);
-  else {fb.textContent='Ei vielä. Etsi kohta, jossa kuvaajat leikkaavat.';fb.className='feedback bad';}
+  else {state.solutionFails++;fb.textContent=state.solutionFails>=2?'Ei vielä oikein. Voit jatkaa yrittämistä.':'Ei vielä oikein. Yritä uudelleen.';fb.className='feedback bad';}
 }
 function checkTwoPoints(sols){
   const p1=[parseFi(document.getElementById('x1').value),parseFi(document.getElementById('y1').value)];
   const p2=[parseFi(document.getElementById('x2').value),parseFi(document.getElementById('y2').value)];
   const same=(a,b)=>a[0]===b[0]&&a[1]===b[1];
   if((same(p1,sols[0])&&same(p2,sols[1]))||(same(p1,sols[1])&&same(p2,sols[0]))) finish(`Oikein! Ratkaisut ovat x = ${fmt(sols[0][0])}, y = ${fmt(sols[0][1])} sekä x = ${fmt(sols[1][0])}, y = ${fmt(sols[1][1])}.`);
-  else {const fb=document.getElementById('solFb');fb.textContent='Ei vielä. Kuvaajilla on kaksi eri leikkauspistettä.';fb.className='feedback bad';}
+  else {const fb=document.getElementById('solFb');state.solutionFails++;fb.textContent=state.solutionFails>=2?'Ei vielä oikein. Voit jatkaa yrittämistä.':'Ei vielä oikein. Yritä uudelleen.';fb.className='feedback bad';}
 }
 function finish(msg){
   const fb=document.getElementById('solFb');
@@ -286,16 +296,16 @@ function drawGraph(mark=false){
   const t=tasks[taskIndex], R=t.range||6, W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
   const xToPx=x=>(x+R)/(2*R)*W, yToPx=y=>H-(y+R)/(2*R)*H;
-  ctx.lineWidth=1; ctx.font='14px system-ui'; ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.lineWidth=.75; ctx.font='18px \"Times New Roman\", Times, serif'; ctx.textAlign='center'; ctx.textBaseline='top';
   for(let i=-R;i<=R;i++){
     const x=xToPx(i), y=yToPx(i);
-    ctx.strokeStyle=i===0?'#758294':'#e5e9ef';
+    ctx.strokeStyle=i===0?'#17191c':'#e3e5e8';
     ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
     ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
     if(i!==0){ctx.fillStyle='#6a7584';ctx.fillText(i,x,yToPx(0)+4);ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(i,xToPx(0)-5,y);ctx.textAlign='center';ctx.textBaseline='top';}
   }
-  ctx.fillStyle='#394455';ctx.font='15px system-ui';ctx.fillText('x',W-12,yToPx(0)+5);ctx.fillText('y',xToPx(0)+12,6);
-  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(W,yToPx(0));ctx.lineTo(W-14,yToPx(0)-7);ctx.lineTo(W-14,yToPx(0)+7);ctx.fill();ctx.beginPath();ctx.moveTo(xToPx(0),0);ctx.lineTo(xToPx(0)-7,14);ctx.lineTo(xToPx(0)+7,14);ctx.fill();ctx.font='italic 19px Georgia,serif';ctx.fillText('x',W-15,yToPx(0)+22);ctx.fillText('y',xToPx(0)+12,18);
+  ctx.fillStyle='#172033';ctx.beginPath();ctx.moveTo(W,yToPx(0));ctx.lineTo(W-10,yToPx(0)-5);ctx.lineTo(W-10,yToPx(0)+5);ctx.fill();ctx.beginPath();ctx.moveTo(xToPx(0),0);ctx.lineTo(xToPx(0)-5,10);ctx.lineTo(xToPx(0)+5,10);ctx.fill();
+  ctx.font='italic 21px \"STIX Two Math\", \"Cambria Math\", \"Times New Roman\", serif';ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('x',W-8,yToPx(0)-8);ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('y',xToPx(0)+9,8);ctx.textAlign='center';ctx.textBaseline='top';
   [[state.live1,'#2457c5'],[state.live2,'#d04848']].forEach(([pts,color])=>{ctx.fillStyle=color;pts.forEach(([x,y])=>{ctx.beginPath();ctx.arc(xToPx(x),yToPx(y),6,0,Math.PI*2);ctx.fill()})});
   if(state.t1) drawFunction(t.f1,t.type1,'#2457c5',t.xs1,R,xToPx,yToPx);
   if(state.t2) drawFunction(t.f2,t.type2,'#d04848',t.xs2,R,xToPx,yToPx);
@@ -307,7 +317,7 @@ function drawGraph(mark=false){
   }
 }
 function drawFunction(f,type,color,xs,R,xToPx,yToPx){
-  ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=3;ctx.beginPath();
+  ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2.15;ctx.beginPath();
   let first=true;
   const step= type==='parabola'?0.03:0.08;
   for(let x=-R;x<=R;x+=step){
@@ -343,5 +353,18 @@ resetState();renderTask();
   }
 </script>
 <!-- End Cloudflare Web Analytics -->
-</body>
+\n<script>
+// Näppäimistökäyttö: Enter vastaa kulloinkin näkyvän Tarkista-painikkeen painamista.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  const a=document.activeElement;
+  if(!a || !/^(INPUT|SELECT)$/.test(a.tagName)) return;
+  const buttons=[...document.querySelectorAll('button')].filter(b=>{
+    const label=(b.textContent||'').trim();
+    const cs=getComputedStyle(b);
+    return !b.disabled && label.startsWith('Tarkista') && cs.display!=='none' && cs.visibility!=='hidden' && b.getClientRects().length>0;
+  });
+  if(buttons.length===1){ e.preventDefault(); buttons[0].click(); }
+});
+</script>\n</body>
 </html>

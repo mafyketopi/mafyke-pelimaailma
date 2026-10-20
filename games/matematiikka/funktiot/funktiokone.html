@@ -257,7 +257,7 @@
 
       <div id="taskNav" class="task-nav" aria-label="Valitse tehtävä"></div>
 
-      <div class="task-title">1. Täydennä puuttuvat funktion arvot. Oikeat arvoparit ilmestyvät koordinaatistoon.</div>
+      <div class="task-title">1. Täydennä taulukkoon puuttuvat funktion tai muuttujan arvot.</div>
       <div class="workspace">
         <table id="machine" class="machine" aria-label="Arvotaulukko"></table>
         <div class="graph-wrap"><canvas id="graph" width="560" height="560" aria-label="Koordinaatisto"></canvas></div>
@@ -280,6 +280,7 @@
 
       <div class="buttons">
         <button id="checkBtn" class="primary">Tarkista</button>
+        <button id="solutionBtn" class="secondary" style="display:none">Näytä ratkaisu</button>
         <button id="nextBtn" class="secondary">Seuraava tehtävä</button>
       </div>
 
@@ -315,6 +316,7 @@ const feedback = document.getElementById('feedback');
 const score = document.getElementById('score');
 const checkBtn = document.getElementById('checkBtn');
 const nextBtn = document.getElementById('nextBtn');
+const solutionBtn = document.getElementById('solutionBtn');
 const canvas = document.getElementById('graph');
 const ctx = canvas.getContext('2d');
 let attempts = 0;
@@ -480,8 +482,8 @@ function drawGraph(){
   ctx.lineJoin='round';
 
   // Kevyt ruudukko, kuten painetussa oppikirjassa.
-  ctx.strokeStyle='#d9d9d9';
-  ctx.lineWidth=1;
+  ctx.strokeStyle='#e3e5e8';
+  ctx.lineWidth=.75;
   for(let i=-sx.half;i<=sx.half;i++){
     const px=left+(i+sx.half)*cell;
     ctx.beginPath();ctx.moveTo(px,top);ctx.lineTo(px,top+plotH);ctx.stroke();
@@ -494,7 +496,7 @@ function drawGraph(){
   // Akselit.
   ctx.strokeStyle='#202020';
   ctx.fillStyle='#202020';
-  ctx.lineWidth=1.55;
+  ctx.lineWidth=1.35;
   ctx.beginPath();ctx.moveTo(left-5,y0);ctx.lineTo(left+plotW+9,y0);ctx.stroke();
   ctx.beginPath();ctx.moveTo(x0,top+plotH+5);ctx.lineTo(x0,top-9);ctx.stroke();
 
@@ -508,7 +510,7 @@ function drawGraph(){
   arrowRight(left+plotW+9,y0); arrowUp(x0,top-9);
 
   // Asteikkoviivat ja luvut. Jokainen ruutu merkitään, mutta nolla vain kerran.
-  ctx.font='16px "Times New Roman", Times, serif';
+  ctx.font='22px "Times New Roman", Times, serif';
   ctx.fillStyle='#202020';
   ctx.textAlign='center';ctx.textBaseline='top';
   for(let i=-sx.half;i<=sx.half;i++){
@@ -529,7 +531,7 @@ function drawGraph(){
   ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('0',x0-7,y0+7);
 
   // Akselien tunnukset.
-  ctx.font='italic 19px "Times New Roman", Times, serif';
+  ctx.font='italic 26px "Times New Roman", Times, serif';
   ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('x',left+plotW+14,y0+13);
   ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText('y',x0+9,top-9);
 
@@ -538,7 +540,7 @@ function drawGraph(){
     if(!visiblePoints.has(i)) return;
     const y=taskY(currentTask,x);
     ctx.fillStyle='#111';
-    ctx.beginPath();ctx.arc(X(x),Y(y),4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(X(x),Y(y),3.6,0,Math.PI*2);ctx.fill();
   });
   ctx.restore();
 }
@@ -655,22 +657,24 @@ function checkAnswers(){
   } else {
     feedback.className = 'feedback bad';
 
-    if (anyBlank) {
-      feedback.textContent = 'Täydennä kaikki puuttuvat arvot ja funktion sääntö.';
-    } else if (!valuesCorrect && !ruleCorrect) {
-      feedback.textContent = 'Kaikki vastaukset eivät vielä ole oikein. Tarkista sekä funktion arvot että sääntö.';
-    } else if (!valuesCorrect) {
-      feedback.textContent = 'Funktion sääntö on oikein, mutta tarkista vielä puuttuvat funktion arvot.';
-    } else {
-      feedback.textContent = 'Funktion arvot ovat oikein. Tarkista vielä funktion sääntö.';
-    }
-    if (attempts >= 2) { nextBtn.textContent = 'Näytä ratkaisu ja jatka'; nextBtn.disabled = false; }
+    feedback.textContent = attempts >= 2 ? 'Ei vielä oikein. Voit jatkaa yrittämistä tai näyttää ratkaisun.' : 'Ei vielä oikein. Yritä uudelleen.';
+    if (attempts >= 2) solutionBtn.style.display = ''; 
   }
   drawGraph();
 }
 
 ruleInput.addEventListener('input', updateRulePreview);
 checkBtn.addEventListener('click', checkAnswers);
+solutionBtn.addEventListener('click', () => {
+  const ys=currentTask.xs.map(x=>taskY(currentTask,x));
+  document.querySelectorAll('.answer').forEach(input=>{input.value=niceNumber(Number(input.dataset.answer));input.className='answer correct'});
+  ruleInput.value=taskRuleLatex(currentTask).replace(/\\frac\{(\d+)\}\{(\d+)\}/g,'$1/$2');
+  ruleInput.className='rule-input correct';visiblePoints=new Set(currentTask.xs.map((_,i)=>i));drawGraph();solved=true;
+  feedback.className='feedback ok';feedback.innerHTML=`Ratkaisu: \(y=${taskRuleLatex(currentTask)}\).`;
+  solutionBtn.style.display='none'; nextBtn.disabled=false;
+  if(window.MathJax?.typesetPromise)MathJax.typesetPromise([feedback]);
+});
+
 nextBtn.addEventListener('click', () => {
   if (!solved && attempts < 2) return;
   if (!solved) {
@@ -714,5 +718,18 @@ chooseTask();
   }
 </script>
 <!-- End Cloudflare Web Analytics -->
-</body>
+\n<script>
+// Näppäimistökäyttö: Enter vastaa kulloinkin näkyvän Tarkista-painikkeen painamista.
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+  const a=document.activeElement;
+  if(!a || !/^(INPUT|SELECT)$/.test(a.tagName)) return;
+  const buttons=[...document.querySelectorAll('button')].filter(b=>{
+    const label=(b.textContent||'').trim();
+    const cs=getComputedStyle(b);
+    return !b.disabled && label.startsWith('Tarkista') && cs.display!=='none' && cs.visibility!=='hidden' && b.getClientRects().length>0;
+  });
+  if(buttons.length===1){ e.preventDefault(); buttons[0].click(); }
+});
+</script>\n</body>
 </html>
