@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Päässälaskuharjoitus</title>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <style>
+    :root{--ink:#17202a;--muted:#667085;--paper:#fff;--bg:#eef1f4;--line:#d4dae2;--accent:#1f5f50;--accent2:#d9eee8;--warn:#9b2c2c;--good:#176b43}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    .app.locked{display:none}
+    .gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--bg)}
+    .gate-card{width:min(460px,94vw);background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:0 16px 45px rgba(26,38,52,.10)}
+    .gate-symbol{width:56px;height:56px;border:3px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:1.45rem;font-weight:900;margin-bottom:20px}
+    .gate h1{font-family:Georgia,serif;font-size:2rem;margin:0 0 10px}
+    .gate p{color:var(--muted);line-height:1.5;margin:0 0 20px}
+    .gate label{display:block;font-weight:800;margin-bottom:7px}
+    .gate-row{display:flex;gap:9px}
+    .gate input{min-width:0;flex:1;height:48px;border:2px solid #b8c0ca;border-radius:10px;padding:8px 12px}
+    .gate input:focus{border-color:var(--accent);outline:3px solid var(--accent2)}
+    .gate-error{min-height:1.35em;margin-top:10px!important;color:var(--warn)!important;font-weight:700;font-size:.9rem}
+    .app{min-height:100vh;display:flex;flex-direction:column}
+    header{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 3vw;gap:18px}
+    .brand{display:flex;align-items:center;gap:14px;min-width:0}
+    .mark{width:44px;height:44px;border:3px solid var(--accent);border-radius:50%;display:grid;place-items:center;font-weight:800;color:var(--accent);letter-spacing:-1px}
+    .brand h1{font-family:Georgia,serif;font-size:clamp(1.15rem,2vw,1.65rem);margin:0;white-space:nowrap}
+    .brand small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+    .timer-wrap{display:none;align-items:center;gap:12px}
+    .timer-label{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:right}
+    .timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.7rem;min-width:78px;text-align:center;border:2px solid var(--accent);border-radius:12px;padding:5px 9px;background:#fff}
+    .timer.urgent{color:var(--warn);border-color:var(--warn);animation:pulse .8s infinite alternate}
+    @keyframes pulse{to{background:#fff0f0}}
+    main{width:min(1180px,94vw);margin:0 auto;flex:1;padding:26px 0 20px;display:flex;flex-direction:column}
+    .screen{display:none;flex:1}
+    .screen.active{display:flex;flex-direction:column}
+    .hero{max-width:980px;margin:auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:clamp(24px,4vw,46px);box-shadow:0 16px 45px rgba(26,38,52,.08)}
+    .eyebrow{color:var(--accent);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.77rem}
+    h2{font-family:Georgia,serif;font-size:clamp(1.8rem,4vw,3rem);margin:.35rem 0 .7rem;line-height:1.08}
+    .lead{font-size:1.08rem;line-height:1.55;color:#3d4754;max-width:760px}
+    .instructions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 24px;margin:24px 0;padding:18px 20px;background:#f7f9fa;border-left:5px solid var(--accent);border-radius:10px;line-height:1.42}
+    .instructions p{margin:0}
+    .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}
+    .choice{border:2px solid var(--line);background:#fff;border-radius:16px;padding:18px;text-align:left;transition:.15s;min-height:128px}
+    .choice:hover,.choice:focus-visible{border-color:var(--accent);transform:translateY(-2px);outline:none;box-shadow:0 8px 20px rgba(31,95,80,.12)}
+    .choice strong{display:block;font-family:Georgia,serif;font-size:1.35rem;margin-bottom:7px}
+    .choice span{display:block;color:var(--muted);line-height:1.35}
+    .choice .duration{color:var(--accent);font-weight:800;margin-top:10px}
+    .topline{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:15px}
+    .progress-title{font-family:Georgia,serif;font-size:1.35rem;font-weight:700}
+    .progress-meta{color:var(--muted);font-size:.92rem;margin-top:4px}
+    .bar{height:8px;background:#dfe4e9;border-radius:99px;overflow:hidden;margin-bottom:18px}
+    .bar>div{height:100%;background:var(--accent);width:0;transition:width .25s}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,minmax(190px,1fr));gap:14px;flex:1;min-height:0}
+    .task{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px 18px;display:flex;flex-direction:column;min-width:0;box-shadow:0 4px 14px rgba(30,42,55,.04)}
+    .task-head{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.8rem;font-weight:700;margin-bottom:10px}
+    .prompt{font-family:Georgia,serif;font-size:clamp(1rem,1.5vw,1.18rem);line-height:1.48;flex:1;display:block;min-width:0;padding-top:14px}
+    .answer-row{display:flex;align-items:center;gap:8px;margin-top:12px}
+    .answer-row input{width:100%;min-width:0;height:44px;border:2px solid #b8c0ca;border-radius:10px;padding:6px 11px;font-size:1.12rem;background:#fff}
+    .answer-row input:focus{border-color:var(--accent);outline:3px solid var(--accent2)}
+    .unit{font-weight:700;white-space:nowrap;min-width:max-content}
+    .controls{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:16px}
+    .hint{color:var(--muted);font-size:.9rem}
+    .primary{border:0;background:var(--accent);color:#fff;border-radius:11px;padding:12px 22px;font-weight:800;box-shadow:0 5px 14px rgba(31,95,80,.22)}
+    .primary:hover{filter:brightness(.94)}
+    .secondary{border:2px solid var(--accent);background:#fff;color:var(--accent);border-radius:11px;padding:10px 20px;font-weight:800}
+    .review-note{background:#fff8df;border:1px solid #e8d78c;border-radius:12px;padding:11px 15px;margin-bottom:14px;color:#5e511e}
+    .results{max-width:1050px;width:100%;margin:auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:clamp(22px,4vw,40px);box-shadow:0 16px 45px rgba(26,38,52,.08)}
+    .scoreline{display:flex;align-items:center;gap:22px;margin:18px 0 25px}
+    .score{width:118px;height:118px;border-radius:50%;border:10px solid var(--accent2);display:grid;place-items:center;font-size:1.8rem;font-weight:900;color:var(--accent);flex:0 0 auto}
+    .summary{font-size:1.05rem;line-height:1.5}
+    .mistakes{max-height:42vh;overflow:auto;border-top:1px solid var(--line);margin-top:16px}
+    .mistake{display:grid;grid-template-columns:36px 1fr auto;gap:12px;padding:12px 3px;border-bottom:1px solid #e5e8ec;align-items:center}
+    .mistake .n{font-weight:800;color:var(--muted)}
+    .mistake .correct{color:var(--good);font-weight:800;text-align:right}
+    .results-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+    .smallprint{font-size:.78rem;color:var(--muted);margin-top:18px}
+    mjx-container{margin:0!important}
+    @media(max-width:850px){header{height:64px}.brand small{display:none}.grid{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(3,minmax(150px,1fr))}.task{padding:13px}.prompt{font-size:1rem}.instructions{grid-template-columns:1fr}.choices{grid-template-columns:1fr}.choice{min-height:auto}.hint{display:none}}
+    @media(max-width:540px){main{width:95vw;padding-top:14px}.brand h1{font-size:1rem}.mark{width:36px;height:36px}.timer{font-size:1.35rem;min-width:67px}.grid{display:flex;flex-direction:column;overflow:auto}.task{min-height:150px}.controls{position:sticky;bottom:0;background:var(--bg);padding-top:8px}.hero{padding:20px}.mistake{grid-template-columns:28px 1fr}.mistake .correct{grid-column:2;text-align:left}}
+  </style>
+</head>
+<body>
+<section class="gate" id="passwordGate" aria-labelledby="gateTitle">
+  <form class="gate-card" id="passwordForm">
+    <div class="gate-symbol">7</div>
+    <h1 id="gateTitle">Päässälaskuharjoitus</h1>
+    <p>Harjoitus on tarkoitettu ryhmän käyttöön. Kirjoita opettajalta saamasi salasana.</p>
+    <label for="passwordInput">Salasana</label>
+    <div class="gate-row"><input id="passwordInput" type="password" autocomplete="current-password" required><button class="primary" id="passwordButton" type="submit">Avaa</button></div>
+    <p class="gate-error" id="passwordError" role="alert" aria-live="polite"></p>
+  </form>
+</section>
+<div class="app locked" id="app">
+  <header>
+    <div class="brand"><div class="mark">7</div><div><h1>Päässälaskuharjoitus</h1><small>7. luokan päässälaskut</small></div></div>
+    <div class="timer-wrap" id="timerWrap"><div class="timer-label" id="timerLabel">Sivuaikaa<br>jäljellä</div><div class="timer" id="timer">2:00</div></div>
+  </header>
+  <main>
+    <section class="screen active" id="startScreen">
+      <div class="hero">
+        <div class="eyebrow">Nopeutta, tarkkuutta ja oivallusta</div>
+        <h2>Valitse harjoituksen pituus</h2>
+        <p class="lead">Ratkaise tehtävät ilman laskinta. Näet kerrallaan kuusi tehtävää. Kun aika loppuu, harjoitus siirtyy automaattisesti seuraavalle sivulle.</p>
+        <div class="instructions">
+          <p><strong>Vastaa vain lukuarvolla.</strong> Yksikkö näkyy vastauskentän vieressä.</p>
+          <p>Voit käyttää desimaalierottimena pilkkua tai pistettä.</p>
+          <p>Murtoluvun voi kirjoittaa esimerkiksi <strong>3/4</strong> ja jakolaskun merkillä <strong>/</strong>.</p>
+          <p>Potenssin voi kirjoittaa esimerkiksi <strong>2^5</strong>. Sulkeita saa käyttää.</p>
+          <p>Tyhjäksi jääneet tehtävät palaavat lopuksi, jos olet säästänyt aikaa.</p>
+          <p>Vastaukset tarkistetaan vasta harjoituksen päätyttyä.</p>
+        </div>
+        <div class="choices">
+          <button class="choice" data-mode="short"><strong>Pieni harjoitus</strong><span>18 tehtävää · 3 sivua</span><span class="duration">6 minuuttia</span></button>
+          <button class="choice" data-mode="medium"><strong>Keskikokoinen harjoitus</strong><span>30 tehtävää · 5 sivua</span><span class="duration">10 minuuttia</span></button>
+          <button class="choice" data-mode="long"><strong>Laaja harjoitus</strong><span>50 tehtävää · 9 sivua</span><span class="duration">15 minuuttia</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="gameScreen">
+      <div class="topline"><div><div class="progress-title" id="pageTitle">Tehtävät 1–6</div><div class="progress-meta" id="pageMeta"></div></div></div>
+      <div class="bar"><div id="progressBar"></div></div>
+      <div class="review-note" id="reviewNote" hidden>Uusintakierros: ratkaise aiemmin tyhjäksi jääneet tehtävät. Käytössäsi on varsinaisilta sivuilta säästynyt aika.</div>
+      <div class="grid" id="taskGrid"></div>
+      <div class="controls"><div class="hint" id="hint">Enter siirtää seuraavaan vastauskenttään.</div><button class="primary" id="nextBtn">Seuraava sivu</button></div>
+    </section>
+
+    <section class="screen" id="resultScreen">
+      <div class="results">
+        <div class="eyebrow">Harjoitus päättyi</div><h2>Tulos</h2>
+        <div class="scoreline"><div class="score" id="scoreCircle">0/0</div><div class="summary" id="summary"></div></div>
+        <h3 id="mistakeTitle">Tarkistettavat tehtävät</h3><div class="mistakes" id="mistakes"></div>
+        <div class="results-actions"><button class="secondary" id="homeBtn">Vaihda harjoitusta</button><button class="primary" id="againBtn">Uusi samanpituinen</button></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+'use strict';
+
+const ACCESS_HASH='0aec52c50ed77e9fd6bd1bfc91d6c7c03f358e4fcb5474ec5a846c0c9ffc7e47';
+const ACCESS_KEY='paassalasku_access_v1';
+const gate=document.querySelector('#passwordGate'),app=document.querySelector('#app');
+function hasSessionAccess(){try{return sessionStorage.getItem(ACCESS_KEY)==='1'}catch{return false}}
+function grantSessionAccess(){try{sessionStorage.setItem(ACCESS_KEY,'1')}catch{}}
+function openApp(){gate.hidden=true;app.classList.remove('locked')}
+async function sha256(text){
+  const bytes=new TextEncoder().encode(text),hash=await crypto.subtle.digest('SHA-256',bytes);
+  return [...new Uint8Array(hash)].map(x=>x.toString(16).padStart(2,'0')).join('')
+}
+if(hasSessionAccess())openApp();else requestAnimationFrame(()=>document.querySelector('#passwordInput').focus());
+document.querySelector('#passwordForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const input=document.querySelector('#passwordInput'),button=document.querySelector('#passwordButton'),error=document.querySelector('#passwordError');
+  button.disabled=true;error.textContent='';
+  try{
+    if(await sha256(input.value)===ACCESS_HASH){grantSessionAccess();input.value='';openApp()}
+    else{error.textContent='Väärä salasana.';input.select();await new Promise(r=>setTimeout(r,700))}
+  }catch{error.textContent='Salasanan tarkistus ei onnistu tässä selaimessa.'}
+  button.disabled=false
+});
+
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[R(0,a.length-1)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b)[a,b]=[b,a%b];return a||1};
+const frac=(n,d)=>{const g=gcd(n,d);return [n/g,d/g]};
+const fmt=n=>Number.isInteger(n)?String(n):String(Math.round(n*1e10)/1e10).replace('.',',');
+const euro=n=>fmt(n);
+const texFrac=(n,d)=>`\\(\\dfrac{${n}}{${d}}\\)`;
+const task=(prompt,answer,unit='',tol=1e-9,source='')=>({prompt,answer:Number(answer),unit,tol,source,user:'',index:0});
+
+// Parametrisoidut tehtävämallit.
+const generators=[
+  ()=>{const a=R(31,89),b=R(12,39);return task(`Laske \\(${a}+${b}\\).`,a+b)},
+  ()=>{const b=R(12,48),a=b+R(21,76);return task(`Laske \\(${a}-${b}\\).`,a-b)},
+  ()=>{const a=R(11,39),b=pick([20,30,40,50]);return task(`Laske \\(${a}\\cdot${b}\\).`,a*b)},
+  ()=>{const a=R(3,12),b=R(4,13);return task(`Laske \\(${a}\\cdot${b}\\).`,a*b)},
+  ()=>{const a=R(2,9),b=R(2,9);return task(`Laske \\(${-a}\\cdot(${-b})\\).`,a*b)},
+  ()=>{const a=R(2,8),b=R(3,9);return task(`Laske \\(${-a}\\cdot${b}\\).`,-a*b)},
+  ()=>{const a=R(2,9),b=R(2,9),c=R(2,9);return task(`Laske \\(${a}\\cdot${b}-${c}\\cdot${b}\\).`,(a-c)*b)},
+  ()=>{const a=R(2,9),b=R(2,8),c=R(2,7);return task(`Laske \\(${a}+${b}\\cdot${c}\\).`,a+b*c)},
+  ()=>{const a=R(20,50),b=R(2,6),c=R(2,8);return task(`Laske \\(${a}-${b}\\cdot${c}\\).`,a-b*c)},
+  ()=>{const a=R(2,8),b=R(3,9),c=R(2,7);return task(`Laske \\(${a}\\cdot(${b}-${c})\\).`,a*(b-c))},
+  ()=>{const a=R(3,9),b=R(2,8),c=R(1,6);return task(`Laske \\(${-a}-(${-b})+${c}\\).`,-a+b+c)},
+  ()=>{const d=R(2,9),q=R(3,15),c=R(2,8);return task(`Laske \\(${d*q}:${d}+${c}\\).`,q+c)},
+  ()=>{const a=R(10,90)/10,b=R(10,90)/10;return task(`Laske \\(${fmt(a)}+${fmt(b)}\\).`,a+b)},
+  ()=>{const b=R(10,70)/10,a=b+R(10,80)/10;return task(`Laske \\(${fmt(a)}-${fmt(b)}\\).`,a-b)},
+  ()=>{const a=R(11,49)/10,b=pick([2,3,4,5]);return task(`Laske \\(${fmt(a)}\\cdot${b}\\).`,a*b)},
+  ()=>{const q=pick([4,6,8,12,15,20,25,30,40]),d=pick([0.02,0.03,0.04,0.05,0.2,0.25]);return task(`Laske \\(${fmt(q*d)}:${fmt(d)}\\).`,q)},
+  ()=>{const a=R(11,95)/10,p=pick([10,100,1000]);return task(`Laske \\(${fmt(a)}\\cdot${p}\\).`,a*p)},
+  ()=>{const a=R(120,980),p=pick([10,100,1000]);return task(`Laske \\(${fmt(a)}:${p}\\).`,a/p)},
+  ()=>{let d=pick([4,5,6,8,10,12]);let a=R(1,d-1),b=R(1,d-1);return task(`Laske ${texFrac(a,d)} \\(+\\) ${texFrac(b,d)}.`,(a+b)/d)},
+  ()=>{let d1=pick([2,3,4,5,6]),d2=pick([3,4,5,6,8]);while(d1===d2)d2=pick([3,4,5,6,8]);const a=R(1,d1-1),b=R(1,d2-1);return task(`Laske ${texFrac(a,d1)} \\(+\\) ${texFrac(b,d2)}.`,a/d1+b/d2)},
+  ()=>{const d=pick([6,8,10,12]),a=R(Math.ceil(d/2),d-1),b=R(1,a-1);return task(`Laske ${texFrac(a,d)} \\(-\\) ${texFrac(b,d)}.`,(a-b)/d)},
+  ()=>{const d1=pick([3,4,5,6]),d2=pick([4,5,6,8]);const a=R(1,d1-1),b=R(1,d2-1);return task(`Laske ${texFrac(a,d1)} \\(\\cdot\\) ${texFrac(b,d2)}.`,a*b/(d1*d2))},
+  ()=>{const d1=pick([2,3,4,5]),d2=pick([3,4,5,6]),a=R(1,d1),b=R(1,d2);return task(`Laske ${texFrac(a,d1)} \\(:\\) ${texFrac(b,d2)}.`,a*d2/(d1*b))},
+  ()=>{const d=pick([3,4,5,6,8]),k=R(2,9),a=R(1,d-1);return task(`Kuinka paljon on ${texFrac(a,d)} luvusta \\(${d*k}\\)?`,a*k)},
+  ()=>{const d=pick([3,4,5,6,8]),a=R(1,d-1),part=a*R(2,8);return task(`${texFrac(a,d)} eräästä luvusta on \\(${part}\\). Mikä luku on kyseessä?`,part*d/a)},
+  ()=>{const p=pick([5,10,15,20,25,30,40,50,75]),base=pick([40,60,80,100,120,160,200,240]);return task(`Laske \\(${p}\\) % luvusta \\(${base}\\).`,p*base/100)},
+  ()=>{const total=pick([200,300,400,500,800,1000]),part=total*pick([0.05,0.1,0.2,0.25,0.4]);return task(`Kuinka monta prosenttia luku \\(${part}\\) on luvusta \\(${total}\\)?`,100*part/total,'%')},
+  ()=>{const price=pick([40,50,80,100,120,200]),p=pick([10,20,25]);return task(`Tuotteen hinta on \\(${price}\\) euroa. Hintaa alennetaan \\(${p}\\) %. Mikä on uusi hinta?`,price*(1-p/100),'€')},
+  ()=>{const price=pick([40,50,80,100,120]),p=pick([10,20,25]);return task(`Tuotteen \\(${price}\\) euron hintaa korotetaan \\(${p}\\) %. Mikä on uusi hinta?`,price*(1+p/100),'€')},
+  ()=>{const h=R(1,4),m=pick([10,15,20,30,40,45]);return task(`Kuinka monta minuuttia on \\(${h}\\) h \\(${m}\\) min?`,60*h+m,'min')},
+  ()=>{const m=R(2,9)*60+pick([0,15,30,45]);return task(`Kuinka monta tuntia on \\(${m}\\) minuuttia?`,m/60,'h')},
+  ()=>{const startH=R(8,18),startM=pick([5,10,15,20,25,30,35,40,45,50]),dur=pick([35,45,55,65,75,85,95]);const total=startH*60+startM+dur;return task(`Tapahtuma alkaa klo ${startH}.${String(startM).padStart(2,'0')} ja kestää ${dur} minuuttia. Moneltako se päättyy? Kirjoita kellonaika muodossa h.mm.`,Math.floor(total/60)+(total%60)/100,'')},
+  ()=>{const km=pick([0.4,0.5,0.8,1.2,1.5,2.5]);return task(`Muunna \\(${fmt(km)}\\) kilometriä metreiksi.`,km*1000,'m')},
+  ()=>{const cm=pick([125,240,350,480,750,1250]);return task(`Muunna \\(${cm}\\) senttimetriä metreiksi.`,cm/100,'m')},
+  ()=>{const l=pick([0.6,0.75,1.2,1.5,2.4]);return task(`Muunna \\(${fmt(l)}\\) litraa desilitroiksi.`,l*10,'dl')},
+  ()=>{const ha=pick([0.2,0.4,0.6,0.8,1.2]);return task(`Kuinka monta aaria on \\(${fmt(ha)}\\) hehtaaria?`,ha*100,'a')},
+  ()=>{const v=pick([12,15,18,20,24]),t=pick([20,30,40,50]);return task(`Laite tekee \\(${v*60}\\) kierrosta minuutissa. Kuinka monta kierrosta se tekee \\(${t}\\) sekunnissa?`,v*t)},
+  ()=>{const kg=pick([60,80,100,120]),litres=kg*pick([0.5,2/3,0.75]);const target=kg*pick([0.5,0.75,1.25]);return task(`\\(${kg}\\) kilogrammasta hedelmiä saadaan \\(${fmt(litres)}\\) litraa mehua. Kuinka monta litraa saadaan \\(${fmt(target)}\\) kilogrammasta?`,litres*target/kg,'l')},
+  ()=>{const each=pick([0.4,0.5,0.6,0.75,1.2,1.5]),total=pick([3,4.5,6,7.5,9]);return task(`Juomaa on \\(${fmt(total)}\\) litraa. Yhteen kannuun mahtuu \\(${fmt(each)}\\) litraa. Kuinka monta täyttä kannullista saadaan?`,Math.floor(total/each))},
+  ()=>{const q=pick([12,15,18,20]),r=R(1,5),size=pick([12,18,24,27]);const n=q*size+r;return task(`Yhteen laatikkoon mahtuu \\(${size}\\) esinettä. Kuinka monta laatikkoa tarvitaan \\(${n}\\) esineelle?`,q+1)},
+  ()=>{const n=pick([2,3,4,5,6]),cuts=n-1,length=pick([120,150,180,200,240]);return task(`\\(${length}\\) cm pitkä nauha katkaistaan \\(${cuts}\\) kohdasta yhtä pitkiksi osiksi. Kuinka pitkä yksi osa on?`,length/n,'cm')},
+  ()=>{const gap=pick([20,25,30,40,50]),length=gap*R(12,40);return task(`Suoran aidan pituus on \\(${length/100}\\) m. Tolppien väli on \\(${gap}\\) cm, ja tolppa tulee aidan kumpaankin päähän. Kuinka monta tolppaa tarvitaan?`,length/gap+1)},
+  ()=>{const a=R(3,12);return task(`Neliön piiri on \\(${4*a}\\) m. Kuinka suuri sen pinta-ala on?`,a*a,'m²')},
+  ()=>{const w=R(3,9),d=R(1,5),p=2*(w+w+d);return task(`Suorakulmion pituus on \\(${d}\\) m leveyttä suurempi. Piiri on \\(${p}\\) m. Kuinka suuri pinta-ala on?`,w*(w+d),'m²')},
+  ()=>{const a=pick([3,4,5,6,8]),b=pick([4,5,6,8,10]);return task(`Suorakulmion sivut ovat \\(${a}\\) m ja \\(${b}\\) m. Kuinka suuri sen pinta-ala on?`,a*b,'m²')},
+  ()=>{const a=pick([20,30,40,50]),b=pick([15,20,25,30]),smallA=a/2,smallB=b/2;return task(`Suorakulmion sivut ovat \\(${a}\\) cm ja \\(${b}\\) cm. Sen kulmasta poistetaan suorakulmio, jonka sivut ovat \\(${smallA}\\) cm ja \\(${smallB}\\) cm. Mikä on jäljelle jäävän alueen pinta-ala?`,a*b-smallA*smallB,'cm²')},
+  ()=>{const a=pick([25,35,45,55,65]),b=pick([35,45,55,65,75]);return task(`Kolmion kaksi kulmaa ovat \\(${a}^\\circ\\) ja \\(${b}^\\circ\\). Kuinka suuri kolmas kulma on?`,180-a-b,'°')},
+  ()=>{const a=pick([25,30,35,40,45,50,55,60]);return task(`Kulman suuruus on \\(${a}^\\circ\\). Kuinka suuri on sen vieruskulma?`,180-a,'°')},
+  ()=>{const start=R(2,20),step=R(3,15);return task(`Mikä on seuraava luku jonossa \\(${start}, ${start+step}, ${start+2*step}, ${start+3*step},\\ldots\\)?`,start+4*step)},
+  ()=>{const n=R(2,5),vals=[n*n+1,(n+1)*(n+1)+1,(n+2)*(n+2)+1,(n+3)*(n+3)+1];return task(`Mikä on seuraava luku jonossa \\(${vals.join(', ')},\\ldots\\)?`,(n+4)*(n+4)+1)},
+  ()=>{const x=R(3,15),a=R(2,7),b=R(1,12),c=a*x-b;return task(`Mikä luku sopii \\(x\\):n paikalle? \\(${a}x-${b}=${c}\\)`,x)},
+  ()=>{const x=R(2,9),a=R(2,6),b=R(1,8),c=R(2,6),rhs=a*x+b-c;return task(`Mikä luku sopii \\(x\\):n paikalle? \\(${a}x+${b}-${c}=${rhs}\\)`,x)},
+  ()=>{const a=pick([120,150,180,210,240]),b=pick([80,100,120,140]);return task(`Kahden luvun summa on \\(${a+b}\\). Toinen luvuista on \\(${a-b}\\) suurempi kuin toinen. Mikä on pienempi luku?`,b)},
+  ()=>{const small=R(4,12),big=R(2,4)*small;return task(`Kahden luvun summa on \\(${small+big}\\). Suurempi luku on \\(${big/small}\\) kertaa pienempi luku. Mikä on suurempi luku?`,big)},
+  ()=>{let n=R(100,999);n+=((3-n%3)%3);return task(`Onko luku \\(${n}\\) jaollinen luvulla \\(3\\)? Vastaa \\(1\\), jos on, ja \\(0\\), jos ei ole.`,1)},
+  ()=>{let n=R(100,999);while(n%3===0)n++;return task(`Onko luku \\(${n}\\) jaollinen luvulla \\(3\\)? Vastaa \\(1\\), jos on, ja \\(0\\), jos ei ole.`,0)},
+  ()=>{const a=R(2,8),b=R(2,8),c=R(2,8);return task(`Laske \\(${a}^2+${b}\\cdot${c}\\).`,a*a+b*c)},
+  ()=>{const a=pick([2,3,4,5]),n=pick([3,4,5]);return task(`Laske \\(${a}^{${n}}\\).`,a**n)},
+  ()=>{const price1=R(2,5)+pick([0.2,0.4,0.5,0.8]),n=R(2,4),price2=R(1,4)+pick([0.1,0.3,0.6,0.9]),cost=n*price1+price2;const paid=pick([20,30,40,50].filter(x=>x>cost));return task(`Ostat \\(${n}\\) tuotetta, joiden kappalehinta on \\(${euro(price1)}\\) €, ja yhden \\(${euro(price2)}\\) € tuotteen. Maksat \\(${paid}\\) eurolla. Kuinka paljon saat takaisin?`,paid-cost,'€')},
+  ()=>{const rates=[R(180,320),R(180,320),R(180,320),R(180,320)];const sum=rates.reduce((a,b)=>a+b,0);return task(`Neljän päivän tuotantomäärät ovat \\(${rates.join(', ')}\\) kappaletta. Mikä on keskimääräinen päiväkohtainen määrä?`,sum/4,'kpl')},
+  ()=>{const empty=pick([12,15,18,20]),water=pick([50,60,70,80]);return task(`Täysi vesiastia painaa \\(${empty+water}\\) kg ja puolillaan oleva astia \\(${empty+water/2}\\) kg. Kuinka paljon tyhjä astia painaa?`,empty,'kg')},
+  ()=>{const teams=pick([4,5,6,8]);return task(`Turnauksen yhdessä lohkossa on \\(${teams}\\) joukkuetta. Jokainen joukkue pelaa kerran jokaista muuta vastaan. Kuinka monta ottelua pelataan?`,teams*(teams-1)/2)},
+  ()=>{const pages=pick([36,48,56,72,84]),per=pick([3,4,6]);return task(`Kansion yhdelle sivulle mahtuu \\(${per}\\) kuvaa. Kuinka monta sivua täyttyy, kun kuvia on \\(${pages}\\)?`,Math.floor(pages/per))},
+  ()=>{const nums=shuffle([R(10,30),R(31,50),R(51,70)]),extra=R(5,15);return task(`Kolmen luvun summa on \\(${nums.reduce((a,b)=>a+b,0)}\\). Kun summaan lisätään \\(${extra}\\), mikä on tulos?`,nums.reduce((a,b)=>a+b,0)+extra)},
+  ()=>{const a=R(2,9),b=R(2,9),c=R(2,9),d=R(2,9);return task(`Laske hyödyntämällä sopivaa ryhmittelyä: \\(${a}\\cdot${b}+${a}\\cdot${d}\\).`,a*(b+d))},
+  ()=>{const a=pick([8,12,16,20]),b=pick([3,5,7,9]),c=pick([2,4,6]);return task(`Laske \\(${a}:${c}+${b}\\cdot${c}\\).`,a/c+b*c)},
+  ()=>{const scale=pick([10,20,25,50]),model=pick([120,180,240,320,450]);return task(`Pienoismallin mittakaava on \\(1:${scale}\\) ja mallin pituus \\(${model}\\) mm. Kuinka pitkä esine on todellisuudessa metreinä?`,model*scale/1000,'m')},
+  ()=>{const l=pick([0.5,0.75,1,1.5]),energy=pick([1200,1600,2000]),need=energy*pick([2,3,4]);return task(`\\(${fmt(l)}\\) litrassa juomaa on \\(${energy}\\) kJ energiaa. Kuinka monta litraa tarvitaan \\(${need}\\) kJ:n energiamäärään?`,l*need/energy,'l')},
+  ()=>{const a=pick([2,3,4,5]),b=pick([2,3,4,5]),c=pick([1,2,3,4]);const denom=1-1/(a-1/b);if(Math.abs(denom)<.01)return generators[68]();return task(`Laske \\(\\dfrac{1}{1-\\dfrac{1}{${a}-\\dfrac{1}{${b}}}}\\).`,1/denom)},
+  ()=>{const a=pick([2,3,4]),b=pick([2,3,4]),c=pick([2,3,4]);return task(`Laske \\(${a}\\cdot${b}\\cdot${c}\\cdot25\\).`,a*b*c*25)},
+  ()=>{const a=R(2,8),b=R(2,8),c=R(2,8);return task(`Laske \\(${a}\\cdot1000+${b}\\cdot100+${c}\\cdot10+${R(1,9)}\\).`,a*1000+b*100+c*10+Number(RegExp.$1||0))}
+];
+
+// Korvataan viimeinen generaattori turvallisella paikallisarvotehtävällä.
+generators[generators.length-1]=()=>{const a=R(2,8),b=R(2,8),c=R(2,8),d=R(1,9);return task(`Laske \\(${a}\\cdot1000+${b}\\cdot100+${c}\\cdot10+${d}\\).`,a*1000+b*100+c*10+d)};
+
+// Vaikeustasot 1–5: rutiinilaskuista monivaiheisiin päättelytehtäviin.
+const generatorDifficulty=[
+  1,1,1,1,2,2,3,2,2,3,3,2,1,1,2,2,1,1,2,3,2,3,3,2,3,2,2,3,3,1,1,3,1,1,1,1,
+  2,3,2,3,1,4,2,4,1,5,2,1,2,4,3,3,5,5,1,1,2,1,3,4,4,5,1,1,2,2,4,4,5,2,1
+];
+
+const modes={
+  short:{count:18,pages:[120,120,120],levels:[5,5,4,3,1],label:'Pieni harjoitus'},
+  medium:{count:30,pages:[120,120,120,120,120],levels:[8,8,7,4,3],label:'Keskikokoinen harjoitus'},
+  long:{count:50,pages:[108,108,108,108,108,108,108,108,36],levels:[14,13,11,7,5],label:'Laaja harjoitus'}
+};
+
+let state={mode:'short',tasks:[],page:0,timeLeft:0,deadline:0,bank:0,tick:null,review:false,reviewTasks:[],reviewPage:0};
+const $=s=>document.querySelector(s);
+const startScreen=$('#startScreen'),gameScreen=$('#gameScreen'),resultScreen=$('#resultScreen');
+
+function show(screen){[startScreen,gameScreen,resultScreen].forEach(s=>s.classList.remove('active'));screen.classList.add('active')}
+function makeSession(mode){
+  const cfg=modes[mode], pool=[];
+  for(let level=1;level<=5;level++){
+    const candidates=shuffle([...Array(generators.length).keys()].filter(i=>generatorDifficulty[i]===level));
+    for(const i of candidates.slice(0,cfg.levels[level-1])){
+      try{const t=generators[i]();if(Number.isFinite(t.answer)){t.difficulty=level;t.tie=Math.random();pool.push(t)}}catch(e){}
+    }
+  }
+  pool.sort((a,b)=>a.difficulty-b.difficulty||a.tie-b.tie);
+  pool.forEach((t,i)=>t.index=i+1);
+  state={mode,tasks:pool,page:0,timeLeft:cfg.pages[0],deadline:0,bank:0,tick:null,review:false,reviewTasks:[],reviewPage:0};
+  show(gameScreen);$('#timerWrap').style.display='flex';renderPage();startTimer();
+}
+
+function currentPageTasks(){
+  if(state.review)return state.reviewTasks.slice(state.reviewPage*6,state.reviewPage*6+6);
+  return state.tasks.slice(state.page*6,Math.min(state.tasks.length,state.page*6+6));
+}
+
+function renderPage(){
+  const list=currentPageTasks(),grid=$('#taskGrid');grid.innerHTML='';
+  const totalPages=modes[state.mode].pages.length;
+  $('#reviewNote').hidden=!state.review;
+  if(state.review){
+    const first=state.reviewPage*6+1,last=first+list.length-1;
+    $('#pageTitle').textContent=`Tyhjät tehtävät ${first}–${last}`;
+    $('#pageMeta').textContent=`Uusintakierros · ${state.reviewTasks.length} tehtävää`;
+    $('#progressBar').style.width=`${100*Math.min(1,(state.reviewPage*6)/Math.max(1,state.reviewTasks.length))}%`;
+    $('#timerLabel').innerHTML='Säästettyä<br>aikaa jäljellä';
+  }else{
+    const first=state.page*6+1,last=first+list.length-1;
+    $('#pageTitle').textContent=`Tehtävät ${first}–${last}`;
+    $('#pageMeta').textContent=`${modes[state.mode].label} · sivu ${state.page+1}/${totalPages}`;
+    $('#progressBar').style.width=`${100*state.page/totalPages}%`;
+    $('#timerLabel').innerHTML='Sivuaikaa<br>jäljellä';
+  }
+  list.forEach((t,j)=>{
+    const card=document.createElement('article');card.className='task';
+    card.innerHTML=`<div class="task-head"><span>TEHTÄVÄ ${t.index}</span><span>${state.review?'UUDELLEEN':''}</span></div><div class="prompt">${t.prompt}</div><div class="answer-row"><input inputmode="decimal" autocomplete="off" aria-label="Vastaus tehtävään ${t.index}" value="${escapeHtml(t.user)}"><span class="unit">${t.unit}</span></div>`;
+    const input=card.querySelector('input');input.addEventListener('input',e=>t.user=e.target.value);input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const inputs=[...grid.querySelectorAll('input')],k=inputs.indexOf(input);if(k<inputs.length-1)inputs[k+1].focus();else advancePage(true)}});grid.appendChild(card);
+  });
+  $('#nextBtn').textContent=state.review?'Jatka':'Seuraava sivu';
+  requestAnimationFrame(()=>grid.querySelector('input')?.focus());
+  if(window.MathJax?.typesetPromise)MathJax.typesetPromise([grid]).catch(()=>{});
+  updateTimer();
+}
+
+function startTimer(){
+  clearInterval(state.tick);state.deadline=Date.now()+state.timeLeft*1000;
+  state.tick=setInterval(()=>{state.timeLeft=Math.max(0,(state.deadline-Date.now())/1000);updateTimer();if(state.timeLeft<=0)advancePage(false)},200)
+}
+function updateTimer(){const shown=Math.max(0,Math.ceil(state.timeLeft)),m=Math.floor(shown/60),s=shown%60;$('#timer').textContent=`${m}:${String(s).padStart(2,'0')}`;$('#timer').classList.toggle('urgent',shown<=15)}
+
+function advancePage(manual){
+  if(!gameScreen.classList.contains('active'))return;
+  if(!state.review){
+    if(manual)state.bank+=Math.max(0,(state.deadline-Date.now())/1000);
+    state.page++;
+    const cfg=modes[state.mode];
+    if(state.page<cfg.pages.length){state.timeLeft=cfg.pages[state.page];renderPage();startTimer();return}
+    const blanks=state.tasks.filter(t=>!t.user.trim());
+    if(blanks.length&&state.bank>0){state.review=true;state.reviewTasks=blanks;state.reviewPage=0;state.timeLeft=state.bank;renderPage();startTimer();return}
+    finish();return;
+  }
+  const remaining=state.reviewTasks.filter(t=>!t.user.trim());
+  if(remaining.length===0||state.timeLeft<=0){finish();return}
+  state.reviewTasks=remaining;state.reviewPage=0;renderPage();startTimer();
+}
+
+function parseAnswer(raw){
+  let s=raw.trim().replace(/\s/g,'').replace(/,/g,'.').replace(/:/g,'/').replace(/\^/g,'**');
+  if(!s||s.length>40||!/^[0-9+\-*/().]+$/.test(s))return NaN;
+  try{return Function(`"use strict";return (${s})`)()}catch{return NaN}
+}
+function isCorrect(t){const v=parseAnswer(t.user);return Number.isFinite(v)&&Math.abs(v-t.answer)<=Math.max(t.tol,Math.abs(t.answer)*1e-9)}
+function displayAnswer(t){const [n,d]=approxFraction(t.answer);if(d!==1&&d<=100)return `${n}/${d} (= ${fmt(t.answer)})`;return fmt(t.answer)}
+function approxFraction(x){let best=[Math.round(x),1],err=Math.abs(x-best[0]);for(let d=2;d<=100;d++){const n=Math.round(x*d),e=Math.abs(x-n/d);if(e<err){best=[n,d];err=e}if(e<1e-10)break}return frac(best[0],best[1])}
+function finish(){
+  clearInterval(state.tick);$('#timerWrap').style.display='none';
+  const correct=state.tasks.filter(isCorrect).length,total=state.tasks.length,wrong=state.tasks.filter(t=>!isCorrect(t));
+  $('#scoreCircle').textContent=`${correct}/${total}`;
+  const pct=Math.round(correct/total*100),blank=state.tasks.filter(t=>!t.user.trim()).length;
+  $('#summary').innerHTML=`<strong>${pct} % oikein.</strong><br>Oikeita vastauksia ${correct}, tarkistettavia ${wrong.length}${blank?` ja tyhjiä ${blank}`:''}.`;
+  const box=$('#mistakes');box.innerHTML='';
+  $('#mistakeTitle').textContent=wrong.length?'Tarkistettavat tehtävät':'Kaikki oikein';
+  if(!wrong.length)box.innerHTML='<p>Erinomaista – kaikki vastaukset olivat oikein.</p>';
+  wrong.forEach(t=>{const row=document.createElement('div');row.className='mistake';row.innerHTML=`<div class="n">${t.index}.</div><div>${t.prompt}<br><small>Vastauksesi: ${escapeHtml(t.user)||'–'}</small></div><div class="correct">Oikea vastaus: ${displayAnswer(t)} ${t.unit}</div>`;box.appendChild(row)});
+  show(resultScreen);if(window.MathJax?.typesetPromise)MathJax.typesetPromise([resultScreen]).catch(()=>{});
+}
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+document.querySelectorAll('.choice').forEach(b=>b.addEventListener('click',()=>makeSession(b.dataset.mode)));
+$('#nextBtn').addEventListener('click',()=>advancePage(true));
+$('#homeBtn').addEventListener('click',()=>{clearInterval(state.tick);$('#timerWrap').style.display='none';show(startScreen)});
+$('#againBtn').addEventListener('click',()=>makeSession(state.mode));
+</script>
+</body>
+</html>
