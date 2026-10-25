@@ -448,7 +448,7 @@ function checkParts(){
  if(!valid){$('feedback').textContent='Täytä jokainen vastausruutu pyydetyssä muodossa.';return}
  {let key=section+'-'+idx[section];if(good){solved[key]={rawParts,correct:true};render()}else wrongTry(key)}
 }
-function wrongTry(key){attempts[key]=(attempts[key]||0)+1;const f=$('feedback');f.className='feedback no';f.innerHTML=attempts[key]===1?'Ei vielä. Tarkista ratkaisu ja yritä uudelleen.':'Ei vielä. Voit korjata vastausta ja tarkistaa uudelleen. <button type="button" id="showAnswer" class="secondary">Näytä ratkaisu</button>';if(attempts[key]>=2){const b=$('showAnswer');if(b)b.onclick=()=>{solved[key]={correct:false,revealed:true};render()}}}
+function wrongTry(key){attempts[key]=(attempts[key]||0)+1;const f=$('feedback');f.className='feedback no';f.innerHTML=attempts[key]===1?'Ei vielä. Tarkista ratkaisu ja yritä uudelleen.':'Ei vielä. Voit korjata vastausta ja tarkistaa uudelleen. <button type="button" id="showAnswer" class="secondary">Näytä ratkaisu</button>';if(attempts[key]>=2){const b=$('showAnswer');if(b)b.onclick=()=>{const t=tasks[section][idx[section]];f.className='feedback no';f.innerHTML='<b>Ratkaisu:</b> '+mathText(t.explain)+'<br><span class="small">Voit vielä korjata vastauksesi ja tarkistaa sen uudelleen.</span>'}}}
 function checkFree(){
  let gridTask=tasks[section][idx[section]],gridKey=section+'-'+idx[section];if(gridTask.diceOperation&&!diceComplete(gridTask,gridKey)){$('feedback').textContent='Täydennä ensin kaikki taulukon ruudut oikein.';return;}
 
