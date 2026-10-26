@@ -58,3 +58,65 @@ if(page==='7'&&!thermalRows21().some(r=>r.i===index))index=thermalRows21()[0].i;
 if(typeof COURSE!=='undefined'&&COURSE[page])drawCourse();
 if(['2','7','8'].includes(page))drawTask();
 if(page==='4')drawMotion();
+
+// Oppilaskierroksen parannukset 26.10.2026.
+function researchPicker26(host,items,current,select){
+ const nav=document.createElement('nav');nav.className='research-picker26';nav.setAttribute('aria-label','Tutkimustehtävät');
+ nav.innerHTML='<strong>Osiossa '+items.length+' '+(items.length===1?'tehtävä':'tehtävää')+'</strong><div>'+items.map((name,i)=>'<button type="button" class="'+(i===current?'':'secondary')+'" aria-current="'+(i===current?'step':'false')+'" data-research="'+i+'">'+(i+1)+'. '+esc(name)+'</button>').join('')+'</div>';
+ nav.querySelectorAll('button').forEach(b=>b.onclick=()=>select(+b.dataset.research));host.before(nav);return nav;
+}
+const heatDraw26=drawHeat;drawHeat=function(){heatDraw26();const select=el('heatKind');if(!select)return;const label=select.closest('label'),host=label.closest('.toolbar')||label;researchPicker26(host,['Vesi ja ruokaöljy','Pinnan lämpeneminen','Veden jäähtyminen'],heatKind,i=>{select.value=String(i);select.dispatchEvent(new Event('change',{bubbles:true}));});host.hidden=true;};
+if(typeof drawExperiment==='function'){
+ const expDraw26=drawExperiment;drawExperiment=function(){expDraw26();const select=el('expStudy');if(!select)return;const label=select.closest('label');researchPicker26(label.closest('.experiment-heading')||label,expAllowed.map(k=>({load:'Kuorman vaikutus kitkaan',material:'Materiaalin vaikutus kitkaan',height:'Nostokorkeuden vaikutus',speed:'Nostonopeuden vaikutus',mass:'Massan vaikutus'}[k]||STUDIES[k].title)),expAllowed.indexOf(studyKey),i=>{select.value=expAllowed[i];select.dispatchEvent(new Event('change',{bubbles:true}));});label.hidden=true;};
+}
+if(typeof drawDensity==='function'){
+ const densityDraw26=drawDensity;drawDensity=function(){densityDraw26();const select=el('densitySeries');if(select){const host=select.closest('.toolbar');researchPicker26(host,['Kolikoiden tiheys','Suolaveden tiheys'],densityIndex,i=>{select.value=String(i);select.dispatchEvent(new Event('change',{bubbles:true}));});host.hidden=true;}else{const panel=el('app').querySelector('article');researchPicker26(panel,['Kolikoiden tiheys','Suolaveden tiheys'],densityIndex,i=>{densityIndex=i;drawDensity();});}};
+}
+let example26=0;
+const examples26={
+ '7':[
+ {title:'1. Veteen siirtyvä energia',question:'Veden massa on 0,75 kg. Veden lämpötilaa nostetaan 7,0 °C. Veden ominaislämpökapasiteetti on 4,2 kJ/(kg·°C). Kuinka paljon energiaa veteen siirtyy?',givens:'m=0.75 kg\nc=4.2 kJ/(kg*°C)\nΔt=7.0 °C',unknown:'E',equation:'E=c*m*dT',work:'4.2 kJ/(kg*°C)*0.75 kg*7.0 °C=22.05 kJ≈22 kJ',sentence:'Veteen siirtyy noin 22 kJ energiaa.'},
+ {title:'2. Lämpötilan nousu',question:'Veteen siirtyy 42 kJ energiaa. Veden massa on 2,0 kg ja ominaislämpökapasiteetti 4,2 kJ/(kg·°C). Kuinka paljon veden lämpötila nousee?',givens:'E=42 kJ\nm=2.0 kg\nc=4.2 kJ/(kg*°C)',unknown:'dT',equation:'E=c*m*dT',solved:'dT=E/(c*m)',work:'42 kJ/(4.2 kJ/(kg*°C)*2.0 kg)=5.0 °C',sentence:'Veden lämpötila nousee 5,0 °C.'}
+ ],
+ '8':[
+ {title:'1. Keskinopeus',question:'Juoksija kulkee 180 metrin matkan 24 sekunnissa. Kuinka suuri hänen keskinopeutensa on?',givens:'s=180 m\nt=24 s',unknown:'v',equation:'v=s/t',work:'180 m/(24 s)=7.5 m/s',sentence:'Juoksijan keskinopeus on 7,5 m/s.'},
+ {title:'2. Matkaan kuluva aika',question:'Pyöräilijä kulkee tasaisesti nopeudella 4,0 m/s. Kuinka kauan häneltä kuluu 360 metrin matkaan?',givens:'s=360 m\nv=4.0 m/s',unknown:'t',equation:'v=s/t',solved:'t=s/v',work:'360 m/(4.0 m/s)=90 s',sentence:'Pyöräilijältä kuluu matkaan 90 sekuntia.'},
+ {title:'3. Laitteen kuluttama energia',question:'Laitteen teho on 0,60 kW. Kuinka paljon energiaa laite kuluttaa 2,5 minuutissa?',givens:'P=0.60 kW=600 W\nt=2.5 min=150 s',unknown:'E',equation:'P=E/t',solved:'E=P*t',work:'600 W*150 s=90000 J=90 kJ',sentence:'Laite kuluttaa 90 kJ energiaa.'}
+ ]};
+drawCalcIntroduction=function(){const rows=examples26[page],e=rows[example26]||rows[0];el('app').innerHTML=`<article class="panel calculation-intro26"><h2>Näin kirjoitat laskuratkaisun</h2><p>Etene tehtävissä esimerkkien mukaisesti: kirjoita lähtöarvot, suureyhtälö, lasku yksiköineen ja sanallinen vastaus.</p><nav class="example-tabs26" aria-label="Johdantoesimerkit">${rows.map((row,i)=>`<button type="button" data-example="${i}" class="${i===example26?'':'secondary'}" aria-current="${i===example26?'step':'false'}">${row.title}</button>`).join('')}</nav><h3>${e.title}</h3><p>${taskText(e.question)}</p><div class="columns"><section><h3>1. Lähtöarvot</h3>${renderGivenPreview(e.givens)}<p class="unknown26">Kysytty suure: ${Mwrap(symbolMath(e.unknown))}.</p></section><section><h3>2. Suureyhtälö</h3>${renderEquationPreview(e.equation)}${e.solved?`<p>Ratkaise kysytty suure tunnuksilla ennen lukujen sijoittamista.</p><h4>Anna ratkaistu suureyhtälö</h4>${renderEquationPreview(e.solved)}`:''}</section><section><h3>3. Lasku ja tulos</h3>${renderWorkPreview(e.work)}</section></div><h3>Sanallinen vastaus</h3><p>${taskText(e.sentence)}</p><details class="writing-help"><summary>Kirjoittaminen ja tarkistus</summary><p>Kirjoita yksi lähtöarvo riville. Jos annat ensin alkuperäisen suureyhtälön, kirjoita kysytyn suureen suhteen ratkaistu yhtälö kenttään <b>Anna ratkaistu suureyhtälö</b>. Sijoita lukuarvot vasta sen jälkeen.</p><p>Kaavapainike lisää alkuperäisen kaavan. Jakopainike lisää nimittäjän sulkeet. Säilytä välivaiheissa laskimen tarkkuus ja pyöristä lopputulos 2–3 merkitsevään numeroon. Käytä tarvittaessa pyöristysmerkkiä ≈.</p><p>Perustehtävissä tarkistetaan lähtöarvot, suureyhtälö ja lasku. Vertaa sanallista vastaustasi tehtävän vastaukseen. Haastavissa tehtävissä tarkistetaan vain lopputulos.</p></details><div class="toolbar"><button id="nextExample26" class="secondary">${example26<rows.length-1?'Seuraava esimerkki →':'← Ensimmäinen esimerkki'}</button><button id="beginCalculations">Aloita tehtävät</button></div></article>`;
+ document.querySelectorAll('[data-example]').forEach(b=>b.onclick=()=>{example26=+b.dataset.example;drawCalcIntroduction();});el('nextExample26').onclick=()=>{example26=(example26+1)%rows.length;drawCalcIntroduction();};el('beginCalculations').onclick=()=>{calcIntroSeen=true;drawTask();};};
+function shortAnswer26(){
+ if(page==='5'&&typeof courseTab==='number'&&courseTab===1&&typeof FORCE_TASKS13!=='undefined'){
+  return '<ol type="a">'+FORCE_TASKS13[forceIndex].questions.map(q=>'<li>'+taskText(q.options?q.options[q.answer]:String(q.value??q.answer)+(q.unit?' '+q.unit:''))+'</li>').join('')+'</ol>';
+ }
+ const t=TASKS[page]?.[index];if(!t)return '<p>Vastaus on tarkistettu.</p>';
+ if(t.kind==='thermal-graph21')return '<p>Ominaislämpökapasiteetti on '+taskText('450 J/(kg·°C)')+'. Metalli on rautaa.</p>';
+ if(t.fields)return '<ol type="a">'+t.fields.map(f=>'<li>'+taskText(f.choices?f.choices[f.answer]:f.words?f.words[0]:fmt(f.value)+(f.unit?' '+f.unit:''))+'</li>').join('')+'</ol>';
+ if(t.sentence)return '<p>'+taskText(t.sentence)+'</p>';
+ if(Number.isFinite(t.value))return '<p>'+taskText((t.resultLabel||'Vastaus')+': '+Number(t.value.toPrecision(3)).toLocaleString('fi-FI',{maximumFractionDigits:8})+(t.unit?' '+t.unit:''))+'.</p>';
+ return '<p>'+taskText(t.why||'Vastaus on tarkistettu.')+'</p>';
+}
+// Malli avautuu oman ratkaisun jälkeen; pelkkä avaaminen tai tyhjä tarkistus ei riitä.
+(()=>{
+ const root=el('app'),records=new WeakMap();
+ function screenKey(){return 'mafyke-f8-model26-'+page+'-'+(typeof courseTab==='number'?courseTab:0)+'-'+(typeof forceIndex==='number'?forceIndex:0)+'-'+index;}
+ function state(key){return saved(key,{attempts:[],unlocked:false});}
+ function reveal(details,record){if(record.shown)return;record.shown=true;record.help.remove();details.append(record.content);record.summary.removeAttribute('aria-disabled');record.summary.title='';}
+ function install(){for(const details of root.querySelectorAll('details')){const summary=details.querySelector(':scope>summary');if(!summary||!/^(Malliratkaisu|Mallivastaus|Esimerkkipäätelmä|Perustelut)$/.test(summary.textContent.trim())||records.has(details))continue;const content=document.createDocumentFragment(),answer=document.createElement('div');answer.className='short-answer26';answer.innerHTML=shortAnswer26();content.append(answer);for(const n of [...details.childNodes])if(n!==summary)n.remove();summary.textContent=answer.querySelector('ol')?'Vastaukset':'Vastaus';details.open=false;const help=document.createElement('p');help.className='model-lock26 note';help.textContent='Vastaus avautuu oikean ratkaisun tai kahden eri, täytetyn yrityksen jälkeen.';details.after(help);summary.setAttribute('aria-disabled','true');summary.title='Ratkaise tehtävää ensin itse.';const record={content,summary,help,key:screenKey(),shown:false};records.set(details,record);summary.addEventListener('click',event=>{if(!record.shown){event.preventDefault();help.classList.add('model-reminder26');}});if(state(record.key).unlocked||(['7','8'].includes(page)&&done[index]))reveal(details,record);}}
+ function submitted(button){let fields;const panel=button.closest('.panel')||root;
+  if(button.id==='checkcalc'){fields=['givens','equation',...(!el('solvedRow').hidden?['solved']:[]),'work','sentence'].map(el);if(!/=/.test(el('givens').value)||!/=/.test(el('equation').value)||!/[*/·÷]/.test(el('work').value))return null;}
+  else if(button.id==='sandboxCheck')fields=['sandboxWork','sandboxAnswer'].map(el);
+  else if(button.id==='graphCheck19'){if(!saved(graphKey19(),{}).fit)return null;fields=[el('graphAnswer19')];}
+  else if(button.id==='thermalCheck21')fields=['thermalC21','thermalMetal21','thermalWork21'].map(el);
+  else fields=[...panel.querySelectorAll('input:not([type=range]):not([type=checkbox]),select,textarea')].filter(f=>f.checkVisibility()&&!f.disabled);
+  const groups=new Set();const answers=[];
+  for(const f of fields){if(!f)return null;if(f.type==='radio'){if(groups.has(f.name))continue;groups.add(f.name);const picked=panel.querySelector('input[name="'+f.name+'"]:checked');if(!picked)return null;answers.push(picked.value);}else{const value=f.value.trim();if(!value||value==='-1')return null;answers.push(value.replace(/\s+/g,'').toLowerCase());}}
+  return answers.length?JSON.stringify(answers):null;
+ }
+ root.addEventListener('click',event=>{const button=event.target.closest('button');if(!button||!/Tarkista/.test(button.textContent)||button.classList.contains('stage-check'))return;install();const fingerprint=submitted(button),key=screenKey(),s=state(key);const good=(['7','8'].includes(page)&&!!done[index])||el('feedback')?.classList.contains('ok');if(good)s.unlocked=true;else if(fingerprint&&!s.attempts.includes(fingerprint)){s.attempts.push(fingerprint);if(s.attempts.length>=2)s.unlocked=true;}save(key,s);if(s.unlocked){for(const details of root.querySelectorAll('details')){const record=records.get(details);if(record?.key===key)reveal(details,record);}}});
+ root.addEventListener('click',event=>{const b=event.target.closest('button');if(!b||!/(?:^reset$|Reset$)/.test(b.id))return;for(const key of Object.keys(sessionStorage))if(key.startsWith('mafyke-f8-model26-'+page+'-'))sessionStorage.removeItem(key);},true);new MutationObserver(install).observe(root,{childList:true,subtree:true});install();
+})();
+if(typeof COURSE!=='undefined'&&COURSE[page])drawCourse();
+if(['2','7','8'].includes(page))drawTask();
+if(page==='3')drawHeat();
+if(page==='4')drawMotion();
