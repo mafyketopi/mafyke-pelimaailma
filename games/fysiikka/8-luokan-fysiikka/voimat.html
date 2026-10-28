@@ -1,5 +1,31 @@
 <!doctype html>
-<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Voimat | MAFYKE</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="round21.css"></head><body data-page="5"><header><div class="brand">MAFYKETOPI / FYSIIKKA</div><a href="index.html">← 8. lk fysiikka</a><span>MAFYKE · 6/10</span></header><main><h1>Voimat</h1><div id="app"></div></main><script src="data.js"></script><script src="calc-engine.js"></script><script src="illustrations.js"></script><script src="app.js"></script><script src="experiments.js"></script><script src="course-data.js"></script><script src="expansion.js"></script><script src="course.js"></script><script src="revision.js"></script><script src="simulation-art.js"></script><script src="feedback.js"></script><script src="refinement.js"></script><script src="round12.js"></script><script src="round13.js"></script><script src="round19.js"></script><script src="round21.js"></script>
+<html lang="fi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Voimat | MAFYKE</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="round21.css"><style>
+.section-tabs .drawing-tab{display:inline-flex;align-items:center;text-decoration:none;font-family:inherit;font-size:.88rem;font-weight:700;line-height:normal;padding:8px 12px;border:1px solid var(--line,#c7d5d2);border-radius:8px;background:white;color:var(--accent,#1c756d)}
+.section-tabs .drawing-tab:hover{background:#eef6f4}.section-tabs .drawing-tab:focus-visible{outline:3px solid #a36b19;outline-offset:3px}
+@media(max-width:700px){.section-tabs .drawing-tab{font-size:.83rem}}
+</style></head><body data-page="5"><header><div class="brand">MAFYKETOPI / FYSIIKKA</div><a href="index.html">← 8. lk fysiikka</a><span>MAFYKE · 6/10</span></header><main><h1>Voimat</h1><div id="app"></div></main><script src="data.js"></script><script src="calc-engine.js"></script><script src="illustrations.js"></script><script src="app.js"></script><script src="experiments.js"></script><script src="course-data.js"></script><script src="expansion.js"></script><script src="course.js"></script><script src="revision.js"></script><script src="simulation-art.js"></script><script src="feedback.js"></script><script src="refinement.js"></script><script src="round12.js"></script><script src="round13.js"></script><script src="round19.js"></script><script src="round21.js"></script>
+<script>
+// This navigation extension belongs only to the Voimat page.
+(() => {
+  const originalTabs = courseTabs;
+  courseTabs = function () {
+    const template = document.createElement('template');
+    template.innerHTML = originalTabs();
+    const nav = template.content.querySelector('.section-tabs');
+    nav.querySelector('[data-section="1"]').textContent = '2. Voimakuvioiden tulkinta';
+    const friction = nav.querySelector('[data-section="2"]');
+    friction.textContent = '4. Kitkatutkimukset';
+    const drawing = document.createElement('a');
+    drawing.className = 'drawing-tab';
+    drawing.href = 'voimakuvioiden_piirtaminen.html';
+    drawing.textContent = '3. Voimakuvioiden piirtäminen';
+    nav.insertBefore(drawing, friction);
+    return template.innerHTML;
+  };
+  if (location.hash === '#voimakuviot') courseTab = 1;
+  drawCourse();
+})();
+</script>
 <!-- Cloudflare Web Analytics -->
 <script>
   if (localStorage.getItem("mafyke_owner") !== "true") {
