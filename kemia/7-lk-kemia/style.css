@@ -103,3 +103,5 @@ button[hidden]{display:none!important}
 
 @media(min-width:851px){.builder-work{display:grid;grid-template-columns:minmax(245px,.82fr) minmax(0,1.18fr);gap:18px;align-items:start;margin:12px 0}.builder-controls .actions{margin:0 0 10px}.builder-work .builder-groups{margin:0;gap:8px}.builder-work .built-group{width:calc(50% - 4px);min-height:150px;padding:7px}.builder-work .built-group svg{height:125px}.particle-active .target-formula{margin:10px 0}.particle-active p{margin:12px 0}.particle-active .feedback{margin:12px 0;min-height:0}.particle-active .feedback:empty{display:none}.particle-active #next-particle{margin-top:8px}}
 @media(min-width:851px){.builder-controls .actions button{font-size:15px;padding:10px 12px}}
+
+.chem-course-home .card-copy{flex:1;min-width:0}.chem-course-home .card-copy p{margin:7px 0 0;font-size:.95rem;line-height:1.4;color:#626262}.chem-course-home .home-card{align-items:center}
