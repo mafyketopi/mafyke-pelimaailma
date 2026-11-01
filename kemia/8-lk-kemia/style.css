@@ -126,3 +126,6 @@ h1{font-size:32px;margin-bottom:12px}h2{font-size:23px;margin:0 0 10px}
 .coefficient-group{border:0;padding:0;margin:0;grid-column:1/-1}.coefficient-group legend{font-size:17px;margin-bottom:9px}.coefficient-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.coefficient-inputs input{width:100%;min-width:0}.coefficient-inputs .field{min-width:0}
 
 .chem-course-home .course-area{margin:0 0 22px}.chem-course-home .course-area>h2{font-size:1.25rem;margin:0 0 10px}.chem-course-home .home-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.chem-course-home .card{min-height:0;display:flex;flex-direction:column;padding:18px}.chem-course-home .card strong{font-size:1.15rem;line-height:1.25;margin:8px 0 0}.chem-course-home .card p{font-size:.95rem;line-height:1.35;margin:9px 0 12px;color:#626262}.chem-course-home .card .card-arrow{position:static;align-self:flex-end;margin-top:auto}.chem-course-home .card .n{position:static}@media(max-width:900px){.chem-course-home .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.chem-course-home .home-grid{grid-template-columns:1fr}}
+
+.chem-course-home .card-open{display:block;margin-top:10px;font-size:.9rem;font-weight:700;color:#44546b}
+.chem-course-home .card .card-open{margin-top:auto;padding-top:6px;align-self:flex-end}

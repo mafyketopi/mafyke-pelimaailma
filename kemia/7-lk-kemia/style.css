@@ -105,3 +105,5 @@ button[hidden]{display:none!important}
 @media(min-width:851px){.builder-controls .actions button{font-size:15px;padding:10px 12px}}
 
 .chem-course-home .card-copy{flex:1;min-width:0}.chem-course-home .card-copy p{margin:7px 0 0;font-size:.95rem;line-height:1.4;color:#626262}.chem-course-home .home-card{align-items:center}
+
+.chem-course-home .card-open{display:block;margin-top:10px;font-size:.9rem;font-weight:700;color:#44546b}
